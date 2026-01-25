@@ -442,17 +442,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return `${y}-${m}-${d}`;
     };
 
-    const STORAGE_VERSION = 3;
-    const STORAGE_KEY = 'ps_v3_meta';
-    const ONBOARDING_KEY = 'ps_onboarding_complete';
-    const ACTIVE_SESSION_KEY = 'ps_active_session';
-    const DRAFT_SESSION_KEY = 'ps_draft_session';
-    const TODAY_WORKOUT_KEY = 'ps_today_workout';
-    const TODAY_SESSION_KEY = 'ps_today_session';
-    const REST_DAY_KEY = 'restDayDates';
-    const LAST_OPEN_KEY = 'ps_last_open';
-    const THEME_MODE_KEY = 'ps_theme_mode';
-    const DARK_VARIANT_KEY = 'ps_dark_variant';
+    // Storage keys are now loaded from data/constants.js
 
     const uniqueDayKeysFromHistory = (history, cardioHistory = {}, restDays = [], dayEntries = null) => {
       if (dayEntries && Object.keys(dayEntries).length > 0) {
