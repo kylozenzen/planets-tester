@@ -1014,7 +1014,13 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     };
 
     const Card = ({ children, className = '', onClick, style }) => (
-      <div onClick={onClick} style={style} className={`bg-white p-4 rounded-xl border border-gray-200 ${className}`}>{children}</div>
+      <div
+        onClick={onClick}
+        style={style}
+        className={`ps-card ${className}`}
+      >
+        {children}
+      </div>
     );
 
     const InlineMessage = ({ message }) => {
@@ -1907,7 +1913,7 @@ const Home = ({
             })}
             </div>
           </div>
-          <div className="home-section-card">
+          <div className="home-section-card card-enter">
             <div className="home-section-title">Start Today</div>
             <div className="home-section-subtitle">{homeStartSubtext}</div>
             <button
@@ -2328,7 +2334,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
 
       <div className={`flex-1 overflow-y-auto pb-28 px-4 space-y-4 workout-scroll ${isSessionMode ? 'workout-scroll--with-footer' : ''}`}>
         {showIdleControls && (
-          <Card className="space-y-3 workout-card mt-5 start-today-card">
+          <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive">
             <div>
               <div className="text-xs font-bold workout-muted uppercase">Start Today</div>
               <div className="text-base font-black workout-heading">Build today’s session</div>
@@ -3521,7 +3527,12 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     const sortedSessions = [...combinedSessions].sort((a, b) => new Date(b.date) - new Date(a.date));
                     
                     if (sortedSessions.length === 0) {
-                      return <p className="text-sm text-gray-500 text-center py-8">No workouts logged yet</p>;
+                      return (
+                        <div className="empty-state-card card-enter">
+                          <div className="empty-state-title">No workouts yet</div>
+                          <div className="empty-state-text">Log a few sessions and we’ll start showing your trends here.</div>
+                        </div>
+                      );
                     }
                     
                     return (
@@ -3637,7 +3648,10 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                               {isExpanded && (
                                 <div className="exercise-history-detail">
                                   {sessions.length === 0 ? (
-                                    <div className="text-xs text-gray-500">No sessions logged yet.</div>
+                                    <div className="empty-state-card card-enter-delayed">
+                                      <div className="empty-state-title">No sessions yet</div>
+                                      <div className="empty-state-text">Once you’ve saved a few workouts, this section will show your overview.</div>
+                                    </div>
                                   ) : (
                                     <div className="space-y-2">
                                       {sessions.map((session, idx) => {

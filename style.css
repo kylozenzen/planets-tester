@@ -539,6 +539,12 @@ body.app-shell {
   background: var(--card-gradient), var(--surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--hairline);
+  transition: transform 140ms var(--ease-standard), box-shadow 140ms var(--ease-standard);
+}
+
+.home-mini-card:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: var(--shadow-card);
 }
 
 .home-muscle-card {
@@ -745,15 +751,39 @@ body.exercise-colors-off .exercise-badge-wrapper {
 }
 
 .home-section-card {
-  padding: 16px 18px;
   border-radius: var(--radius-card);
   background: var(--surface);
   background: var(--card-gradient), var(--surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--hairline);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  padding: 16px 16px 14px;
+}
+
+.home-section-card + .home-section-card {
+  margin-top: 10px;
+}
+
+.empty-state-card {
+  margin: 16px;
+  padding: 18px 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  background-image: var(--card-gradient), var(--surface);
+  border: 1px dashed color-mix(in srgb, var(--border) 80%, var(--accent) 20%);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--hairline);
+  text-align: left;
+}
+
+.empty-state-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 2px;
+}
+
+.empty-state-text {
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 .home-section-title {
@@ -1564,13 +1594,27 @@ textarea::placeholder {
   color: var(--muted);
 }
 
-.workout-shell .workout-card {
+.workout-card {
   background: var(--surface);
-  background: var(--card-gradient), var(--surface);
+  background-image: var(--card-gradient), var(--surface);
   border-color: var(--border);
   color: var(--text);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--hairline);
+  transition:
+    transform 140ms var(--ease-standard),
+    box-shadow 140ms var(--ease-standard),
+    border-color 140ms var(--ease-standard);
+}
+
+.workout-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-strong);
+}
+
+.workout-card:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
 }
 
 .workout-accent-text {
@@ -1773,6 +1817,91 @@ textarea::placeholder {
 
 .hold-button.holding .hold-progress {
   transform: scaleX(1);
+}
+
+/* ===== Planet Strength – Card & Motion Layer ===== */
+
+.ps-card {
+  position: relative;
+  background: var(--surface);
+  background-image: var(--card-gradient), var(--surface);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--hairline);
+  padding: 16px;
+  transition:
+    transform 160ms var(--ease-standard),
+    box-shadow 160ms var(--ease-standard),
+    border-color 160ms var(--ease-standard),
+    background-color 160ms var(--ease-standard),
+    background-image 160ms var(--ease-standard);
+}
+
+.ps-card[data-interactive="true"],
+.ps-card.ps-card-interactive {
+  cursor: pointer;
+}
+
+.ps-card[data-interactive="true"]:hover,
+.ps-card.ps-card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-strong);
+  border-color: color-mix(in srgb, var(--border) 70%, var(--accent) 30%);
+}
+
+.ps-card[data-interactive="true"]:active,
+.ps-card.ps-card-interactive:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+
+@keyframes psCardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-enter {
+  animation: psCardFadeUp 260ms var(--ease-standard);
+}
+
+.card-enter-delayed {
+  animation: psCardFadeUp 260ms var(--ease-standard);
+  animation-delay: 80ms;
+}
+
+.ps-tap {
+  transition:
+    transform 120ms var(--ease-standard),
+    box-shadow 120ms var(--ease-standard),
+    background-color 120ms var(--ease-standard),
+    border-color 120ms var(--ease-standard);
+}
+
+.ps-tap:active {
+  transform: scale(0.97) translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-enter,
+  .card-enter-delayed {
+    animation: none;
+  }
+
+  .ps-card[data-interactive="true"]:hover,
+  .ps-card.ps-card-interactive:hover {
+    transform: none;
+    box-shadow: var(--shadow-card);
+  }
+
+  .ps-tap {
+    transition: none;
+  }
 }
 
 @keyframes fadeInMessage {
