@@ -16,8 +16,51 @@ const WORKOUT_PLANS = {
     machines: ["leg_press", "leg_extension", "leg_curl", "ab_crunch"],
     dumbbells: ["db_goblet_squat", "db_lunge"],
     barbells: ["bb_squat"]
+  },
+  FullBody: {
+    machines: ["chest_press", "lat_pulldown", "leg_press"],
+    dumbbells: ["db_row"],
+    barbells: ["bb_deadlift"]
   }
 };
+
+// ========== TEMPLATE PICKS ==========
+// Friendly template descriptions for the picker modal
+
+const WORKOUT_TEMPLATES = [
+  {
+    id: 'push',
+    key: 'Push',
+    name: 'Upper body — push',
+    description: 'Chest, shoulders, and triceps with simple press movements.',
+    exerciseIds: ["chest_press", "shoulder_press", "db_bench_press", "bb_bench"],
+    createdFrom: 'template'
+  },
+  {
+    id: 'pull',
+    key: 'Pull',
+    name: 'Upper body — pull',
+    description: 'Back and biceps using rows and pull-downs.',
+    exerciseIds: ["lat_pulldown", "seated_row", "db_row", "bb_row"],
+    createdFrom: 'template'
+  },
+  {
+    id: 'legs',
+    key: 'Legs',
+    name: 'Leg day',
+    description: 'Quads, hamstrings, and glutes without overcomplicating it.',
+    exerciseIds: ["leg_press", "leg_curl", "db_goblet_squat", "bb_squat"],
+    createdFrom: 'template'
+  },
+  {
+    id: 'full_body',
+    key: 'FullBody',
+    name: 'Full body basics',
+    description: 'One round that hits upper, lower, and posterior chain.',
+    exerciseIds: ["chest_press", "leg_press", "db_row", "bb_deadlift"],
+    createdFrom: 'template'
+  }
+];
 
 // ========== BIG BASICS ==========
 // Core exercises shown by default - the foundational movements everyone should know
@@ -41,66 +84,4 @@ const BIG_BASICS = [
   "bb_deadlift", 
   "bb_row", 
   "bb_overhead_press"
-];
-
-// ========== BEGINNER STARTER EXERCISES ==========
-// Safe, machine-based exercises for new lifters
-
-const BEGINNER_EXERCISES = [
-  { 
-    id: 'chest_press', 
-    name: 'Chest Press', 
-    emoji: '⚙️', 
-    desc: 'Great for building chest strength', 
-    why: 'Machine guides your movement' 
-  },
-  { 
-    id: 'lat_pulldown', 
-    name: 'Lat Pulldown', 
-    emoji: '⚙️', 
-    desc: 'Builds a strong back', 
-    why: 'Easier than pull-ups' 
-  },
-  { 
-    id: 'leg_press', 
-    name: 'Leg Press', 
-    emoji: '⚙️', 
-    desc: 'Powerful legs, safe form', 
-    why: 'No balance required' 
-  },
-  { 
-    id: 'seated_row', 
-    name: 'Seated Row', 
-    emoji: '⚙️', 
-    desc: 'Posture and back strength', 
-    why: 'Simple pulling motion' 
-  },
-  { 
-    id: 'shoulder_press', 
-    name: 'Shoulder Press', 
-    emoji: '⚙️', 
-    desc: 'Strong shoulders', 
-    why: 'Machine stabilizes weight' 
-  },
-  { 
-    id: 'leg_curl', 
-    name: 'Leg Curl', 
-    emoji: '⚙️', 
-    desc: 'Hamstring strength', 
-    why: 'Isolates one muscle group' 
-  },
-  { 
-    id: 'ab_crunch', 
-    name: 'Ab Crunch Machine', 
-    emoji: '⚙️', 
-    desc: 'Core strength', 
-    why: 'Controlled movement' 
-  },
-  { 
-    id: 'pec_fly', 
-    name: 'Pec Fly', 
-    emoji: '⚙️', 
-    desc: 'Chest definition', 
-    why: 'Isolated chest work' 
-  }
 ];

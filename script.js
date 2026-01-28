@@ -423,10 +423,10 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     // ========== EXTRACTED DATA ==========
     // The following are now loaded from separate files in /data:
     // - data/constants.js: AVATARS, homeQuotes, postWorkoutQuotes, restDayQuotes, GYM_TYPES,
-    //   EXPERIENCE_LEVELS, ACTIVITY_LEVELS, GOALS, DIFFICULTY_LEVELS, BEGINNER_EXERCISES,
+    //   EXPERIENCE_LEVELS, ACTIVITY_LEVELS, GOALS, DIFFICULTY_LEVELS,
     //   CARDIO_TYPES, motivationalQuotes, TIMING, THRESHOLDS, STORAGE_KEYS
     // - data/equipment.js: EQUIPMENT_DB
-    // - data/workoutPlans.js: WORKOUT_PLANS, BIG_BASICS, BEGINNER_EXERCISES
+    // - data/workoutPlans.js: WORKOUT_PLANS, BIG_BASICS, WORKOUT_TEMPLATES
 
     // ========== UTILITIES ==========
     const clampTo5 = (n) => Math.max(10, Math.round(n / 5) * 5);
@@ -1013,6 +1013,30 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return null;
     };
 
+    const getCoachMessage = ({ streak, sessionsThisWeek }) => {
+      if (streak >= 7) {
+        return `You’ve shown up ${streak} days in a row. Keep that string alive.`;
+      }
+
+      if (streak >= 4) {
+        return `You’re on a ${streak}-day streak. Don’t let it fall over something small.`;
+      }
+
+      if (sessionsThisWeek === 0) {
+        return 'First session of the week. Set the tone you want to keep.';
+      }
+
+      if (sessionsThisWeek === 1) {
+        return 'You’ve started the week. Now build on it.';
+      }
+
+      if (sessionsThisWeek >= 3) {
+        return `You’ve logged ${sessionsThisWeek} sessions this week. Momentum is on your side.`;
+      }
+
+      return 'Show up, log the work, and let the numbers stack up for you.';
+    };
+
     const Card = ({ children, className = '', onClick, style }) => (
       <div
         onClick={onClick}
@@ -1047,6 +1071,50 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
         <div className="toast toast--undo" role="status" aria-live="polite">
           <span>{message}</span>
           <button onClick={onUndo} className="toast-action">Undo</button>
+        </div>
+      );
+    };
+
+    const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
+      if (!isOpen) return null;
+
+      return (
+        <div className="template-picker-backdrop" onClick={onClose}>
+          <div
+            className="template-picker card-enter"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="template-picker-header">
+              <h2 className="template-picker-title">Start from a template</h2>
+              <button
+                type="button"
+                className="btn-secondary-flat ps-tap text-xs"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+            </div>
+            <div className="template-picker-list no-scrollbar">
+              {plans.map((plan) => (
+                <button
+                  key={plan.id}
+                  type="button"
+                  className="template-picker-item ps-card-interactive ps-tap"
+                  onClick={() => onSelect(plan)}
+                >
+                  <div className="template-picker-name">{plan.name}</div>
+                  {plan.description && (
+                    <div className="template-picker-desc">{plan.description}</div>
+                  )}
+                  {Array.isArray(plan.exercises) && plan.exercises.length > 0 && (
+                    <div className="template-picker-meta">
+                      {plan.exercises.length} movements
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       );
     };
@@ -1787,6 +1855,7 @@ const Home = ({
   onStartWorkout,
   onGenerate,
   homeQuote,
+  coachMessage,
   isRestDay,
   sessionIntent,
   onLogRestDay,
@@ -1913,6 +1982,12 @@ const Home = ({
             })}
             </div>
           </div>
+          {coachMessage && (
+            <div className="coach-strip card-enter">
+              <span className="coach-strip-label">Coach</span>
+              <span className="coach-strip-text">{coachMessage}</span>
+            </div>
+          )}
           <div className="home-section-card card-enter">
             <div className="home-section-title">Start Today</div>
             <div className="home-section-subtitle">{homeStartSubtext}</div>
@@ -1971,13 +2046,14 @@ const Home = ({
   );
 };
 
-const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent }) => {
+const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
   const [swapState, setSwapState] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [showCompactSearch, setShowCompactSearch] = useState(false);
+  const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
   const searchInputRef = useRef(null);
   const searchResultsRef = useRef(null);
   const sessionCardRef = useRef(null);
@@ -2023,6 +2099,27 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const finishSummaryText = finishSummaryIntent ? `${finishSummaryBase} • ${finishSummaryIntent}` : finishSummaryBase;
 
   const filterOptions = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Cardio'];
+
+  const templatePlans = useMemo(() => {
+    return (WORKOUT_TEMPLATES || []).map((tpl) => {
+      const uniqueIds = Array.from(new Set(tpl.exerciseIds || []));
+      return {
+        id: tpl.id,
+        key: tpl.key,
+        name: tpl.name,
+        description: tpl.description,
+        exercises: uniqueIds.map((exerciseId) => {
+          const eq = EQUIPMENT_DB[exerciseId] || {};
+          return {
+            id: exerciseId,
+            name: eq.name || exerciseId,
+            muscleGroup: eq.target || null,
+            equipment: eq.type || null
+          };
+        })
+      };
+    });
+  }, []);
 
   const resolveGroup = (eq) => {
     if (eq?.type === 'cardio') return 'Cardio';
@@ -2444,7 +2541,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 <div className="text-xs font-bold workout-muted uppercase">{isSessionMode ? 'Workout active' : 'Draft workout'}</div>
                 <div className="flex items-center gap-2">
                   <div className="text-lg font-black workout-heading">Today’s Workout</div>
-                  {activeSession?.createdFrom === 'generated' && (
+                  {(activeSession?.createdFrom === 'generated' || activeSession?.createdFrom === 'template') && (
                     <span className="session-badge">Generated</span>
                   )}
                 </div>
@@ -2463,6 +2560,36 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 {isSessionMode ? 'Cancel workout' : 'Cancel draft'}
               </button>
             </div>
+            {mode === 'draft' && !isRestDay && (
+              <div className="workout-mode-pills">
+                <button
+                  type="button"
+                  className="workout-mode-pill ps-tap"
+                  onClick={handleBrowseAll}
+                >
+                  Browse
+                </button>
+                <button
+                  type="button"
+                  className="workout-mode-pill ps-tap"
+                  onClick={() => {
+                    setShowCompactSearch(true);
+                    requestAnimationFrame(() => {
+                      searchInputRef.current?.focus();
+                    });
+                  }}
+                >
+                  Search
+                </button>
+                <button
+                  type="button"
+                  className="workout-mode-pill ps-tap"
+                  onClick={() => setIsTemplatePickerOpen(true)}
+                >
+                  Template
+                </button>
+              </div>
+            )}
             {sessionEntries.length === 0 ? (
               <div className="text-xs workout-muted">Workout ready. Add exercises to get started.</div>
             ) : (
@@ -2632,6 +2759,15 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           </div>
         </div>
       )}
+      <TemplatePicker
+        isOpen={isTemplatePickerOpen}
+        plans={templatePlans}
+        onClose={() => setIsTemplatePickerOpen(false)}
+        onSelect={(plan) => {
+          onApplyTemplate?.(plan);
+          setIsTemplatePickerOpen(false);
+        }}
+      />
     </div>
   );
 };
@@ -3959,6 +4095,13 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     onToggle={(next) => setSettings({ ...settings, smartSuggestionsEnabled: next })}
                   />
                   <ToggleRow
+                    icon="MessageCircle"
+                    title="Coach mode"
+                    subtitle="Show a one-line nudge based on your streak and weekly sessions."
+                    enabled={settings.coachModeEnabled}
+                    onToggle={(next) => setSettings({ ...settings, coachModeEnabled: next })}
+                  />
+                  <ToggleRow
                     icon="List"
                     title="Show All Exercises"
                     subtitle="Start with the full library open"
@@ -4943,6 +5086,19 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
   );
 };
 // ========== MAIN APP ==========
+    const SETTINGS_DEFAULTS = {
+      insightsEnabled: true,
+      smartSuggestionsEnabled: true,
+      darkMode: false,
+      darkAccent: 'purple',
+      showAllExercises: false,
+      pinnedExercises: [],
+      workoutViewMode: 'all',
+      suggestedWorkoutCollapsed: true,
+      useDemoData: false,
+      coachModeEnabled: false
+    };
+
     const App = () => {
       const [loaded, setLoaded] = useState(false);
 
@@ -4955,7 +5111,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         onboarded: false
       });
 
-      const [settings, setSettings] = useState({ insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true, useDemoData: false });
+      const [settings, setSettings] = useState({ ...SETTINGS_DEFAULTS });
       const [themeMode, setThemeModeState] = useState('light');
       const [darkVariant, setDarkVariantState] = useState('blue');
       const [colorfulExerciseCards, setColorfulExerciseCards] = useState(() => {
@@ -4983,6 +5139,10 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [showButDidYouDie, setShowButDidYouDie] = useState(false);
       const [showNice, setShowNice] = useState(false);
       const [showPerfectWeek, setShowPerfectWeek] = useState(false);
+      const [hasSeenCoachModeNudge, setHasSeenCoachModeNudge] = useState(() => {
+        return storage.get('ps_seen_coach_nudge', false);
+      });
+      const [showCoachModeNudge, setShowCoachModeNudge] = useState(false);
       const [activeSession, setActiveSession] = useState(null);
       const [inlineMessage, setInlineMessage] = useState(null);
       const messageTimerRef = useRef(null);
@@ -5048,6 +5208,10 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         document.addEventListener('click', handleRageTap, true);
         return () => document.removeEventListener('click', handleRageTap, true);
       }, []);
+
+      useEffect(() => {
+        storage.set('ps_seen_coach_nudge', hasSeenCoachModeNudge);
+      }, [hasSeenCoachModeNudge]);
 
       const normalizeActiveSession = (session) => {
         if (!session) return null;
@@ -5119,7 +5283,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       useEffect(() => {
         const savedOnboarding = storage.get(ONBOARDING_KEY, false);
         const savedProfileRaw = storage.get('ps_v2_profile', null);
-        const settingsDefaults = { insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true, useDemoData: false };
+        const settingsDefaults = { ...SETTINGS_DEFAULTS };
         const savedSettings = storage.get('ps_v2_settings', settingsDefaults);
         const savedHistory = storage.get('ps_v2_history', {});
         const savedCardio = storage.get('ps_v2_cardio', {});
@@ -5447,6 +5611,14 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         return count;
       }, [effectiveDayEntries]);
 
+      const streak = streakObj?.current || 0;
+      const sessionsThisWeek = weekWorkoutCount || 0;
+
+      const coachMessage = useMemo(() => {
+        if (!settings.coachModeEnabled) return '';
+        return getCoachMessage({ streak, sessionsThisWeek });
+      }, [settings.coachModeEnabled, streak, sessionsThisWeek]);
+
       const recordDayEntry = (dayKey, type = 'workout', extras = {}) => {
         setDayEntries(prev => {
           const existing = prev[dayKey];
@@ -5541,6 +5713,12 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         
         checkPerfectWeek();
       }, [effectiveDayEntries, todayKey]);
+
+      useEffect(() => {
+        if (!settings.coachModeEnabled && !hasSeenCoachModeNudge && streak >= 7) {
+          setShowCoachModeNudge(true);
+        }
+      }, [settings.coachModeEnabled, hasSeenCoachModeNudge, streak]);
 
       const createEmptySession = (overrides = {}) => ({
         date: todayKey,
@@ -5736,7 +5914,8 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const buildDraftPlan = (type, options = {}) => {
         const gymType = GYM_TYPES[profile.gymType];
-        const planKey = type === 'legs' ? 'Legs' : type === 'push' ? 'Push' : type === 'pull' ? 'Pull' : type === 'full' ? 'Full Body' : todayWorkoutType;
+        const planKey = type === 'legs' ? 'Legs' : type === 'push' ? 'Push' : type === 'pull' ? 'Pull' : type === 'full' ? 'FullBody' : todayWorkoutType;
+        const planLabel = planKey === 'FullBody' ? 'Full Body' : `${planKey} Day`;
         const plan = WORKOUT_PLANS[planKey] || {};
         const pool = [];
         const wantsMachines = options.equipment === 'machines';
@@ -5772,7 +5951,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           duration: options.duration || '',
           equipment: options.equipment || ''
         };
-        return { type, label: planKey === 'Full Body' ? 'Full Body' : `${planKey} Day`, exercises: picks, options: sanitizedOptions };
+        return { type, label: planLabel, exercises: picks, options: sanitizedOptions };
       };
 
       const createDraft = (draft) => {
@@ -5912,6 +6091,38 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           return next;
         });
         pushMessage('Rest day removed.');
+      };
+
+      const applyTemplatePlan = (plan) => {
+        if (!plan) return;
+        if (isRestDay) {
+          undoRestDay();
+        }
+
+        const exerciseIds = (plan.exercises || [])
+          .map((ex) => ex.id || ex.key || ex.name)
+          .filter(Boolean);
+
+        if (!exerciseIds.length) return;
+
+        const nextStatus = activeSessionToday?.status === 'active' ? 'active' : 'draft';
+
+        updateSessionItemsByIds(exerciseIds, {
+          status: nextStatus,
+          createdFrom: 'template',
+        });
+
+        setDraftPlan({
+          date: todayKey,
+          label: plan.name || 'Workout Template',
+          exercises: exerciseIds,
+          options: {},
+          status: nextStatus,
+          createdFrom: 'template',
+          type: todayWorkoutType,
+        });
+
+        setDismissedDraftDate(null);
       };
 
       const startWorkoutFromBuilder = () => {
@@ -6235,7 +6446,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           setView('onboarding');
           setTab('home');
           setAppState({ lastWorkoutType: null, lastWorkoutDayKey: null, restDays: [] });
-          setSettings({ insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true });
+          setSettings({ ...SETTINGS_DEFAULTS });
           setPinnedExercises([]);
           setStarredExercises([]);
           setColorfulExerciseCards(true);
@@ -6245,11 +6456,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           setLastExerciseStats({});
           setDraftPlan(null);
           setDismissedDraftDate(null);
+          setHasSeenCoachModeNudge(false);
+          setShowCoachModeNudge(false);
           storage.set('ps_v2_profile', null);
           storage.set('ps_v2_history', {});
           storage.set('ps_v2_cardio', {});
           storage.set('ps_v2_state', { lastWorkoutType: null, lastWorkoutDayKey: null, restDays: [] });
-          storage.set('ps_v2_settings', { insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true });
+          storage.set('ps_v2_settings', { ...SETTINGS_DEFAULTS });
           storage.set(STORAGE_KEY, { version: STORAGE_VERSION, pinnedExercises: [], recentExercises: [], exerciseUsageCounts: {}, dayEntries: {}, lastExerciseStats: {} });
           storage.set(ONBOARDING_KEY, false);
           storage.set('ps_dismissed_draft_date', null);
@@ -6258,6 +6471,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           storage.set(TODAY_WORKOUT_KEY, null);
           storage.set(TODAY_SESSION_KEY, null);
           storage.set(REST_DAY_KEY, []);
+          storage.set('ps_seen_coach_nudge', false);
           try {
             localStorage.setItem('ps_starredExercises', JSON.stringify([]));
             localStorage.setItem('ps_colorfulExerciseCards', JSON.stringify(true));
@@ -6356,8 +6570,9 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
                   storage.set('ps_v2_profile', importedData.profile);
                 }
                 if (importedData.settings) {
-                  setSettings(importedData.settings);
-                  storage.set('ps_v2_settings', importedData.settings);
+                  const mergedSettings = { ...SETTINGS_DEFAULTS, ...importedData.settings };
+                  setSettings(mergedSettings);
+                  storage.set('ps_v2_settings', mergedSettings);
                 }
                 if (importedData.history) {
                   setHistory(importedData.history);
@@ -6522,6 +6737,7 @@ return (
                       triggerGenerator(map[label] || 'surprise');
                     }}
                     homeQuote={homeQuote}
+                    coachMessage={coachMessage}
                     isRestDay={isRestDay}
                     sessionIntent={sessionIntent}
                     onLogRestDay={logRestDay}
@@ -6556,6 +6772,7 @@ return (
                     isRestDay={isRestDay}
                     onCancelSession={cancelTodaySession}
                     sessionIntent={sessionIntent}
+                    onApplyTemplate={applyTemplatePlan}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
@@ -6591,6 +6808,50 @@ return (
                 </div>
               </div>
             </div>
+
+            {showCoachModeNudge && (
+              <div
+                className="coach-nudge-backdrop"
+                onClick={() => {
+                  setShowCoachModeNudge(false);
+                  setHasSeenCoachModeNudge(true);
+                }}
+              >
+                <div
+                  className="coach-nudge-card card-enter"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="coach-nudge-title">You just finished a full week.</div>
+                  <div className="coach-nudge-text">
+                    Want a quiet nudge each time you show up? Try turning on Coach mode in Settings.
+                  </div>
+                  <div className="coach-nudge-actions">
+                    <button
+                      type="button"
+                      className="btn-secondary-flat ps-tap text-xs"
+                      onClick={() => {
+                        setShowCoachModeNudge(false);
+                        setHasSeenCoachModeNudge(true);
+                      }}
+                    >
+                      Maybe later
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-primary ps-tap text-xs"
+                      onClick={() => {
+                        setSettings({ ...settings, coachModeEnabled: true });
+                        setHasSeenCoachModeNudge(true);
+                        setShowCoachModeNudge(false);
+                        setTab('profile');
+                      }}
+                    >
+                      Turn on Coach mode
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {!showAnalytics && !showPatterns && !showMuscleMap && <TabBar currentTab={tab} setTab={setTab} onWorkoutTripleTap={() => setShowSpartan(true)} />}
 

@@ -1217,6 +1217,170 @@ textarea::placeholder {
   cursor: pointer;
 }
 
+.template-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 35;
+}
+
+.template-picker {
+  width: 100%;
+  max-width: 380px;
+  max-height: 70vh;
+  padding: 14px 14px 10px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  background-image: var(--card-gradient), var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.template-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.template-picker-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.template-picker-list {
+  overflow-y: auto;
+  padding-top: 4px;
+}
+
+.template-picker-item {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  padding: 10px 11px 9px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  background-image: var(--card-gradient), var(--surface);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--hairline);
+}
+
+.template-picker-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.template-picker-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.template-picker-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.workout-mode-pills {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.workout-mode-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.workout-mode-pill:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.coach-strip {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: radial-gradient(circle at top left, rgba(0, 255, 148, 0.12), transparent),
+              var(--surface);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, rgba(0, 255, 148, 0.7) 20%);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coach-strip-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.coach-strip-text {
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.coach-nudge-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 12px 80px;
+  background: transparent;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.coach-nudge-card {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  background-image: var(--card-gradient), var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  padding: 12px 14px 10px;
+}
+
+.coach-nudge-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 4px;
+}
+
+.coach-nudge-text {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.coach-nudge-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .baseline-card {
   background: var(--surface-2);
   border: 1px solid var(--border);
