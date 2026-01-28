@@ -13,6 +13,19 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       }
     };
 
+    const SETTINGS_DEFAULTS = {
+      insightsEnabled: true,
+      smartSuggestionsEnabled: true,
+      darkMode: false,
+      darkAccent: 'purple',
+      showAllExercises: false,
+      pinnedExercises: [],
+      workoutViewMode: 'all',
+      suggestedWorkoutCollapsed: true,
+      useDemoData: false,
+      lockedInMode: false
+    };
+
     // ========== PWA SETUP ==========
     // Confirm manifest + icon links (guarded for templates that omit them).
     const manifestLink = document.getElementById('manifest-placeholder');
@@ -423,14 +436,42 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     // ========== EXTRACTED DATA ==========
     // The following are now loaded from separate files in /data:
     // - data/constants.js: AVATARS, homeQuotes, postWorkoutQuotes, restDayQuotes, GYM_TYPES,
-    //   EXPERIENCE_LEVELS, ACTIVITY_LEVELS, GOALS, DIFFICULTY_LEVELS, BEGINNER_EXERCISES,
+    //   EXPERIENCE_LEVELS, ACTIVITY_LEVELS, GOALS, DIFFICULTY_LEVELS,
     //   CARDIO_TYPES, motivationalQuotes, TIMING, THRESHOLDS, STORAGE_KEYS
     // - data/equipment.js: EQUIPMENT_DB
-    // - data/workoutPlans.js: WORKOUT_PLANS, BIG_BASICS, BEGINNER_EXERCISES
+    // - data/workoutPlans.js: WORKOUT_PLANS, BIG_BASICS
 
     // ========== UTILITIES ==========
     const clampTo5 = (n) => Math.max(10, Math.round(n / 5) * 5);
     const safeArray = (value) => (Array.isArray(value) ? value : []);
+
+    if (typeof WORKOUT_PLANS === 'object' && WORKOUT_PLANS !== null) {
+      WORKOUT_PLANS.Push = {
+        machines: ["chest_press", "shoulder_press", "pec_fly", "cable_tricep"],
+        dumbbells: [],
+        barbells: []
+      };
+      WORKOUT_PLANS.Pull = {
+        machines: ["lat_pulldown", "seated_row", "cable_bicep"],
+        dumbbells: ["db_row"],
+        barbells: []
+      };
+      WORKOUT_PLANS.Legs = {
+        machines: ["leg_press", "leg_extension", "leg_curl"],
+        dumbbells: ["db_goblet_squat"],
+        barbells: []
+      };
+      WORKOUT_PLANS.Core = {
+        machines: ["ab_crunch", "back_extension", "cable_woodchop"],
+        dumbbells: ["plank_bodyweight"],
+        barbells: []
+      };
+      WORKOUT_PLANS["Full Body"] = {
+        machines: ["chest_press", "lat_pulldown", "leg_press"],
+        dumbbells: ["db_shoulder_press"],
+        barbells: []
+      };
+    }
 
     // useDebounce hook is now loaded from hooks/useDebounce.js
     // usePersistedState hook is now loaded from hooks/usePersistedState.js
@@ -1013,6 +1054,22 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return null;
     };
 
+    const getCoachMessage = ({ streak, sessionsThisWeek }) => {
+      if (streak >= 4) {
+        return `You're on a ${streak}-day streak. Keep it alive.`;
+      }
+
+      if (sessionsThisWeek === 0) {
+        return 'First session of the week. Set the tone.';
+      }
+
+      if (sessionsThisWeek >= 3) {
+        return `You've logged ${sessionsThisWeek} sessions this week. Momentum is on your side.`;
+      }
+
+      return 'Show up, log the work, and let the numbers build for you.';
+    };
+
     const Card = ({ children, className = '', onClick, style }) => (
       <div
         onClick={onClick}
@@ -1032,21 +1089,94 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       );
     };
 
-    const Toast = ({ message }) => {
-      if (!message) return null;
-      return (
-        <div className="toast" role="status" aria-live="polite">
-          {message}
-        </div>
-      );
-    };
-
     const UndoToast = ({ message, onUndo }) => {
       if (!message) return null;
       return (
         <div className="toast toast--undo" role="status" aria-live="polite">
           <span>{message}</span>
           <button onClick={onUndo} className="toast-action">Undo</button>
+        </div>
+      );
+    };
+
+    const LockedInGate = ({ onLockedIn, onBrowse }) => (
+      <div className="locked-in-gate">
+        <div className="locked-in-card card-enter">
+          <h1 className="locked-in-title">Ready to lock in?</h1>
+          <p className="locked-in-text">
+            Turn this session into a promise. Once you tap in, you're here to work.
+          </p>
+          <div className="locked-in-actions">
+            <button
+              type="button"
+              className="btn-primary ps-tap"
+              onClick={onLockedIn}
+            >
+              I'm Locked In
+            </button>
+            <button
+              type="button"
+              className="btn-secondary-flat ps-tap"
+              onClick={onBrowse}
+            >
+              I'm Just Browsing
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
+    const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
+      if (!isOpen) return null;
+
+      return (
+        <div className="template-picker-backdrop">
+          <div className="template-picker card-enter">
+            <div className="template-picker-header">
+              <h2 className="template-picker-title">Start from template</h2>
+              <button
+                type="button"
+                className="btn-secondary-flat ps-tap text-xs"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+            </div>
+            <div className="template-picker-list">
+              {plans.map((plan) => (
+                <button
+                  key={plan.id || plan.name}
+                  type="button"
+                  className="template-picker-item ps-card-interactive ps-tap"
+                  onClick={() => onSelect(plan)}
+                >
+                  <div className="template-picker-name">{plan.name}</div>
+                  {plan.description && (
+                    <div className="template-picker-desc">{plan.description}</div>
+                  )}
+                  {Array.isArray(plan.exercises) && (
+                    <div className="template-picker-meta">
+                      {plan.exercises.length} exercises
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ToastHost = ({ toasts }) => {
+      if (!toasts.length) return null;
+
+      return (
+        <div className="toast-host">
+          {toasts.map((toast) => (
+            <div key={toast.id} className="toast card-enter">
+              <div className="toast-text">{toast.message}</div>
+            </div>
+          ))}
         </div>
       );
     };
@@ -1787,6 +1917,7 @@ const Home = ({
   onStartWorkout,
   onGenerate,
   homeQuote,
+  coachMessage,
   isRestDay,
   sessionIntent,
   onLogRestDay,
@@ -1913,6 +2044,12 @@ const Home = ({
             })}
             </div>
           </div>
+          {coachMessage && (
+            <div className="coach-strip card-enter">
+              <span className="coach-strip-label">Coach</span>
+              <span className="coach-strip-text">{coachMessage}</span>
+            </div>
+          )}
           <div className="home-section-card card-enter">
             <div className="home-section-title">Start Today</div>
             <div className="home-section-subtitle">{homeStartSubtext}</div>
@@ -1971,13 +2108,14 @@ const Home = ({
   );
 };
 
-const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent }) => {
+const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
   const [swapState, setSwapState] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [showCompactSearch, setShowCompactSearch] = useState(false);
+  const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
   const searchInputRef = useRef(null);
   const searchResultsRef = useRef(null);
   const sessionCardRef = useRef(null);
@@ -2023,6 +2161,60 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const finishSummaryText = finishSummaryIntent ? `${finishSummaryBase} • ${finishSummaryIntent}` : finishSummaryBase;
 
   const filterOptions = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Cardio'];
+
+  const templatePlans = useMemo(() => {
+    if (!WORKOUT_PLANS) return [];
+    const labels = {
+      Push: {
+        name: 'Push Day',
+        description: 'Upper body – chest, shoulders & triceps.'
+      },
+      Pull: {
+        name: 'Pull Day',
+        description: 'Upper body – back & biceps focus.'
+      },
+      Legs: {
+        name: 'Legs Day',
+        description: 'Lower body – quads, glutes & hamstrings.'
+      },
+      Core: {
+        name: 'Core Day',
+        description: 'Core & abs – anti-slouch session.'
+      },
+      'Full Body': {
+        name: 'Full Body Day',
+        description: 'Balanced mix of upper & lower body.'
+      }
+    };
+
+    const planOrder = ['Push', 'Pull', 'Legs', 'Core', 'Full Body'];
+    return planOrder
+      .filter((name) => WORKOUT_PLANS[name])
+      .map((name) => {
+        const plan = WORKOUT_PLANS[name] || {};
+        const exerciseIds = [
+          ...(plan.machines || []),
+          ...(plan.dumbbells || []),
+          ...(plan.barbells || [])
+        ];
+        const uniqueIds = Array.from(new Set(exerciseIds));
+        const label = labels[name] || {};
+        return {
+          id: name.toLowerCase().replace(/\\s+/g, '-'),
+          name: label.name || `${name} Day`,
+          description: label.description || `A focused ${name.toLowerCase()} template.`,
+          exercises: uniqueIds.map((exerciseId) => {
+            const eq = EQUIPMENT_DB[exerciseId] || {};
+            return {
+              id: exerciseId,
+              name: eq.name || exerciseId,
+              muscleGroup: eq.target || null,
+              equipment: eq.type || null
+            };
+          })
+        };
+      });
+  }, []);
 
   const resolveGroup = (eq) => {
     if (eq?.type === 'cardio') return 'Cardio';
@@ -2382,25 +2574,33 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               <div className="text-xs font-bold workout-muted uppercase">
                 {mode === 'draft' ? 'Draft mode' : 'Workout active'}
               </div>
-              <div className="flex items-center gap-3 text-xs font-semibold">
+              <div className="flex items-center gap-2">
                 <button
+                  type="button"
+                  className="pill-button"
                   onClick={handleBrowseAll}
                   disabled={isRestDay}
-                  className={`px-2 py-1 rounded-full border ${
-                    isRestDay ? 'border-gray-200 text-gray-400 cursor-not-allowed' : 'border-gray-200 text-gray-700'
-                  }`}
                 >
                   {libraryVisible ? 'Close' : 'Browse all'}
                 </button>
                 <button
+                  type="button"
+                  className="pill-button"
                   onClick={handleSearchFocus}
                   disabled={isRestDay}
-                  className={`px-2 py-1 rounded-full border ${
-                    isRestDay ? 'border-gray-200 text-gray-400 cursor-not-allowed' : 'border-gray-200 text-gray-700'
-                  }`}
                 >
                   Search
                 </button>
+                {mode === 'draft' && (
+                  <button
+                    type="button"
+                    className="pill-button"
+                    onClick={() => setIsTemplatePickerOpen(true)}
+                    disabled={isRestDay}
+                  >
+                    Template
+                  </button>
+                )}
               </div>
             </div>
           </Card>
@@ -2632,6 +2832,15 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           </div>
         </div>
       )}
+      <TemplatePicker
+        isOpen={isTemplatePickerOpen}
+        plans={templatePlans}
+        onClose={() => setIsTemplatePickerOpen(false)}
+        onSelect={(plan) => {
+          onApplyTemplate?.(plan);
+          setIsTemplatePickerOpen(false);
+        }}
+      />
     </div>
   );
 };
@@ -3959,6 +4168,13 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     onToggle={(next) => setSettings({ ...settings, smartSuggestionsEnabled: next })}
                   />
                   <ToggleRow
+                    icon="Lock"
+                    title="Locked-In Mode"
+                    subtitle="Show a focus gate every time you open the app."
+                    enabled={settings.lockedInMode}
+                    onToggle={(next) => setSettings({ ...settings, lockedInMode: next })}
+                  />
+                  <ToggleRow
                     icon="List"
                     title="Show All Exercises"
                     subtitle="Start with the full library open"
@@ -4955,7 +5171,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         onboarded: false
       });
 
-      const [settings, setSettings] = useState({ insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true, useDemoData: false });
+      const [settings, setSettings] = useState({ ...SETTINGS_DEFAULTS });
       const [themeMode, setThemeModeState] = useState('light');
       const [darkVariant, setDarkVariantState] = useState('blue');
       const [colorfulExerciseCards, setColorfulExerciseCards] = useState(() => {
@@ -4986,8 +5202,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [activeSession, setActiveSession] = useState(null);
       const [inlineMessage, setInlineMessage] = useState(null);
       const messageTimerRef = useRef(null);
-      const [toastMessage, setToastMessage] = useState(null);
-      const toastTimerRef = useRef(null);
+      const [toasts, setToasts] = useState([]);
       const [undoToast, setUndoToast] = useState(null);
       const undoTimerRef = useRef(null);
       const undoActionRef = useRef(null);
@@ -5016,6 +5231,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [dismissedDraftDate, setDismissedDraftDate] = useState(null);
       const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * motivationalQuotes.length));
       const [generatorOptions, setGeneratorOptions] = useState({ goal: '', duration: 45, equipment: '' });
+      const [lockedInDismissed, setLockedInDismissed] = useState(false);
 
       useEffect(() => {
         if (!DEBUG_LOG) return;
@@ -5119,8 +5335,9 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       useEffect(() => {
         const savedOnboarding = storage.get(ONBOARDING_KEY, false);
         const savedProfileRaw = storage.get('ps_v2_profile', null);
-        const settingsDefaults = { insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true, useDemoData: false };
-        const savedSettings = storage.get('ps_v2_settings', settingsDefaults);
+        const settingsDefaults = { ...SETTINGS_DEFAULTS };
+        const savedSettingsRaw = storage.get('ps_v2_settings', settingsDefaults);
+        const savedSettings = { ...settingsDefaults, ...savedSettingsRaw };
         const savedHistory = storage.get('ps_v2_history', {});
         const savedCardio = storage.get('ps_v2_cardio', {});
         const savedState = storage.get('ps_v2_state', { lastWorkoutType: null, lastWorkoutDayKey: null, restDays: [] });
@@ -5159,7 +5376,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         if (savedProfileRaw) setProfile(migratedProfile);
         if (migratedProfile.onboarded) setView('app');
 
-        setSettings({ ...settingsDefaults, ...savedSettings });
+        setSettings(savedSettings);
         setHistory(savedHistory);
         setCardioHistory(savedCardio);
         setAppState({ ...savedState, restDays: mergedRestDays });
@@ -5286,12 +5503,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       useEffect(() => {
         return () => {
-          if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-        };
-      }, []);
-
-      useEffect(() => {
-        return () => {
           if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
         };
       }, []);
@@ -5305,6 +5516,12 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         };
       }, [sessionStartNotice]);
 
+      useEffect(() => {
+        if (!settings.lockedInMode) {
+          setLockedInDismissed(false);
+        }
+      }, [settings.lockedInMode]);
+
       const pushMessage = (text) => {
         if (!text || text === 'Workout saved.') return;
         setInlineMessage(text);
@@ -5312,12 +5529,14 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         messageTimerRef.current = setTimeout(() => setInlineMessage(null), 3200);
       };
 
-      const showToast = (text) => {
-        if (!text) return;
-        setToastMessage(text);
-        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-        toastTimerRef.current = setTimeout(() => setToastMessage(null), 1500);
-      };
+      const showToast = useCallback((message) => {
+        if (!message) return;
+        const id = Date.now().toString();
+        setToasts(prev => [...prev, { id, message }]);
+        setTimeout(() => {
+          setToasts(prev => prev.filter((toast) => toast.id !== id));
+        }, 2600);
+      }, []);
 
       const showUndoToast = ({ message, onUndo, onCommit }) => {
         if (undoTimerRef.current) {
@@ -5446,6 +5665,15 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         }
         return count;
       }, [effectiveDayEntries]);
+
+      const streak = streakObj?.current || 0;
+      const sessionsThisWeek = weekWorkoutCount || 0;
+
+      const coachMessage = useMemo(
+        () => getCoachMessage({ streak, sessionsThisWeek }),
+        [streak, sessionsThisWeek]
+      );
+      const shouldShowLockedInGate = settings.lockedInMode && !lockedInDismissed;
 
       const recordDayEntry = (dayKey, type = 'workout', extras = {}) => {
         setDayEntries(prev => {
@@ -5732,11 +5960,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         postWorkoutTimerRef.current = setTimeout(() => setShowPostWorkout(false), 3600);
         setTab('home');
         pushMessage('Workout saved.');
+        showToast('Session saved. Future you says thanks.');
       };
 
       const buildDraftPlan = (type, options = {}) => {
         const gymType = GYM_TYPES[profile.gymType];
         const planKey = type === 'legs' ? 'Legs' : type === 'push' ? 'Push' : type === 'pull' ? 'Pull' : type === 'full' ? 'Full Body' : todayWorkoutType;
+        const planLabel = planKey === 'Full Body' ? 'Full Body' : `${planKey} Day`;
         const plan = WORKOUT_PLANS[planKey] || {};
         const pool = [];
         const wantsMachines = options.equipment === 'machines';
@@ -5772,7 +6002,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           duration: options.duration || '',
           equipment: options.equipment || ''
         };
-        return { type, label: planKey === 'Full Body' ? 'Full Body' : `${planKey} Day`, exercises: picks, options: sanitizedOptions };
+        return { type, label: planLabel, exercises: picks, options: sanitizedOptions };
       };
 
       const createDraft = (draft) => {
@@ -5912,6 +6142,38 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           return next;
         });
         pushMessage('Rest day removed.');
+      };
+
+      const applyTemplatePlan = (plan) => {
+        if (!plan) return;
+        if (isRestDay) {
+          undoRestDay();
+        }
+
+        const exerciseIds = (plan.exercises || [])
+          .map((ex) => ex.id || ex.key || ex.name)
+          .filter(Boolean);
+
+        if (!exerciseIds.length) return;
+
+        const nextStatus = activeSessionToday?.status === 'active' ? 'active' : 'draft';
+
+        updateSessionItemsByIds(exerciseIds, {
+          status: nextStatus,
+          createdFrom: 'generated'
+        });
+
+        setDraftPlan({
+          date: todayKey,
+          label: plan.name || 'Workout Template',
+          exercises: exerciseIds,
+          options: {},
+          status: nextStatus,
+          createdFrom: 'generated',
+          type: todayWorkoutType
+        });
+
+        setDismissedDraftDate(null);
       };
 
       const startWorkoutFromBuilder = () => {
@@ -6235,7 +6497,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           setView('onboarding');
           setTab('home');
           setAppState({ lastWorkoutType: null, lastWorkoutDayKey: null, restDays: [] });
-          setSettings({ insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true });
+          setSettings({ ...SETTINGS_DEFAULTS });
           setPinnedExercises([]);
           setStarredExercises([]);
           setColorfulExerciseCards(true);
@@ -6245,11 +6507,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           setLastExerciseStats({});
           setDraftPlan(null);
           setDismissedDraftDate(null);
+          setHasSeenCoachModeNudge(false);
+          setShowCoachModeNudge(false);
           storage.set('ps_v2_profile', null);
           storage.set('ps_v2_history', {});
           storage.set('ps_v2_cardio', {});
           storage.set('ps_v2_state', { lastWorkoutType: null, lastWorkoutDayKey: null, restDays: [] });
-          storage.set('ps_v2_settings', { insightsEnabled: true, smartSuggestionsEnabled: true, darkMode: false, darkAccent: 'purple', showAllExercises: false, pinnedExercises: [], workoutViewMode: 'all', suggestedWorkoutCollapsed: true });
+          storage.set('ps_v2_settings', { ...SETTINGS_DEFAULTS });
           storage.set(STORAGE_KEY, { version: STORAGE_VERSION, pinnedExercises: [], recentExercises: [], exerciseUsageCounts: {}, dayEntries: {}, lastExerciseStats: {} });
           storage.set(ONBOARDING_KEY, false);
           storage.set('ps_dismissed_draft_date', null);
@@ -6356,8 +6620,9 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
                   storage.set('ps_v2_profile', importedData.profile);
                 }
                 if (importedData.settings) {
-                  setSettings(importedData.settings);
-                  storage.set('ps_v2_settings', importedData.settings);
+                  const mergedSettings = { ...SETTINGS_DEFAULTS, ...importedData.settings };
+                  setSettings(mergedSettings);
+                  storage.set('ps_v2_settings', mergedSettings);
                 }
                 if (importedData.history) {
                   setHistory(importedData.history);
@@ -6441,11 +6706,17 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 return (
         <>
           <InstallPrompt />
+          {shouldShowLockedInGate && (
+            <LockedInGate
+              onLockedIn={() => setLockedInDismissed(true)}
+              onBrowse={() => setLockedInDismissed(true)}
+            />
+          )}
           <div className="app-root bg-gray-50 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-hidden">
               <InlineMessage message={tab === 'home' && inlineMessage === 'Workout saved.' ? null : inlineMessage} />
-              <Toast message={toastMessage} />
               <UndoToast message={undoToast?.message} onUndo={handleUndoAction} />
+              <ToastHost toasts={toasts} />
               {showPostWorkout && (
                 <div className="post-workout-screen" onClick={() => setShowPostWorkout(false)}>
                   <div
@@ -6522,6 +6793,7 @@ return (
                       triggerGenerator(map[label] || 'surprise');
                     }}
                     homeQuote={homeQuote}
+                    coachMessage={coachMessage}
                     isRestDay={isRestDay}
                     sessionIntent={sessionIntent}
                     onLogRestDay={logRestDay}
@@ -6556,6 +6828,7 @@ return (
                     isRestDay={isRestDay}
                     onCancelSession={cancelTodaySession}
                     sessionIntent={sessionIntent}
+                    onApplyTemplate={applyTemplatePlan}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
