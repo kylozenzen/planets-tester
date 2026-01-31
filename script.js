@@ -2001,107 +2001,139 @@ const Home = ({
 
   return (
     <div className="flex flex-col h-full bg-gray-50 home-screen">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em] select-none">
-              PLANET STRENGTH
-            </div>
-            <h1 className="text-xl font-black text-gray-900">Welcome back, {profile.username || 'Athlete'}</h1>
-            <div className="text-xs text-gray-500 font-semibold mt-1">A session on your terms.</div>
-          </div>
-          <div 
-            className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
-            style={{
-              transform: isHolding ? 'scale(0.9)' : 'scale(1)',
-              boxShadow: isHolding ? '0 0 20px rgba(147, 51, 234, 0.5)' : 'none',
-              transition: 'all 0.1s ease'
-            }}
-            onTouchStart={handleAvatarTouchStart}
-            onTouchEnd={handleAvatarTouchEnd}
-            onMouseDown={handleAvatarTouchStart}
-            onMouseUp={handleAvatarTouchEnd}
-            onMouseLeave={handleAvatarTouchEnd}
-          >
-            {profile.avatar}
-          </div>
-        </div>
+      <div
+        className="bg-gradient-to-r from-emerald-300 to-cyan-300 text-center text-sm font-semibold text-emerald-950"
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: '0.6rem' }}
+      >
+        {coachMessage
+          ? coachMessage
+          : `Today’s Focus: ${suggestedFocus || 'Training'}`}
       </div>
 
-      <div className="flex-1 p-4 pb-6 home-content">
-        <div className="home-stack">
-          <div className="home-muscle-section">
-            <div className="home-card-row no-scrollbar">
-            {muscleGroups.map(group => {
-              return (
-                <div key={group.key} className="home-mini-card home-muscle-card">
-                  <div className="home-muscle-card-title">
-                    {renderMuscleBadge(group.label)}
-                    <span>{group.label}</span>
-                  </div>
-                </div>
-              );
-            })}
-            </div>
-          </div>
-          {coachMessage && (
-            <div className="coach-strip card-enter">
-              <span className="coach-strip-label">Coach</span>
-              <span className="coach-strip-text">{coachMessage}</span>
-            </div>
-          )}
-          <div className="home-section-card card-enter">
-            <div className="home-section-title">Start Today</div>
-            <div className="home-section-subtitle">{homeStartSubtext}</div>
-            <button
-              onClick={onStartWorkout}
-              className="home-primary-button"
-            >
-              Build Today's Workout
-            </button>
-          </div>
-          <div className="home-section-card">
-            <div className="home-section-title home-section-title--row">
-              <span>Quick Generate</span>
-              <span className="home-section-chevron" aria-hidden="true">›</span>
-            </div>
-            <div className="home-quick-generate no-scrollbar">
-              {['Push', 'Pull', 'Legs', 'Full Body', 'Surprise Me'].map(label => (
-                <button
-                  key={label}
-                  onClick={() => onGenerate(label)}
-                  className="quick-chip"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {homeQuote && (
-            <div className="home-section-card home-quote">
-              <div className="home-section-title">Inspiration</div>
-              <div className="quote-block">
-                <p className="quote-text">“{homeQuote.text}”</p>
-                <p className="quote-meta">— {homeQuote.movie}</p>
+      <div className="flex-1 flex flex-col px-4 pb-6 pt-3">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.18em] select-none">
+                PLANET STRENGTH
+              </div>
+              <h1 className="text-xl font-black text-gray-900">
+                Welcome back, {profile.username || 'Athlete'}
+              </h1>
+              <div className="text-xs text-gray-500 font-semibold mt-1">
+                A session on your terms.
               </div>
             </div>
+
+            <div
+              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl cursor-pointer select-none active:scale-95"
+              style={{
+                transform: isHolding ? 'scale(0.9)' : 'scale(1)',
+                boxShadow: isHolding
+                  ? '0 0 20px rgba(147, 51, 234, 0.5)'
+                  : 'none',
+                transition: 'all 0.1s ease'
+              }}
+              onTouchStart={handleAvatarTouchStart}
+              onTouchEnd={handleAvatarTouchEnd}
+              onMouseDown={handleAvatarTouchStart}
+              onMouseUp={handleAvatarTouchEnd}
+              onMouseLeave={handleAvatarTouchEnd}
+            >
+              {profile.avatar}
+            </div>
+          </div>
+
+          <div className="mt-1 flex flex-col gap-1.5">
+            <button
+              onClick={onStartWorkout}
+              className="w-full rounded-full bg-gradient-to-tr from-emerald-800 to-emerald-500 py-3.5 text-sm font-semibold text-emerald-50 shadow-[0_10px_25px_rgba(5,46,22,0.35)] transition active:translate-y-px active:shadow-[0_6px_18px_rgba(5,46,22,0.35)]"
+            >
+              Start Workout
+            </button>
+
+            <button
+              type="button"
+              onClick={handleRestDayClick}
+              onTouchStart={handleRestDayTouchStart}
+              onTouchEnd={handleRestDayTouchEnd}
+              onMouseDown={handleRestDayTouchStart}
+              onMouseUp={handleRestDayTouchEnd}
+              onMouseLeave={handleRestDayTouchEnd}
+              className="self-end text-[11px] font-medium text-gray-400"
+              style={{
+                transform: isHoldingRestDay ? 'scale(0.95)' : 'scale(1)',
+                opacity: isHoldingRestDay ? 0.8 : 1,
+                transition: 'all 0.1s ease'
+              }}
+            >
+              {isRestDay ? 'Undo rest day' : 'Log rest day'}
+            </button>
+          </div>
+
+          <div className="my-2 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+
+          <section>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+              Recent Sessions
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2.5">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-left">
+                <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Last session
+                </div>
+                <div className="mt-0.5 text-[13px] font-medium text-gray-900 truncate">
+                  {lastWorkoutLabel || 'No workout logged yet'}
+                </div>
+                {lastWorkoutDate && (
+                  <div className="mt-0.5 text-[11px] text-gray-500">
+                    {lastWorkoutDate}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-left">
+                <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Today
+                </div>
+                <div className="mt-0.5 text-[13px] font-medium text-gray-900 truncate">
+                  {suggestedFocus || 'Strength session'}
+                </div>
+                <div className="mt-0.5 text-[11px] text-gray-500">
+                  {sessionIntent === 'recovery'
+                    ? 'Recovery-focused'
+                    : sessionIntent === 'calm'
+                    ? 'Calm session'
+                    : 'You choose the pace.'}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {homeQuote && (
+            <section className="mt-1.5 rounded-2xl border border-slate-200 bg-slate-100 px-3.5 py-3 text-center">
+              <div className="text-[13px] italic text-slate-900">
+                “{homeQuote.text}”
+              </div>
+              <div className="mt-1 text-[11px] text-slate-500">
+                — {homeQuote.movie}
+              </div>
+              <div className="mt-1 text-[11px] text-slate-500">
+                Small reminder: showing up is the hardest set.
+              </div>
+            </section>
           )}
-          <button
-            onClick={handleRestDayClick}
-            onTouchStart={handleRestDayTouchStart}
-            onTouchEnd={handleRestDayTouchEnd}
-            onMouseDown={handleRestDayTouchStart}
-            onMouseUp={handleRestDayTouchEnd}
-            onMouseLeave={handleRestDayTouchEnd}
-            className="home-rest-action"
-            style={{
-              transform: isHoldingRestDay ? 'scale(0.95)' : 'scale(1)',
-              opacity: isHoldingRestDay ? 0.8 : 1,
-              transition: 'all 0.1s ease'
-            }}
-          >
-            {isRestDay ? 'Undo Rest Day' : 'Log Rest Day'}
-          </button>
+
+          {!homeQuote && (
+            <section className="mt-1.5 rounded-2xl border border-slate-200 bg-slate-100 px-3.5 py-3 text-center">
+              <div className="text-[13px] italic text-slate-900">
+                “Strong today, stronger tomorrow.”
+              </div>
+              <div className="mt-1 text-[11px] text-slate-500">
+                Small reminder: showing up is the hardest set.
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>
