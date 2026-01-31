@@ -4053,8 +4053,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [workoutOpen, setWorkoutOpen] = useState(false);
       const [appearanceOpen, setAppearanceOpen] = useState(false);
       const [analyticsOpen, setAnalyticsOpen] = useState(false);
-      const [patternsOpen, setPatternsOpen] = useState(false);
-      const [muscleMapOpen, setMuscleMapOpen] = useState(false);
       const [learnOpen, setLearnOpen] = useState(false);
       const [aboutOpen, setAboutOpen] = useState(false);
       const [dataToolsOpen, setDataToolsOpen] = useState(false);
@@ -4186,50 +4184,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
             </Card>
 
             <Card className="space-y-3">
-              <button onClick={() => setPatternsOpen(prev => !prev)} className="w-full flex items-center justify-between text-left">
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase">Patterns</div>
-                  <div className="text-sm text-gray-500">Friendly signals from your history</div>
-                </div>
-                <Icon name="ChevronDown" className={`w-4 h-4 text-gray-400 transition-transform ${patternsOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {patternsOpen && (
-                <div className="space-y-3 animate-expand">
-                  <button
-                    onClick={onViewPatterns}
-                    className="settings-action-button"
-                  >
-                    Open Patterns
-                  </button>
-                </div>
-              )}
-            </Card>
-
-            <Card className="space-y-3">
-              <button onClick={() => setMuscleMapOpen(prev => !prev)} className="w-full flex items-center justify-between text-left">
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase">Muscle Map</div>
-                  <div className="text-sm text-gray-500">Visual snapshot of recent focus</div>
-                </div>
-                <Icon name="ChevronDown" className={`w-4 h-4 text-gray-400 transition-transform ${muscleMapOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {muscleMapOpen && (
-                <div className="space-y-3 animate-expand">
-                  <div>
-                    <div className="text-sm font-semibold text-gray-900">Muscle Map</div>
-                    <div className="text-sm text-gray-500">See which muscle groups you’ve focused on recently. No streaks, no pressure—just a visual snapshot.</div>
-                  </div>
-                  <button
-                    onClick={onViewMuscleMap}
-                    className="settings-action-button"
-                  >
-                    Open Muscle Map
-                  </button>
-                </div>
-              )}
-            </Card>
-
-            <Card className="space-y-3">
               <button onClick={() => setAnalyticsOpen(prev => !prev)} className="w-full flex items-center justify-between text-left">
                 <div>
                   <div className="text-xs font-bold text-gray-500 uppercase">Analytics</div>
@@ -4243,7 +4197,19 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     onClick={onViewAnalytics}
                     className="settings-action-button"
                   >
-                    Open Analytics
+                    Progress view
+                  </button>
+                  <button
+                    onClick={onViewMuscleMap}
+                    className="settings-action-button"
+                  >
+                    Muscle map
+                  </button>
+                  <button
+                    onClick={onViewPatterns}
+                    className="settings-action-button"
+                  >
+                    Patterns
                   </button>
                 </div>
               )}
