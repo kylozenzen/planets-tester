@@ -1915,7 +1915,6 @@ const Home = ({
   dayEntries,
   lastWorkoutDate,
   onStartWorkout,
-  onGenerate,
   homeQuote,
   coachMessage,
   isRestDay,
@@ -1924,7 +1923,8 @@ const Home = ({
   onUndoRestDay,
   onTriggerGlory,
   onLongPressRestDay,
-  onOpenTemplatesFromHome
+  onOpenTemplatesFromHome,
+  onOpenHistoryFromHome
 }) => {
   const longPressTimerRef = useRef(null);
   const restDayTimerRef = useRef(null);
@@ -1990,7 +1990,7 @@ const Home = ({
   };
 
   const handleHomeLastSessionClick = () => {
-    onStartWorkout();
+    onOpenHistoryFromHome?.();
   };
 
   const homeStartSubtext = sessionIntent === 'calm'
@@ -2019,7 +2019,7 @@ const Home = ({
             <h1 className="text-xl font-black text-gray-900">Welcome back, {profile.username || 'Athlete'}</h1>
             <div className="text-xs text-gray-500 font-semibold mt-1">A session on your terms.</div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={handleRestDayClick}
@@ -2028,14 +2028,14 @@ const Home = ({
               onMouseDown={handleRestDayTouchStart}
               onMouseUp={handleRestDayTouchEnd}
               onMouseLeave={handleRestDayTouchEnd}
-              className="w-10 h-10 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center text-base cursor-pointer select-none transition-transform active:scale-95"
+              className="home-rest-top-button"
               style={{
                 transform: isHoldingRestDay ? 'scale(0.9)' : 'scale(1)',
                 transition: 'all 0.1s ease'
               }}
-              aria-label={isRestDay ? 'Undo rest day' : 'Log rest day'}
+              title={isRestDay ? 'Undo rest day' : 'Log rest day'}
             >
-              😴
+              <span aria-hidden="true">😴</span>
             </button>
             <div 
               className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
@@ -2083,7 +2083,7 @@ const Home = ({
               {homeStartSubtext}
             </div>
             <button onClick={onStartWorkout} className="home-primary-button">
-              Build Today’s Workout
+              Build Today's Workout
             </button>
           </div>
           <div className="home-section-card">
@@ -2095,7 +2095,11 @@ const Home = ({
 
               <button type="button" className="home-mini-tile" onClick={handleHomeLastSessionClick}>
                 <div className="home-mini-title">Last Session</div>
-                <div className="home-mini-subtitle">View sets & focus areas</div>
+                <div className="home-mini-subtitle">
+                  {lastWorkoutLabel
+                    ? `Last session · ${lastWorkoutLabel}`
+                    : 'No recent sessions yet'}
+                </div>
               </button>
             </div>
           </div>
@@ -2132,7 +2136,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
       setIsTemplatePickerOpen(true);
       onConsumedOpenTemplatesFromHome?.();
     }
-  }, [openTemplatesFromHome]);
+  }, [openTemplatesFromHome, onConsumedOpenTemplatesFromHome]);
 
   const gymType = GYM_TYPES[profile.gymType];
 
@@ -3608,11 +3612,23 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROGRESS TAB ==========
-    const Progress = ({ profile, history, strengthScoreObj, cardioHistory }) => {
+    const Progress = ({
+      profile,
+      history,
+      strengthScoreObj,
+      cardioHistory,
+      initialAnalyticsTab = 'overview'
+    }) => {
       const [selectedEquipment, setSelectedEquipment] = useState(null);
-      const [analyticsTab, setAnalyticsTab] = useState('overview');
+      const [analyticsTab, setAnalyticsTab] = useState(initialAnalyticsTab);
       const [exerciseHistoryQuery, setExerciseHistoryQuery] = useState('');
       const [exerciseHistoryExpanded, setExerciseHistoryExpanded] = useState(null);
+      useEffect(() => {
+        if (initialAnalyticsTab && initialAnalyticsTab !== analyticsTab) {
+          setAnalyticsTab(initialAnalyticsTab);
+          setSelectedEquipment(null);
+        }
+      }, [initialAnalyticsTab]);
 
       const allEquipment = Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio');
       const combinedSessions = useMemo(() => {
@@ -5172,6 +5188,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [showPatterns, setShowPatterns] = useState(false);
       const [showMuscleMap, setShowMuscleMap] = useState(false);
       const [openTemplatesFromHome, setOpenTemplatesFromHome] = useState(false);
+      const [homeRequestedAnalyticsTab, setHomeRequestedAnalyticsTab] = useState(null);
       const [showMatrix, setShowMatrix] = useState(false);
       const [showPowerUp, setShowPowerUp] = useState(false);
       const [showGlory, setShowGlory] = useState(false);
@@ -6179,6 +6196,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         }
       };
 
+      const handleOpenHistoryFromHome = () => {
+        setHomeRequestedAnalyticsTab('history');
+        setShowPatterns(false);
+        setShowMuscleMap(false);
+        setShowAnalytics(true);
+      };
+
       const startEmptySession = () => {
         if (isRestDay) {
           undoRestDay();
@@ -6737,6 +6761,7 @@ return (
                         history={effectiveHistory}
                         strengthScoreObj={strengthScoreObj}
                         cardioHistory={effectiveCardioHistory}
+                        initialAnalyticsTab={homeRequestedAnalyticsTab || 'overview'}
                       />
                     </div>
                   </div>
@@ -6762,16 +6787,6 @@ return (
                     dayEntries={effectiveDayEntries}
                     lastWorkoutDate={lastWorkoutDate}
                     onStartWorkout={handleStartWorkout}
-                    onGenerate={(label) => {
-                      const map = {
-                        'Push': 'push',
-                        'Pull': 'pull',
-                        'Legs': 'legs',
-                        'Full Body': 'full',
-                        'Surprise Me': 'surprise'
-                      };
-                      triggerGenerator(map[label] || 'surprise');
-                    }}
                     homeQuote={homeQuote}
                     coachMessage={coachMessage}
                     isRestDay={isRestDay}
@@ -6784,6 +6799,7 @@ return (
                       setTab('workout');
                       setOpenTemplatesFromHome(true);
                     }}
+                    onOpenHistoryFromHome={handleOpenHistoryFromHome}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'workout' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'workout'}>
