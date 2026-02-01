@@ -27,6 +27,8 @@
   --accent: #6366f1;
   --accent-hover: #4f46e5;
   --accent-soft: rgba(99, 102, 241, 0.18);
+  --home-primary-button-bg: #22a06b;
+  --home-primary-button-shadow: rgba(34, 160, 107, 0.35);
   --tint-chest: #f87171;
   --tint-back: #60a5fa;
   --tint-legs: #34d399;
@@ -104,6 +106,8 @@ body.dark-mode {
   --glass-border: color-mix(in srgb, var(--surface) 55%, white);
   --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   --glass-blur: 18px;
+  --home-primary-button-bg: var(--accent);
+  --home-primary-button-shadow: var(--accent-soft);
 }
 
 body.dark-mode.theme-red {
@@ -820,12 +824,12 @@ body.exercise-colors-off .exercise-badge-wrapper {
   width: 100%;
   padding: 16px 18px;
   border-radius: var(--radius-control);
-  background: var(--accent);
+  background: var(--home-primary-button-bg);
   color: #fff;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 18px;
-  box-shadow: 0 12px 28px var(--accent-soft);
+  box-shadow: 0 12px 28px var(--home-primary-button-shadow);
   transition: transform 160ms var(--ease-standard),
               box-shadow 200ms var(--ease-standard),
               border-color 200ms var(--ease-standard),
@@ -855,6 +859,37 @@ body.exercise-colors-off .exercise-badge-wrapper {
 
 .home-secondary-button:active {
   transform: scale(0.97);
+}
+
+.home-mini-tile {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 140ms var(--ease-standard),
+              box-shadow 160ms var(--ease-standard),
+              border-color 160ms var(--ease-standard);
+}
+
+.home-mini-tile:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.home-mini-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.home-mini-subtitle {
+  font-size: 11px;
+  color: var(--muted);
 }
 
 .home-quick-generate {
@@ -2161,8 +2196,8 @@ textarea::placeholder {
 
 @media (hover: hover) and (pointer: fine) {
   .home-primary-button:hover {
-    background: var(--accent-hover);
-    box-shadow: 0 16px 32px var(--accent-soft);
+    background: color-mix(in srgb, var(--home-primary-button-bg) 88%, black);
+    box-shadow: 0 16px 32px var(--home-primary-button-shadow);
   }
 
   .home-secondary-button:hover {

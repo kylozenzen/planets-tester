@@ -1923,7 +1923,8 @@ const Home = ({
   onLogRestDay,
   onUndoRestDay,
   onTriggerGlory,
-  onLongPressRestDay
+  onLongPressRestDay,
+  onOpenTemplatesFromHome
 }) => {
   const longPressTimerRef = useRef(null);
   const restDayTimerRef = useRef(null);
@@ -1984,6 +1985,14 @@ const Home = ({
     }
   };
 
+  const handleHomeTemplatesClick = () => {
+    onOpenTemplatesFromHome?.();
+  };
+
+  const handleHomeLastSessionClick = () => {
+    onStartWorkout();
+  };
+
   const homeStartSubtext = sessionIntent === 'calm'
     ? 'Draft a session in seconds.'
     : sessionIntent === 'recovery'
@@ -2010,20 +2019,39 @@ const Home = ({
             <h1 className="text-xl font-black text-gray-900">Welcome back, {profile.username || 'Athlete'}</h1>
             <div className="text-xs text-gray-500 font-semibold mt-1">A session on your terms.</div>
           </div>
-          <div 
-            className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
-            style={{
-              transform: isHolding ? 'scale(0.9)' : 'scale(1)',
-              boxShadow: isHolding ? '0 0 20px rgba(147, 51, 234, 0.5)' : 'none',
-              transition: 'all 0.1s ease'
-            }}
-            onTouchStart={handleAvatarTouchStart}
-            onTouchEnd={handleAvatarTouchEnd}
-            onMouseDown={handleAvatarTouchStart}
-            onMouseUp={handleAvatarTouchEnd}
-            onMouseLeave={handleAvatarTouchEnd}
-          >
-            {profile.avatar}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRestDayClick}
+              onTouchStart={handleRestDayTouchStart}
+              onTouchEnd={handleRestDayTouchEnd}
+              onMouseDown={handleRestDayTouchStart}
+              onMouseUp={handleRestDayTouchEnd}
+              onMouseLeave={handleRestDayTouchEnd}
+              className="w-10 h-10 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center text-base cursor-pointer select-none transition-transform active:scale-95"
+              style={{
+                transform: isHoldingRestDay ? 'scale(0.9)' : 'scale(1)',
+                transition: 'all 0.1s ease'
+              }}
+              aria-label={isRestDay ? 'Undo rest day' : 'Log rest day'}
+            >
+              😴
+            </button>
+            <div 
+              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
+              style={{
+                transform: isHolding ? 'scale(0.9)' : 'scale(1)',
+                boxShadow: isHolding ? '0 0 20px rgba(147, 51, 234, 0.5)' : 'none',
+                transition: 'all 0.1s ease'
+              }}
+              onTouchStart={handleAvatarTouchStart}
+              onTouchEnd={handleAvatarTouchEnd}
+              onMouseDown={handleAvatarTouchStart}
+              onMouseUp={handleAvatarTouchEnd}
+              onMouseLeave={handleAvatarTouchEnd}
+            >
+              {profile.avatar}
+            </div>
           </div>
         </div>
       </div>
@@ -2051,30 +2079,24 @@ const Home = ({
             </div>
           )}
           <div className="home-section-card card-enter">
-            <div className="home-section-title">Start Today</div>
-            <div className="home-section-subtitle">{homeStartSubtext}</div>
-            <button
-              onClick={onStartWorkout}
-              className="home-primary-button"
-            >
-              Build Today's Workout
+            <div className="home-section-title">
+              {homeStartSubtext}
+            </div>
+            <button onClick={onStartWorkout} className="home-primary-button">
+              Build Today’s Workout
             </button>
           </div>
           <div className="home-section-card">
-            <div className="home-section-title home-section-title--row">
-              <span>Quick Generate</span>
-              <span className="home-section-chevron" aria-hidden="true">›</span>
-            </div>
-            <div className="home-quick-generate no-scrollbar">
-              {['Push', 'Pull', 'Legs', 'Full Body', 'Surprise Me'].map(label => (
-                <button
-                  key={label}
-                  onClick={() => onGenerate(label)}
-                  className="quick-chip"
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="flex gap-3">
+              <button type="button" className="home-mini-tile" onClick={handleHomeTemplatesClick}>
+                <div className="home-mini-title">Templates</div>
+                <div className="home-mini-subtitle">Start from a saved session</div>
+              </button>
+
+              <button type="button" className="home-mini-tile" onClick={handleHomeLastSessionClick}>
+                <div className="home-mini-title">Last Session</div>
+                <div className="home-mini-subtitle">View sets & focus areas</div>
+              </button>
             </div>
           </div>
           {homeQuote && (
@@ -2086,29 +2108,13 @@ const Home = ({
               </div>
             </div>
           )}
-          <button
-            onClick={handleRestDayClick}
-            onTouchStart={handleRestDayTouchStart}
-            onTouchEnd={handleRestDayTouchEnd}
-            onMouseDown={handleRestDayTouchStart}
-            onMouseUp={handleRestDayTouchEnd}
-            onMouseLeave={handleRestDayTouchEnd}
-            className="home-rest-action"
-            style={{
-              transform: isHoldingRestDay ? 'scale(0.95)' : 'scale(1)',
-              opacity: isHoldingRestDay ? 0.8 : 1,
-              transition: 'all 0.1s ease'
-            }}
-          >
-            {isRestDay ? 'Undo Rest Day' : 'Log Rest Day'}
-          </button>
         </div>
       </div>
     </div>
   );
 };
 
-const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate }) => {
+const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
@@ -2120,6 +2126,13 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const searchResultsRef = useRef(null);
   const sessionCardRef = useRef(null);
   const lastSessionStatusRef = useRef(activeSession?.status || null);
+
+  useEffect(() => {
+    if (openTemplatesFromHome) {
+      setIsTemplatePickerOpen(true);
+      onConsumedOpenTemplatesFromHome?.();
+    }
+  }, [openTemplatesFromHome]);
 
   const gymType = GYM_TYPES[profile.gymType];
 
@@ -5158,6 +5171,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [showAnalytics, setShowAnalytics] = useState(false);
       const [showPatterns, setShowPatterns] = useState(false);
       const [showMuscleMap, setShowMuscleMap] = useState(false);
+      const [openTemplatesFromHome, setOpenTemplatesFromHome] = useState(false);
       const [showMatrix, setShowMatrix] = useState(false);
       const [showPowerUp, setShowPowerUp] = useState(false);
       const [showGlory, setShowGlory] = useState(false);
@@ -6766,6 +6780,10 @@ return (
                     onUndoRestDay={undoRestDay}
                     onTriggerGlory={() => setShowGlory(true)}
                     onLongPressRestDay={() => setShowButDidYouDie(true)}
+                    onOpenTemplatesFromHome={() => {
+                      setTab('workout');
+                      setOpenTemplatesFromHome(true);
+                    }}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'workout' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'workout'}>
@@ -6795,6 +6813,8 @@ return (
                     onCancelSession={cancelTodaySession}
                     sessionIntent={sessionIntent}
                     onApplyTemplate={applyTemplatePlan}
+                    openTemplatesFromHome={openTemplatesFromHome}
+                    onConsumedOpenTemplatesFromHome={() => setOpenTemplatesFromHome(false)}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
