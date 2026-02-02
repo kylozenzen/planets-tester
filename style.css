@@ -52,6 +52,37 @@ html, body {
   --glass-shadow: 0 18px 45px rgba(15, 23, 42, 0.45);
   --glass-blur: 18px;
   --bottom-nav-h: 64px;
+  /* Light mode backgrounds (Infinity aura inspired) */
+  --ps-bg-main: #F8FAFF;
+  --ps-bg-soft: #F3E5FF;
+  --ps-bg-card: #FFFFFF;
+
+  /* Brand accents (Infinity palette) */
+  --ps-primary: #A855F7;
+  --ps-primary-soft: #C4B5FD;
+  --ps-accent: #14B8A6;
+  --ps-accent-soft: #A5F3FC;
+
+  /* Neutrals */
+  --ps-border: #E5E7EB;
+  --ps-text-main: #0F172A;
+  --ps-text-muted: #6B7280;
+}
+
+.dark,
+body.dark-mode {
+  --ps-bg-main: #020617;
+  --ps-bg-soft: #020617;
+  --ps-bg-card: #020617;
+
+  --ps-primary: #C4B5FD;
+  --ps-primary-soft: #4C1D95;
+  --ps-accent: #22D3EE;
+  --ps-accent-soft: #0F766E;
+
+  --ps-border: #1F2937;
+  --ps-text-main: #F9FAFB;
+  --ps-text-muted: #9CA3AF;
 }
 
 body {
@@ -65,6 +96,20 @@ body {
   overscroll-behavior: none;
   transition: background-color 0.25s ease, color 0.25s ease;
   line-height: 1.5;
+}
+
+.ps-shell {
+  background: radial-gradient(circle at top left, #E5F3FF 0, transparent 55%),
+              radial-gradient(circle at top right, #F3E5FF 0, transparent 55%),
+              radial-gradient(circle at bottom, #DDF9FF 0, transparent 55%),
+              var(--ps-bg-main);
+  min-height: 100vh;
+}
+
+.dark .ps-shell,
+body.dark-mode .ps-shell {
+  background: radial-gradient(circle at top, rgba(168, 85, 247, 0.22) 0, transparent 55%),
+              var(--ps-bg-main);
 }
 
 .stat-number {
@@ -2134,10 +2179,10 @@ textarea::placeholder {
 
 .ps-card {
   position: relative;
-  background: var(--surface);
-  background-image: var(--card-gradient), var(--surface);
+  background-color: var(--ps-bg-card);
+  background-image: var(--card-gradient), var(--ps-bg-card);
   border-radius: var(--radius-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--ps-border);
   box-shadow: var(--shadow-card), inset 0 1px 0 var(--hairline);
   padding: 16px;
   transition:
@@ -2146,6 +2191,34 @@ textarea::placeholder {
     border-color 160ms var(--ease-standard),
     background-color 160ms var(--ease-standard),
     background-image 160ms var(--ease-standard);
+}
+
+.ps-btn-primary {
+  background: linear-gradient(135deg, var(--ps-primary), var(--ps-accent));
+  color: #FFFFFF;
+}
+
+.ps-btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.ps-btn-primary:active {
+  transform: scale(0.97);
+}
+
+.ps-progress-bar {
+  background: linear-gradient(90deg, var(--ps-primary), var(--ps-accent));
+}
+
+.ps-chip-highlight {
+  background-color: var(--ps-primary-soft);
+  color: #312E81;
+}
+
+.dark .ps-chip-highlight,
+body.dark-mode .ps-chip-highlight {
+  background-color: rgba(76, 29, 149, 0.75);
+  color: #E5E7EB;
 }
 
 .ps-card[data-interactive="true"],
