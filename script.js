@@ -4127,7 +4127,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROFILE TAB ==========
-    const ProfileView = ({ settings, setSettings, themeMode, darkVariant, setThemeMode, setDarkVariant, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding }) => {
+    const ProfileView = ({ settings, setSettings, themeMode, setThemeMode, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding }) => {
       const [workoutOpen, setWorkoutOpen] = useState(false);
       const [appearanceOpen, setAppearanceOpen] = useState(false);
       const [analyticsOpen, setAnalyticsOpen] = useState(false);
@@ -4136,11 +4136,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [dataToolsOpen, setDataToolsOpen] = useState(false);
       const [advancedOpen, setAdvancedOpen] = useState(false);
 
-      const accentOptions = [
-        { id: 'red', label: 'Red', color: '#ef4444' },
-        { id: 'yellow', label: 'Yellow', color: '#f59e0b' },
-        { id: 'blue', label: 'Blue', color: '#3b82f6' },
-      ];
       const isDarkMode = themeMode === 'dark';
 
       const learnItems = [
@@ -4172,7 +4167,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               >
                 <div>
                   <div className="text-xs font-bold text-gray-500 uppercase">Appearance</div>
-                  <div className="text-sm text-gray-500">Theme and accent</div>
+                  <div className="text-sm text-gray-500">Light or dark appearance</div>
                 </div>
                 <Icon name="ChevronDown" className={`w-4 h-4 text-gray-400 transition-transform ${appearanceOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -4192,29 +4187,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     enabled={colorfulExerciseCards}
                     onToggle={onToggleColorfulExerciseCards}
                   />
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Dark mode accent</div>
-                    <div className="flex gap-2">
-                      {accentOptions.map(opt => (
-                        <button
-                          key={opt.id}
-                          onClick={() => isDarkMode && setDarkVariant(opt.id)}
-                          disabled={!isDarkMode}
-                          aria-disabled={!isDarkMode}
-                          className={`flex-1 accent-pill ${isDarkMode && darkVariant === opt.id ? 'active' : ''} rounded-xl p-2 flex items-center gap-2 ${isDarkMode ? '' : 'opacity-50 pointer-events-none'}`}
-                        >
-                          <span className="w-6 h-6 rounded-lg" style={{ background: opt.color }}></span>
-                          <span className="text-sm font-semibold text-gray-800">{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mt-3">Theme preview</div>
-                    <div className="theme-preview">
-                      <div className="preview-btn">Primary</div>
-                      <div className="preview-chip">Chip</div>
-                      <div className="preview-card">Card border</div>
-                    </div>
-                  </div>
                 </div>
               )}
             </Card>
@@ -5217,7 +5189,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const [settings, setSettings] = useState({ ...SETTINGS_DEFAULTS });
       const [themeMode, setThemeModeState] = useState('light');
-      const [darkVariant, setDarkVariantState] = useState('blue');
       const [colorfulExerciseCards, setColorfulExerciseCards] = useState(() => {
         try {
           const raw = localStorage.getItem('ps_colorfulExerciseCards');
@@ -5629,31 +5600,19 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const applyTheme = () => {
         const savedMode = storage.get(THEME_MODE_KEY, 'light');
-        const storedVariant = storage.get(DARK_VARIANT_KEY, 'blue');
-        const nextVariant = storedVariant || 'blue';
-        const themeClasses = ['theme-red', 'theme-yellow', 'theme-blue'];
-        document.body.classList.remove(...themeClasses);
-        if (savedMode === 'dark') {
-          document.body.classList.add('dark-mode');
-          document.body.classList.add(`theme-${nextVariant}`);
-        } else {
-          document.body.classList.remove('dark-mode');
+        const normalizedMode = savedMode === 'dark' ? 'dark' : 'light';
+        if (normalizedMode !== savedMode) {
+          storage.set(THEME_MODE_KEY, normalizedMode);
         }
-        setThemeModeState(savedMode);
-        setDarkVariantState(nextVariant);
+        document.documentElement.classList.toggle('dark', normalizedMode === 'dark');
+        setThemeModeState(normalizedMode);
       };
 
       const setThemeMode = (mode) => {
-        storage.set(THEME_MODE_KEY, mode);
-        if (!storage.get(DARK_VARIANT_KEY, null)) {
-          storage.set(DARK_VARIANT_KEY, 'blue');
-        }
-        applyTheme();
-      };
-
-      const setDarkVariant = (variant) => {
-        storage.set(DARK_VARIANT_KEY, variant);
-        applyTheme();
+        const normalizedMode = mode === 'dark' ? 'dark' : 'light';
+        storage.set(THEME_MODE_KEY, normalizedMode);
+        document.documentElement.classList.toggle('dark', normalizedMode === 'dark');
+        setThemeModeState(normalizedMode);
       };
 
       useEffect(() => {
@@ -6901,9 +6860,7 @@ return (
                     settings={settings}
                     setSettings={setSettings}
                     themeMode={themeMode}
-                    darkVariant={darkVariant}
                     setThemeMode={setThemeMode}
-                    setDarkVariant={setDarkVariant}
                     colorfulExerciseCards={colorfulExerciseCards}
                     onToggleColorfulExerciseCards={setColorfulExerciseCards}
                     onViewAnalytics={() => {
