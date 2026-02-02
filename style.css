@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+}
+
 :root {
   --bg: #f4f5f8;
   --bg-gradient: linear-gradient(
@@ -56,6 +60,7 @@ body {
   background-image: var(--bg-gradient);
   color: var(--text);
   margin: 0;
+  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
   transition: background-color 0.25s ease, color 0.25s ease;
@@ -305,11 +310,20 @@ body.dark-mode.theme-blue {
 }
 
 body.app-shell {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .app-root {
   height: 100dvh;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .page-stack {
@@ -481,7 +495,7 @@ body.app-shell {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px 18px !important;
+  padding: 24px 18px !important;
   padding-bottom: calc(var(--bottom-nav-h) + 16px) !important;
   overflow-y: auto;
   gap: 16px;
@@ -829,12 +843,12 @@ body.exercise-colors-off .exercise-badge-wrapper {
   transition: transform 160ms var(--ease-standard),
               box-shadow 200ms var(--ease-standard),
               border-color 200ms var(--ease-standard),
-              background-color 200ms var(--ease-standard),
-              color 200ms var(--ease-standard);
+              background-color 200ms var(--ease-standard);
 }
 
 .home-primary-button:active {
-  transform: scale(0.97);
+  transform: translateY(0);
+  box-shadow: 0 6px 18px var(--accent-soft);
 }
 
 .home-secondary-button {
@@ -855,6 +869,54 @@ body.exercise-colors-off .exercise-badge-wrapper {
 
 .home-secondary-button:active {
   transform: scale(0.97);
+}
+
+.home-mini-tile {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: 140ms var(--ease-standard);
+}
+
+.home-mini-tile:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--border));
+}
+
+.home-mini-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.home-mini-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.home-lastsession-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-lastsession-top {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.home-lastsession-bottom {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .home-quick-generate {
@@ -918,6 +980,36 @@ body.exercise-colors-off .exercise-badge-wrapper {
 .home-quote .quote-meta {
   font-size: 12px;
   color: var(--muted);
+}
+
+.home-section-card.home-quote {
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+}
+
+.home-rest-top-button,
+.home-settings-top-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 160ms var(--ease-standard);
+}
+
+.home-rest-top-button:active,
+.home-settings-top-button:active {
+  transform: scale(0.88);
+  transition: transform 80ms ease;
 }
 
 .home-rest-action {
@@ -2161,7 +2253,7 @@ textarea::placeholder {
 
 @media (hover: hover) and (pointer: fine) {
   .home-primary-button:hover {
-    background: var(--accent-hover);
+    transform: translateY(-1px);
     box-shadow: 0 16px 32px var(--accent-soft);
   }
 
