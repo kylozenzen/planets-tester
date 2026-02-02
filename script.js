@@ -1340,7 +1340,7 @@ const OnboardingForm = ({ profile, setProfile, onComplete, onBack, step, total }
         <div className="text-sm font-bold text-gray-500 uppercase">Quick setup</div>
         {onBack && <button className="ghost-button text-sm" onClick={onBack}>Back</button>}
       </div>
-      <div className="space-y-4 flex-1 flex flex-col">
+      <div className="space-y-3 flex-1 flex flex-col">
         <div className="form-tile">
           <label className="field-label">Name</label>
             <input
@@ -1369,25 +1369,23 @@ const OnboardingForm = ({ profile, setProfile, onComplete, onBack, step, total }
 
         <div className="form-tile">
           <label className="field-label">Where are you working out?</label>
-          <div className="space-y-2">
+          <div className="flex items-stretch justify-center gap-2">
             {locationOptions.map((loc) => (
-                <button
-                  key={loc.id}
-                  onClick={() => setProfile({ ...profile, workoutLocation: loc.id, gymType: loc.gymType })}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
-                    profile.workoutLocation === loc.id ? 'border-purple-400 bg-purple-50' : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-2xl">{loc.id === 'gym' ? '🏋️' : loc.id === 'home' ? '🏠' : '🧳'}</div>
-                  <div className="flex-1">
-                  <div className={`font-bold ${profile.workoutLocation === loc.id ? 'text-purple-700' : 'text-gray-900'}`}>{loc.label}</div>
-                    <div className="text-xs text-gray-500 mt-1">{loc.detail}</div>
-                  </div>
-                  {profile.workoutLocation === loc.id && <Icon name="Check" className="w-5 h-5 text-purple-600" />}
-                </button>
-              ))}
-            </div>
+              <button
+                key={loc.id}
+                onClick={() => setProfile({ ...profile, workoutLocation: loc.id, gymType: loc.gymType })}
+                className={`flex-1 min-w-0 rounded-xl border-2 px-3 py-3 text-center transition-all flex flex-col items-center gap-1 ${
+                  profile.workoutLocation === loc.id ? 'border-purple-400 bg-purple-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="text-xl">{loc.id === 'gym' ? '🏋️' : loc.id === 'home' ? '🏠' : '🧳'}</div>
+                <div className={`text-sm font-bold ${profile.workoutLocation === loc.id ? 'text-purple-700' : 'text-gray-900'}`}>{loc.label}</div>
+                <div className="text-[11px] text-gray-500 leading-snug">{loc.detail}</div>
+                {profile.workoutLocation === loc.id && <Icon name="Check" className="w-4 h-4 text-purple-600" />}
+              </button>
+            ))}
           </div>
+        </div>
       </div>
       <div className="onboarding-actions">
         <button
