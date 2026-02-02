@@ -2047,7 +2047,7 @@ const Home = ({
 
   return (
     <div className="flex flex-col h-full bg-gray-50 home-screen">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20 ps-section-glow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <div className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em] select-none">
@@ -2118,12 +2118,12 @@ const Home = ({
             </div>
           </div>
           {coachMessage && (
-            <div className="coach-strip card-enter ps-coach-pill ps-section-glow-top">
+            <div className="coach-strip card-enter ps-coach-pill ps-section-glow">
               <span className="coach-strip-label">Coach</span>
               <span className="coach-strip-text">{coachMessage}</span>
             </div>
           )}
-          <div className="home-section-card card-enter ps-card ps-hero-card ps-section-glow-top">
+          <div className="home-section-card card-enter ps-card ps-hero-card ps-section-glow">
             <div className="home-section-title">
               {homeStartSubtext}
             </div>
@@ -2153,7 +2153,7 @@ const Home = ({
             </div>
           </div>
           {homeQuote && (
-            <div className="home-section-card home-quote ps-inspiration-card ps-section-glow-bottom">
+            <div className="home-section-card home-quote ps-inspiration-card ps-section-glow">
               <div className="home-section-title">Inspiration</div>
               <div className="quote-block">
                 <p className="quote-text">“{homeQuote.text}”</p>
