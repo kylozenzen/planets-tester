@@ -1413,7 +1413,7 @@ const OnboardingFlow = ({ profile, setProfile, onFinish }) => {
   const total = steps.length;
 
   return (
-    <div className="onboarding-shell">
+    <div className="onboarding-shell onboarding-scrollable">
       {steps[step].type === 'intro' ? (
         <OnboardingIntro
           title={steps[step].title}
