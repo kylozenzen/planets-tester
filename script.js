@@ -2065,7 +2065,7 @@ const Home = ({
               onMouseDown={handleRestDayTouchStart}
               onMouseUp={handleRestDayTouchEnd}
               onMouseLeave={handleRestDayTouchEnd}
-              className="home-rest-top-button"
+              className="home-rest-top-button ps-hero-pill"
               style={{
                 transform: isHoldingRestDay ? 'scale(0.9)' : 'scale(1)',
                 transition: 'all 0.1s ease'
@@ -2076,14 +2076,14 @@ const Home = ({
             </button>
             <button
               type="button"
-              className="home-settings-top-button"
+              className="home-settings-top-button ps-hero-pill"
               onClick={onOpenSettingsFromHome}
               title="Settings"
             >
               <span aria-hidden="true">⚙️</span>
             </button>
             <div 
-              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
+              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95 ps-hero-pill"
               style={{
                 transform: isHolding ? 'scale(0.9)' : 'scale(1)',
                 boxShadow: isHolding ? '0 0 20px rgba(147, 51, 234, 0.5)' : 'none',
@@ -2118,16 +2118,16 @@ const Home = ({
             </div>
           </div>
           {coachMessage && (
-            <div className="coach-strip card-enter ps-coach-pill">
+            <div className="coach-strip card-enter ps-coach-pill ps-section-glow-top">
               <span className="coach-strip-label">Coach</span>
               <span className="coach-strip-text">{coachMessage}</span>
             </div>
           )}
-          <div className="home-section-card card-enter ps-card ps-hero-card">
+          <div className="home-section-card card-enter ps-card ps-hero-card ps-section-glow-top">
             <div className="home-section-title">
               {homeStartSubtext}
             </div>
-            <button onClick={onStartWorkout} className="home-primary-button ps-btn-primary">
+            <button onClick={onStartWorkout} className="home-primary-button ps-cta-main">
               Build Today's Workout
             </button>
           </div>
@@ -2153,7 +2153,7 @@ const Home = ({
             </div>
           </div>
           {homeQuote && (
-            <div className="home-section-card home-quote ps-inspiration-card">
+            <div className="home-section-card home-quote ps-inspiration-card ps-section-glow-bottom">
               <div className="home-section-title">Inspiration</div>
               <div className="quote-block">
                 <p className="quote-text">“{homeQuote.text}”</p>
@@ -2592,7 +2592,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
 
       <div className={`flex-1 overflow-y-auto pb-28 px-4 space-y-4 workout-scroll ${isSessionMode ? 'workout-scroll--with-footer' : ''}`}>
         {showIdleControls && (
-          <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive">
+          <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive ps-section-glow-top">
             <div>
               <div className="text-xs font-bold workout-muted uppercase">Start Today</div>
               <div className="text-base font-black workout-heading">Build today’s session</div>
@@ -2602,7 +2602,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 onClick={() => onStartEmptySession?.()}
                 disabled={isRestDay || hasTodayWorkout}
                 className={`w-full py-3 rounded-xl font-bold active:scale-[0.98] ${
-                  (isRestDay || hasTodayWorkout) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'accent-button'
+                  (isRestDay || hasTodayWorkout) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'accent-button ps-cta-main'
                 }`}
               >
                 {hasTodayWorkout ? 'Drafted for today' : 'Start Today'}
@@ -4127,7 +4127,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROFILE TAB ==========
-    const ProfileView = ({ settings, setSettings, themeMode, setThemeMode, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding }) => {
+    const ProfileView = ({ settings, setSettings, themeMode, setThemeMode, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
       const [workoutOpen, setWorkoutOpen] = useState(false);
       const [appearanceOpen, setAppearanceOpen] = useState(false);
       const [analyticsOpen, setAnalyticsOpen] = useState(false);
@@ -4137,6 +4137,15 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [advancedOpen, setAdvancedOpen] = useState(false);
 
       const isDarkMode = themeMode === 'dark';
+      const handleBack = () => {
+        if (onBack) {
+          onBack();
+          return;
+        }
+        if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
+          window.history.back();
+        }
+      };
 
       const learnItems = [
         {
@@ -4156,7 +4165,18 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       return (
         <div className="flex flex-col h-full bg-gray-50">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-            <h1 className="text-2xl font-black text-gray-900 p-4 py-5">Profile & Settings</h1>
+            <div className="ps-settings-header">
+              <button
+                type="button"
+                className="ps-settings-back"
+                onClick={handleBack}
+                aria-label="Back"
+              >
+                <span className="inline-block -translate-x-[1px]">←</span>
+              </button>
+              <div className="ps-settings-title flex-1 text-center text-gray-900">Settings</div>
+              <div className="w-8" aria-hidden="true"></div>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
@@ -6862,6 +6882,7 @@ return (
                     themeMode={themeMode}
                     setThemeMode={setThemeMode}
                     colorfulExerciseCards={colorfulExerciseCards}
+                    onBack={() => setTab('home')}
                     onToggleColorfulExerciseCards={setColorfulExerciseCards}
                     onViewAnalytics={() => {
                       setShowPatterns(false);

@@ -95,19 +95,20 @@ body {
 
 .ps-shell {
   background:
-    radial-gradient(circle at top center, rgba(255, 255, 255, 0.96) 0, rgba(248, 250, 252, 0.96) 30%, transparent 70%),
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.98) 0, rgba(248, 250, 252, 0.96) 32%, transparent 72%),
     radial-gradient(circle at top left, rgba(249, 168, 212, 0.55) 0, transparent 55%),
-    radial-gradient(circle at top right, rgba(196, 181, 253, 0.60) 0, transparent 55%),
-    radial-gradient(circle at bottom, rgba(45, 212, 191, 0.45) 0, transparent 55%),
+    radial-gradient(circle at top right, rgba(196, 181, 253, 0.55) 0, transparent 55%),
+    radial-gradient(circle at bottom, rgba(56, 189, 248, 0.40) 0, transparent 60%),
     #F5F7FF;
   min-height: 100vh;
 }
 
 .dark .ps-shell {
   background:
-    radial-gradient(circle at top center, rgba(15, 23, 42, 0.9) 0, rgba(15, 23, 42, 0.96) 40%, transparent 75%),
-    radial-gradient(circle at top left, rgba(76, 29, 149, 0.55) 0, transparent 55%),
-    radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.45) 0, transparent 55%),
+    radial-gradient(circle at top center, rgba(15, 23, 42, 0.92) 0, rgba(15, 23, 42, 0.98) 40%, transparent 75%),
+    radial-gradient(circle at 18% 40%, rgba(196, 181, 253, 0.38) 0, transparent 55%),
+    radial-gradient(circle at 82% 55%, rgba(34, 211, 238, 0.32) 0, transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.18) 0, transparent 60%),
     #020617;
 }
 
@@ -2270,6 +2271,82 @@ textarea::placeholder {
   border-color: rgba(148, 163, 184, 0.35);
 }
 
+.ps-section-glow-top {
+  position: relative;
+}
+
+.ps-section-glow-top::before {
+  content: "";
+  position: absolute;
+  inset: -32px -16px auto -16px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top center, rgba(139, 92, 246, 0.22) 0, transparent 55%);
+  z-index: -1;
+}
+
+.ps-section-glow-bottom {
+  position: relative;
+}
+
+.ps-section-glow-bottom::after {
+  content: "";
+  position: absolute;
+  inset: auto -16px -40px -16px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at bottom center, rgba(34, 211, 238, 0.22) 0, transparent 60%);
+  z-index: -1;
+}
+
+.dark .ps-section-glow-top::before,
+.dark .ps-section-glow-bottom::after {
+  opacity: 1;
+}
+
+.ps-hero-pill {
+  background:
+    linear-gradient(135deg, rgba(248, 250, 252, 0.96), rgba(237, 233, 254, 0.96));
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  box-shadow: 0 10px 24px rgba(148, 163, 184, 0.45);
+}
+
+.dark .ps-hero-pill {
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 64, 175, 0.92));
+  border-color: rgba(148, 163, 184, 0.7);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.9);
+}
+
+.ps-settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 4px 16px;
+}
+
+.ps-settings-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.ps-settings-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.dark .ps-settings-back {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(148, 163, 184, 0.8);
+}
+
 .dark .ps-card {
   background: rgba(11, 16, 32, 0.85);
   border: 1px solid rgba(148, 163, 184, 0.24);
@@ -2309,22 +2386,27 @@ textarea::placeholder {
   transform: scale(0.97) translateY(1px);
 }
 
+.ps-cta-main,
 .ps-btn-primary {
   background: var(--ps-gradient-main);
   color: #FFFFFF;
   box-shadow:
     0 18px 40px rgba(15, 23, 42, 0.40),
     0 0 0 1px rgba(255, 255, 255, 0.16);
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
 }
 
+.ps-cta-main:hover,
 .ps-btn-primary:hover {
   filter: brightness(1.06);
 }
 
+.ps-cta-main:active,
 .ps-btn-primary:active {
   transform: scale(0.97);
 }
 
+.dark .ps-cta-main,
 .dark .ps-btn-primary {
   background: var(--ps-gradient-main);
   color: #020617;
