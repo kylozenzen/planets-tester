@@ -183,7 +183,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
         if (this.state.hasError) {
           return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm w-full text-center space-y-4">
+              <div className="bg-white rounded-2xl shadow-lg p-6 max-w-sm w-full text-center space-y-4 ps-card">
                 <div className="text-4xl">😅</div>
                 <h2 className="text-xl font-bold text-gray-900">Something went wrong</h2>
                 <p className="text-sm text-gray-600">
@@ -191,7 +191,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
                 </p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="w-full py-3 bg-purple-600 text-white font-bold rounded-xl active:scale-95 transition-transform"
+                  className="w-full py-3 ps-btn-primary font-bold rounded-xl active:scale-95 transition-transform"
                 >
                   Reload App
                 </button>
@@ -1149,7 +1149,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
           <div className="locked-in-actions">
             <button
               type="button"
-              className="btn-primary ps-tap"
+              className="btn-primary ps-btn-primary ps-tap"
               onClick={onLockedIn}
             >
               I'm Locked In
@@ -1321,7 +1321,7 @@ const OnboardingIntro = ({ title, subhead, body, step, total, onNext, onSkip, em
     </div>
     <div className="onboarding-actions">
       <button className="ghost-button" onClick={onSkip}>Skip</button>
-      <button className="accent-button" onClick={onNext}>Next</button>
+      <button className="accent-button ps-btn-primary" onClick={onNext}>Next</button>
     </div>
   </OnboardingCardShell>
 );
@@ -1391,7 +1391,7 @@ const OnboardingForm = ({ profile, setProfile, onComplete, onBack, step, total }
         <button
           onClick={() => { if (canStart) onComplete(); }}
           disabled={!canStart}
-          className="accent-button"
+          className="accent-button ps-btn-primary"
         >
           Start Tracking
         </button>
@@ -1613,8 +1613,8 @@ const MatrixWaterfall = ({ show, onClose }) => {
       <canvas ref={canvasRef} className="absolute inset-0" />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div 
-          className="text-2xl font-mono text-green-400"
-          style={{ textShadow: '0 0 20px rgba(0,255,0,0.8)', opacity: 0.7, animation: 'fadeIn 2s' }}
+          className="text-2xl font-mono text-teal-300"
+          style={{ textShadow: '0 0 20px rgba(20, 184, 166, 0.8)', opacity: 0.7, animation: 'fadeIn 2s' }}
         >
           Wake up, Neo...
         </div>
@@ -1863,7 +1863,7 @@ const ButDidYouDie = ({ show, onClose, onConfirm }) => {
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl font-bold active:scale-95"
+            className="flex-1 px-6 py-3 ps-btn-primary rounded-xl font-bold active:scale-95"
           >
             Log Rest Day
           </button>
@@ -1878,7 +1878,7 @@ const NiceToast = ({ show }) => {
 
   return (
     <div 
-      className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 bg-purple-600 text-white px-6 py-3 rounded-full font-bold shadow-lg"
+      className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 ps-btn-primary px-6 py-3 rounded-full font-bold shadow-lg"
       style={{ animation: 'niceSlide 2s ease-in-out' }}
     >
       Nice 😎
@@ -2127,7 +2127,7 @@ const Home = ({
             <div className="home-section-title">
               {homeStartSubtext}
             </div>
-            <button onClick={onStartWorkout} className="home-primary-button">
+            <button onClick={onStartWorkout} className="home-primary-button ps-btn-primary">
               Build Today's Workout
             </button>
           </div>
@@ -2443,7 +2443,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     return (
       <div
         key={id}
-        className={`exercise-library-card w-full p-3 rounded-xl border border-gray-200 bg-white flex items-center justify-between ${categoryClass}`}
+        className={`exercise-library-card w-full p-3 rounded-xl border border-gray-200 bg-white flex items-center justify-between ps-card ${categoryClass}`}
       >
         <div className="flex items-center gap-3 text-left flex-1 min-w-0">
           <div className="exercise-badge-wrapper">
@@ -2602,7 +2602,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 onClick={() => onStartEmptySession?.()}
                 disabled={isRestDay || hasTodayWorkout}
                 className={`w-full py-3 rounded-xl font-bold active:scale-[0.98] ${
-                  (isRestDay || hasTodayWorkout) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'accent-button'
+                  (isRestDay || hasTodayWorkout) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'accent-button ps-btn-primary'
                 }`}
               >
                 {hasTodayWorkout ? 'Drafted for today' : 'Start Today'}
@@ -2711,7 +2711,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 <div className="flex items-center gap-2">
                   <div className="text-lg font-black workout-heading">Today’s Workout</div>
                   {activeSession?.createdFrom === 'generated' && (
-                    <span className="session-badge">Generated</span>
+                    <span className="session-badge ps-chip-highlight">Generated</span>
                   )}
                 </div>
                 <div className="text-[11px] workout-muted">{isSessionMode ? 'Log as you go' : 'Edit and start when ready'}</div>
@@ -2801,7 +2801,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                     setActiveFilter('All');
                     onStartWorkoutFromBuilder?.();
                   }}
-                  className="w-full py-3 rounded-xl font-bold active:scale-[0.98] accent-button"
+                  className="w-full py-3 rounded-xl font-bold active:scale-[0.98] accent-button ps-btn-primary"
                 >
                   Start Workout
                 </button>
@@ -2858,7 +2858,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
             </div>
             <button
               onClick={onFinishSession}
-              className="finish-button accent-button w-auto py-3 px-5 rounded-2xl font-bold shadow-lg active:scale-[0.98]"
+              className="finish-button accent-button ps-btn-primary w-auto py-3 px-5 rounded-2xl font-bold shadow-lg active:scale-[0.98]"
             >
               Finish Workout
             </button>
@@ -4081,7 +4081,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                             </div>
                           </div>
                           <div className="w-14 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-purple-600 rounded-full" style={{ width: `${bar}%` }}></div>
+                            <div className="h-full ps-progress-bar rounded-full" style={{ width: `${bar}%` }}></div>
                           </div>
                         </div>
                       );
@@ -4547,13 +4547,13 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                 This feature is in progress. Soon you’ll see gentle, no-guilt notes about your training style—like time-of-day tendencies and muscle-group balance.
               </div>
             </div>
-            <div className="pattern-intro bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+            <div className="pattern-intro bg-white rounded-2xl border border-gray-200 p-4 shadow-sm ps-card">
               <div className="text-sm font-semibold text-gray-900">Gentle insights from your recent training.</div>
               <div className="text-xs text-gray-500">These update as you keep logging sessions.</div>
             </div>
 
             {patterns.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center text-gray-600">
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center text-gray-600 ps-card">
                 <div className="text-3xl mb-2">🌱</div>
                 <div className="text-sm font-semibold text-gray-900 mb-2">No patterns yet</div>
                 <div className="text-sm text-gray-500">As you log more sessions, we’ll highlight your training patterns here.</div>
