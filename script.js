@@ -433,6 +433,46 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return new Date(Math.max(...dates.map(d => d.getTime())));
     };
 
+    const buildLastSessionSummary = (history, lastWorkoutLabel) => {
+      if (!history || !lastWorkoutLabel) return null;
+      const sessions = [];
+      Object.entries(history || {}).forEach(([exerciseId, arr]) => {
+        safeArray(arr).forEach(session => {
+          if (!session?.date) return;
+          sessions.push({ ...session, exerciseId });
+        });
+      });
+      if (sessions.length === 0) return null;
+      sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const lastSessionDate = sessions[0]?.date;
+      if (!lastSessionDate) return null;
+      const lastSessionKey = toDayKey(new Date(lastSessionDate));
+      const lastExercises = sessions.filter(session => toDayKey(new Date(session.date)) === lastSessionKey);
+      const totalSets = lastExercises.reduce((sum, session) => sum + safeArray(session.sets).length, 0);
+      const muscleCounts = {};
+      lastExercises.forEach(session => {
+        const eq = EQUIPMENT_DB[session.exerciseId];
+        const key = resolveMuscleGroup(eq);
+        muscleCounts[key] = (muscleCounts[key] || 0) + 1;
+      });
+      const primaryMuscle = Object.entries(muscleCounts)
+        .sort((a, b) => b[1] - a[1])[0]?.[0];
+
+      const parts = [`Last session · ${lastWorkoutLabel}`];
+      if (totalSets) parts.push(`${totalSets} sets`);
+      if (primaryMuscle) parts.push(primaryMuscle);
+
+      const detailParts = [];
+      if (primaryMuscle) detailParts.push(primaryMuscle);
+      if (totalSets) detailParts.push(`${totalSets} sets`);
+
+      return {
+        full: parts.join(' • '),
+        short: lastWorkoutLabel,
+        detail: detailParts.join(' • ')
+      };
+    };
+
     // ========== EXTRACTED DATA ==========
     // The following are now loaded from separate files in /data:
     // - data/constants.js: AVATARS, homeQuotes, postWorkoutQuotes, restDayQuotes, GYM_TYPES,
@@ -1212,8 +1252,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
           <div className="flex justify-around items-center h-16 px-2">
             {[
               { id: 'home', label: 'Home', icon: 'Home' },
-              { id: 'workout', label: 'Workout', icon: 'Dumbbell' },
-              { id: 'profile', label: 'Profile', icon: 'User' }
+              { id: 'workout', label: 'Workout', icon: 'Dumbbell' }
             ].map(t => (
               <button 
                 key={t.id} 
@@ -1911,6 +1950,9 @@ const PerfectWeek = ({ show, onClose }) => {
 const Home = ({
   profile,
   lastWorkoutLabel,
+  lastSessionSummary,
+  lastSessionShortLabel,
+  lastSessionDetail,
   suggestedFocus,
   dayEntries,
   lastWorkoutDate,
@@ -1924,7 +1966,8 @@ const Home = ({
   onTriggerGlory,
   onLongPressRestDay,
   onOpenTemplatesFromHome,
-  onOpenHistoryFromHome
+  onOpenHistoryFromHome,
+  onOpenSettingsFromHome
 }) => {
   const longPressTimerRef = useRef(null);
   const restDayTimerRef = useRef(null);
@@ -1993,11 +2036,7 @@ const Home = ({
     onOpenHistoryFromHome?.();
   };
 
-  const homeStartSubtext = sessionIntent === 'calm'
-    ? 'Draft a session in seconds.'
-    : sessionIntent === 'recovery'
-      ? 'Draft a recovery session in seconds.'
-      : 'Draft a session in seconds.';
+  const homeStartSubtext = 'Plan your workout in seconds.';
 
   const muscleGroups = useMemo(() => ([
     { label: 'Chest', key: 'chest' },
@@ -2036,6 +2075,14 @@ const Home = ({
               title={isRestDay ? 'Undo rest day' : 'Log rest day'}
             >
               <span aria-hidden="true">😴</span>
+            </button>
+            <button
+              type="button"
+              className="home-settings-top-button"
+              onClick={onOpenSettingsFromHome}
+              title="Settings"
+            >
+              <span aria-hidden="true">⚙️</span>
             </button>
             <div 
               className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
@@ -2090,15 +2137,19 @@ const Home = ({
             <div className="flex gap-3">
               <button type="button" className="home-mini-tile" onClick={handleHomeTemplatesClick}>
                 <div className="home-mini-title">Templates</div>
-                <div className="home-mini-subtitle">Start from a saved session</div>
+                {/* Future enhancement: add info tooltip explaining templates */}
+                <div className="home-mini-subtitle">Get started without thinking</div>
               </button>
 
               <button type="button" className="home-mini-tile" onClick={handleHomeLastSessionClick}>
                 <div className="home-mini-title">Last Session</div>
-                <div className="home-mini-subtitle">
-                  {lastWorkoutLabel
-                    ? `Last session · ${lastWorkoutLabel}`
-                    : 'No recent sessions yet'}
+                <div className="home-lastsession-wrapper">
+                  <div className="home-lastsession-top">
+                    {lastSessionShortLabel || lastWorkoutLabel || '—'}
+                  </div>
+                  <div className="home-lastsession-bottom">
+                    {lastSessionDetail || '—'}
+                  </div>
                 </div>
               </button>
             </div>
@@ -5651,6 +5702,14 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         return lastWorkoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       }, [lastWorkoutDate]);
 
+      const sessionSummary = useMemo(
+        () => buildLastSessionSummary(effectiveHistory, lastWorkoutLabel),
+        [effectiveHistory, lastWorkoutLabel]
+      );
+      const lastSessionSummary = sessionSummary?.full;
+      const lastSessionShortLabel = sessionSummary?.short;
+      const lastSessionDetail = sessionSummary?.detail;
+
       const weekWorkoutCount = useMemo(() => {
         const today = new Date();
         let count = 0;
@@ -6203,6 +6262,8 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         setShowAnalytics(true);
       };
 
+      const handleOpenSettingsFromHome = () => setTab('profile');
+
       const startEmptySession = () => {
         if (isRestDay) {
           undoRestDay();
@@ -6717,7 +6778,7 @@ return (
             />
           )}
           <div className="app-root bg-gray-50 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-hidden">
+            <div className="app-main">
               <InlineMessage message={tab === 'home' && inlineMessage === 'Workout saved.' ? null : inlineMessage} />
               <UndoToast message={undoToast?.message} onUndo={handleUndoAction} />
               <ToastHost toasts={toasts} />
@@ -6783,6 +6844,9 @@ return (
                   <Home
                     profile={profile}
                     lastWorkoutLabel={lastWorkoutLabel}
+                    lastSessionSummary={lastSessionSummary}
+                    lastSessionShortLabel={lastSessionShortLabel}
+                    lastSessionDetail={lastSessionDetail}
                     suggestedFocus={suggestedFocus}
                     dayEntries={effectiveDayEntries}
                     lastWorkoutDate={lastWorkoutDate}
@@ -6800,6 +6864,7 @@ return (
                       setOpenTemplatesFromHome(true);
                     }}
                     onOpenHistoryFromHome={handleOpenHistoryFromHome}
+                    onOpenSettingsFromHome={handleOpenSettingsFromHome}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'workout' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'workout'}>
