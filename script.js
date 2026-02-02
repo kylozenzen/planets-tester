@@ -2118,16 +2118,16 @@ const Home = ({
             </div>
           </div>
           {coachMessage && (
-            <div className="coach-strip card-enter">
+            <div className="coach-strip card-enter ps-coach-pill">
               <span className="coach-strip-label">Coach</span>
               <span className="coach-strip-text">{coachMessage}</span>
             </div>
           )}
-          <div className="home-section-card card-enter">
+          <div className="home-section-card card-enter ps-card ps-hero-card">
             <div className="home-section-title">
               {homeStartSubtext}
             </div>
-            <button onClick={onStartWorkout} className="home-primary-button">
+            <button onClick={onStartWorkout} className="home-primary-button ps-btn-primary">
               Build Today's Workout
             </button>
           </div>
@@ -2153,7 +2153,7 @@ const Home = ({
             </div>
           </div>
           {homeQuote && (
-            <div className="home-section-card home-quote">
+            <div className="home-section-card home-quote ps-inspiration-card">
               <div className="home-section-title">Inspiration</div>
               <div className="quote-block">
                 <p className="quote-text">“{homeQuote.text}”</p>

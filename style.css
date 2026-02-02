@@ -20,6 +20,20 @@ html, body {
   --ps-border: #E5E7EB;
   --ps-text-main: #0F172A;
   --ps-text-muted: #6B7280;
+  --ps-spectrum-pink: #F9A8D4;
+  --ps-spectrum-violet: #A855F7;
+  --ps-spectrum-cyan: #38BDF8;
+  --ps-gradient-main: linear-gradient(
+    135deg,
+    var(--ps-spectrum-pink) 0%,
+    var(--ps-spectrum-violet) 40%,
+    var(--ps-spectrum-cyan) 100%
+  );
+  --ps-gradient-soft: radial-gradient(
+    circle at top left,
+    rgba(249, 168, 212, 0.75) 0,
+    transparent 55%
+  );
 
   --bg: var(--ps-bg-main);
   --bg-gradient: linear-gradient(
@@ -81,18 +95,20 @@ body {
 
 .ps-shell {
   background:
-    radial-gradient(circle at top left, #E5F3FF 0, transparent 55%),
-    radial-gradient(circle at top right, #ECE4FF 0, transparent 55%),
-    radial-gradient(circle at bottom, #DDF9FF 0, transparent 55%),
-    var(--ps-bg-main);
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.96) 0, rgba(248, 250, 252, 0.96) 30%, transparent 70%),
+    radial-gradient(circle at top left, rgba(249, 168, 212, 0.55) 0, transparent 55%),
+    radial-gradient(circle at top right, rgba(196, 181, 253, 0.60) 0, transparent 55%),
+    radial-gradient(circle at bottom, rgba(45, 212, 191, 0.45) 0, transparent 55%),
+    #F5F7FF;
   min-height: 100vh;
 }
 
 .dark .ps-shell {
   background:
-    radial-gradient(circle at top left, rgba(124, 58, 237, 0.22) 0, transparent 55%),
-    radial-gradient(circle at bottom right, rgba(45, 212, 191, 0.16) 0, transparent 55%),
-    var(--ps-bg-main);
+    radial-gradient(circle at top center, rgba(15, 23, 42, 0.9) 0, rgba(15, 23, 42, 0.96) 40%, transparent 75%),
+    radial-gradient(circle at top left, rgba(76, 29, 149, 0.55) 0, transparent 55%),
+    radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.45) 0, transparent 55%),
+    #020617;
 }
 
 .stat-number {
@@ -114,6 +130,20 @@ body {
   --ps-border: #1F2937;
   --ps-text-main: #E5E7EB;
   --ps-text-muted: #9CA3AF;
+  --ps-spectrum-pink: #F472B6;
+  --ps-spectrum-violet: #C4B5FD;
+  --ps-spectrum-cyan: #22D3EE;
+  --ps-gradient-main: linear-gradient(
+    135deg,
+    rgba(244, 114, 182, 1) 0%,
+    rgba(196, 181, 253, 1) 40%,
+    rgba(34, 211, 238, 1) 100%
+  );
+  --ps-gradient-soft: radial-gradient(
+    circle at top left,
+    rgba(196, 181, 253, 0.40) 0,
+    transparent 60%
+  );
 
   --bg: var(--ps-bg-main);
   --bg-gradient: linear-gradient(
@@ -2191,6 +2221,55 @@ textarea::placeholder {
   box-shadow: var(--shadow-card);
 }
 
+.ps-hero-card {
+  background:
+    radial-gradient(circle at top left, rgba(249, 250, 251, 0.95) 0, rgba(248, 250, 252, 0.92) 40%, transparent 75%),
+    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.25) 0, transparent 60%),
+    radial-gradient(circle at top right, rgba(249, 168, 212, 0.28) 0, transparent 60%),
+    var(--ps-bg-card);
+  box-shadow:
+    0 22px 50px rgba(148, 163, 184, 0.45);
+}
+
+.dark .ps-hero-card {
+  background:
+    radial-gradient(circle at top left, rgba(196, 181, 253, 0.32) 0, transparent 60%),
+    radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.26) 0, transparent 65%),
+    #050816;
+  box-shadow:
+    0 24px 55px rgba(15, 23, 42, 0.9);
+}
+
+.ps-coach-pill {
+  background:
+    linear-gradient(120deg,
+      rgba(56, 189, 248, 0.18),
+      rgba(168, 85, 247, 0.26));
+  border-color: rgba(148, 163, 184, 0.40);
+}
+
+.dark .ps-coach-pill {
+  background:
+    linear-gradient(120deg,
+      rgba(34, 211, 238, 0.18),
+      rgba(196, 181, 253, 0.28));
+}
+
+.ps-inspiration-card {
+  background:
+    linear-gradient(135deg,
+      rgba(248, 250, 252, 0.96),
+      rgba(237, 233, 254, 0.92));
+}
+
+.dark .ps-inspiration-card {
+  background:
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.96),
+      rgba(17, 24, 39, 0.94));
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
 .dark .ps-card {
   background: rgba(11, 16, 32, 0.85);
   border: 1px solid rgba(148, 163, 184, 0.24);
@@ -2231,13 +2310,15 @@ textarea::placeholder {
 }
 
 .ps-btn-primary {
-  background: linear-gradient(135deg, var(--ps-primary), var(--ps-accent));
+  background: var(--ps-gradient-main);
   color: #FFFFFF;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.40),
+    0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 
 .ps-btn-primary:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.06);
 }
 
 .ps-btn-primary:active {
@@ -2245,8 +2326,8 @@ textarea::placeholder {
 }
 
 .dark .ps-btn-primary {
-  background: linear-gradient(135deg, #C4B5FD, #22D3EE);
-  color: #050816;
+  background: var(--ps-gradient-main);
+  color: #020617;
 }
 
 .ps-progress-bar {
