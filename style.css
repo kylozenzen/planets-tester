@@ -67,6 +67,49 @@ body {
   line-height: 1.5;
 }
 
+.ps-shell {
+  background:
+    /* central white/ice glow */
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 1) 0, rgba(248, 250, 252, 0.97) 32%, transparent 72%),
+    /* pink hint top-left */
+    radial-gradient(circle at 0% 25%, rgba(249, 168, 212, 0.35) 0, transparent 55%),
+    /* cyan hint bottom-right */
+    radial-gradient(circle at 100% 80%, rgba(56, 189, 248, 0.32) 0, transparent 60%),
+    /* very subtle violet wash, much lower opacity than before */
+    radial-gradient(circle at 50% 100%, rgba(196, 181, 253, 0.20) 0, transparent 60%),
+    #F9FAFB; /* almost white */
+  min-height: 100vh;
+}
+
+body.dark-mode .ps-shell {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(15, 23, 42, 0.95) 0, rgba(15, 23, 42, 0.98) 45%, transparent 80%),
+    radial-gradient(circle at 0% 40%, rgba(196, 181, 253, 0.38) 0, transparent 55%),
+    radial-gradient(circle at 100% 70%, rgba(34, 211, 238, 0.32) 0, transparent 55%),
+    #020617;
+  min-height: 100vh;
+}
+
+.ps-section-glow {
+  position: relative;
+}
+
+.ps-section-glow::before {
+  content: "";
+  position: absolute;
+  inset: -40px -24px -40px -24px;
+  pointer-events: none;
+  opacity: 0.75;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(196, 181, 253, 0.36) 0, transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(34, 211, 238, 0.30) 0, transparent 60%);
+  z-index: -1;
+}
+
+body.dark-mode .ps-section-glow::before {
+  opacity: 1;
+}
+
 .stat-number {
   font-family: var(--font-display);
   font-size: 1.4em;
@@ -509,6 +552,12 @@ body.app-shell {
   gap: 14px;
   flex: 1;
   justify-content: flex-start;
+}
+
+.home-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .home-card-row {

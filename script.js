@@ -2046,8 +2046,8 @@ const Home = ({
   ]), []);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 home-screen">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="flex flex-col h-full home-screen">
+      <div className="ps-section-glow bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <div className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em] select-none">
@@ -2117,19 +2117,21 @@ const Home = ({
             })}
             </div>
           </div>
-          {coachMessage && (
-            <div className="coach-strip card-enter">
-              <span className="coach-strip-label">Coach</span>
-              <span className="coach-strip-text">{coachMessage}</span>
+          <div className="ps-section-glow home-section-group">
+            {coachMessage && (
+              <div className="coach-strip card-enter">
+                <span className="coach-strip-label">Coach</span>
+                <span className="coach-strip-text">{coachMessage}</span>
+              </div>
+            )}
+            <div className="home-section-card card-enter">
+              <div className="home-section-title">
+                {homeStartSubtext}
+              </div>
+              <button onClick={onStartWorkout} className="home-primary-button">
+                Build Today's Workout
+              </button>
             </div>
-          )}
-          <div className="home-section-card card-enter">
-            <div className="home-section-title">
-              {homeStartSubtext}
-            </div>
-            <button onClick={onStartWorkout} className="home-primary-button">
-              Build Today's Workout
-            </button>
           </div>
           <div className="home-section-card">
             <div className="flex gap-3">
@@ -2153,11 +2155,13 @@ const Home = ({
             </div>
           </div>
           {homeQuote && (
-            <div className="home-section-card home-quote">
-              <div className="home-section-title">Inspiration</div>
-              <div className="quote-block">
-                <p className="quote-text">“{homeQuote.text}”</p>
-                <p className="quote-meta">— {homeQuote.movie}</p>
+            <div className="ps-section-glow">
+              <div className="home-section-card home-quote">
+                <div className="home-section-title">Inspiration</div>
+                <div className="quote-block">
+                  <p className="quote-text">“{homeQuote.text}”</p>
+                  <p className="quote-meta">— {homeQuote.movie}</p>
+                </div>
               </div>
             </div>
           )}
@@ -6775,7 +6779,7 @@ return (
               onBrowse={() => setLockedInDismissed(true)}
             />
           )}
-          <div className="app-root bg-gray-50 flex flex-col overflow-hidden">
+          <div className="app-root ps-shell flex flex-col overflow-hidden">
             <div className="app-main">
               <InlineMessage message={tab === 'home' && inlineMessage === 'Workout saved.' ? null : inlineMessage} />
               <UndoToast message={undoToast?.message} onUndo={handleUndoAction} />
