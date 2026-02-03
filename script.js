@@ -2046,8 +2046,8 @@ const Home = ({
   ]), []);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 home-screen">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="flex flex-col h-full home-screen">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20 ps-section-glow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <div className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em] select-none">
@@ -2065,7 +2065,7 @@ const Home = ({
               onMouseDown={handleRestDayTouchStart}
               onMouseUp={handleRestDayTouchEnd}
               onMouseLeave={handleRestDayTouchEnd}
-              className="home-rest-top-button"
+              className="home-rest-top-button ps-hero-pill"
               style={{
                 transform: isHoldingRestDay ? 'scale(0.9)' : 'scale(1)',
                 transition: 'all 0.1s ease'
@@ -2076,14 +2076,14 @@ const Home = ({
             </button>
             <button
               type="button"
-              className="home-settings-top-button"
+              className="home-settings-top-button ps-hero-pill"
               onClick={onOpenSettingsFromHome}
               title="Settings"
             >
               <span aria-hidden="true">⚙️</span>
             </button>
             <div 
-              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
+              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95 ps-hero-pill"
               style={{
                 transform: isHolding ? 'scale(0.9)' : 'scale(1)',
                 boxShadow: isHolding ? '0 0 20px rgba(147, 51, 234, 0.5)' : 'none',
@@ -2118,16 +2118,16 @@ const Home = ({
             </div>
           </div>
           {coachMessage && (
-            <div className="coach-strip card-enter">
+            <div className="coach-strip card-enter ps-coach-pill ps-section-glow">
               <span className="coach-strip-label">Coach</span>
               <span className="coach-strip-text">{coachMessage}</span>
             </div>
           )}
-          <div className="home-section-card card-enter">
+          <div className="home-section-card card-enter ps-card ps-hero-card ps-section-glow">
             <div className="home-section-title">
               {homeStartSubtext}
             </div>
-            <button onClick={onStartWorkout} className="home-primary-button">
+            <button onClick={onStartWorkout} className="home-primary-button ps-cta-main">
               Build Today's Workout
             </button>
           </div>
@@ -2153,7 +2153,7 @@ const Home = ({
             </div>
           </div>
           {homeQuote && (
-            <div className="home-section-card home-quote">
+            <div className="home-section-card home-quote ps-inspiration-card ps-section-glow">
               <div className="home-section-title">Inspiration</div>
               <div className="quote-block">
                 <p className="quote-text">“{homeQuote.text}”</p>
@@ -2580,7 +2580,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const showCompactSearchInput = showCompactControls && (showCompactSearch || !!searchQuery);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 workout-shell relative">
+    <div className="flex flex-col h-full workout-shell relative">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="px-4 py-4 flex items-center justify-between">
           <div>
@@ -2592,7 +2592,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
 
       <div className={`flex-1 overflow-y-auto pb-28 px-4 space-y-4 workout-scroll ${isSessionMode ? 'workout-scroll--with-footer' : ''}`}>
         {showIdleControls && (
-          <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive">
+          <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive ps-section-glow-top">
             <div>
               <div className="text-xs font-bold workout-muted uppercase">Start Today</div>
               <div className="text-base font-black workout-heading">Build today’s session</div>
@@ -2602,7 +2602,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 onClick={() => onStartEmptySession?.()}
                 disabled={isRestDay || hasTodayWorkout}
                 className={`w-full py-3 rounded-xl font-bold active:scale-[0.98] ${
-                  (isRestDay || hasTodayWorkout) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'accent-button'
+                  (isRestDay || hasTodayWorkout) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'accent-button ps-cta-main'
                 }`}
               >
                 {hasTodayWorkout ? 'Drafted for today' : 'Start Today'}
@@ -3758,7 +3758,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       };
 
       return (
-        <div className="flex flex-col h-full bg-gray-50 analytics-shell">
+        <div className="flex flex-col h-full analytics-shell">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="p-4">
               <h1 className="text-2xl font-black text-gray-900">Analytics</h1>
@@ -4127,7 +4127,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROFILE TAB ==========
-    const ProfileView = ({ settings, setSettings, themeMode, darkVariant, setThemeMode, setDarkVariant, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding }) => {
+    const ProfileView = ({ settings, setSettings, themeMode, setThemeMode, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
       const [workoutOpen, setWorkoutOpen] = useState(false);
       const [appearanceOpen, setAppearanceOpen] = useState(false);
       const [analyticsOpen, setAnalyticsOpen] = useState(false);
@@ -4136,12 +4136,16 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [dataToolsOpen, setDataToolsOpen] = useState(false);
       const [advancedOpen, setAdvancedOpen] = useState(false);
 
-      const accentOptions = [
-        { id: 'red', label: 'Red', color: '#ef4444' },
-        { id: 'yellow', label: 'Yellow', color: '#f59e0b' },
-        { id: 'blue', label: 'Blue', color: '#3b82f6' },
-      ];
       const isDarkMode = themeMode === 'dark';
+      const handleBack = () => {
+        if (onBack) {
+          onBack();
+          return;
+        }
+        if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
+          window.history.back();
+        }
+      };
 
       const learnItems = [
         {
@@ -4159,9 +4163,20 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       ];
 
       return (
-        <div className="flex flex-col h-full bg-gray-50">
+        <div className="flex flex-col h-full">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-            <h1 className="text-2xl font-black text-gray-900 p-4 py-5">Profile & Settings</h1>
+            <div className="ps-settings-header">
+              <button
+                type="button"
+                className="ps-settings-back"
+                onClick={handleBack}
+                aria-label="Back"
+              >
+                <span className="inline-block -translate-x-[1px]">←</span>
+              </button>
+              <div className="ps-settings-title flex-1 text-center text-gray-900">Settings</div>
+              <div className="w-8" aria-hidden="true"></div>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
@@ -4172,7 +4187,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               >
                 <div>
                   <div className="text-xs font-bold text-gray-500 uppercase">Appearance</div>
-                  <div className="text-sm text-gray-500">Theme and accent</div>
+                  <div className="text-sm text-gray-500">Light or dark appearance</div>
                 </div>
                 <Icon name="ChevronDown" className={`w-4 h-4 text-gray-400 transition-transform ${appearanceOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -4192,29 +4207,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     enabled={colorfulExerciseCards}
                     onToggle={onToggleColorfulExerciseCards}
                   />
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Dark mode accent</div>
-                    <div className="flex gap-2">
-                      {accentOptions.map(opt => (
-                        <button
-                          key={opt.id}
-                          onClick={() => isDarkMode && setDarkVariant(opt.id)}
-                          disabled={!isDarkMode}
-                          aria-disabled={!isDarkMode}
-                          className={`flex-1 accent-pill ${isDarkMode && darkVariant === opt.id ? 'active' : ''} rounded-xl p-2 flex items-center gap-2 ${isDarkMode ? '' : 'opacity-50 pointer-events-none'}`}
-                        >
-                          <span className="w-6 h-6 rounded-lg" style={{ background: opt.color }}></span>
-                          <span className="text-sm font-semibold text-gray-800">{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mt-3">Theme preview</div>
-                    <div className="theme-preview">
-                      <div className="preview-btn">Primary</div>
-                      <div className="preview-chip">Chip</div>
-                      <div className="preview-card">Card border</div>
-                    </div>
-                  </div>
                 </div>
               )}
             </Card>
@@ -4454,7 +4446,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       }, [muscleCounts, muscleGroups, totalCount]);
 
       return (
-        <div className="muscle-map-screen flex flex-col h-full bg-gray-50">
+    <div className="muscle-map-screen flex flex-col h-full">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="p-4 flex items-center gap-3">
               <button onClick={onClose} className="p-2 rounded-full bg-gray-100">
@@ -4527,7 +4519,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const patterns = useMemo(() => buildPatternsFromHistory(history, cardioHistory), [history, cardioHistory]);
 
       return (
-        <div className="patterns-screen flex flex-col h-full bg-gray-50">
+        <div className="patterns-screen flex flex-col h-full">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="p-4 flex items-center gap-3">
               <button onClick={onClose} className="p-2 rounded-full bg-gray-100">
@@ -5217,7 +5209,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const [settings, setSettings] = useState({ ...SETTINGS_DEFAULTS });
       const [themeMode, setThemeModeState] = useState('light');
-      const [darkVariant, setDarkVariantState] = useState('blue');
       const [colorfulExerciseCards, setColorfulExerciseCards] = useState(() => {
         try {
           const raw = localStorage.getItem('ps_colorfulExerciseCards');
@@ -5629,31 +5620,19 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const applyTheme = () => {
         const savedMode = storage.get(THEME_MODE_KEY, 'light');
-        const storedVariant = storage.get(DARK_VARIANT_KEY, 'blue');
-        const nextVariant = storedVariant || 'blue';
-        const themeClasses = ['theme-red', 'theme-yellow', 'theme-blue'];
-        document.body.classList.remove(...themeClasses);
-        if (savedMode === 'dark') {
-          document.body.classList.add('dark-mode');
-          document.body.classList.add(`theme-${nextVariant}`);
-        } else {
-          document.body.classList.remove('dark-mode');
+        const normalizedMode = savedMode === 'dark' ? 'dark' : 'light';
+        if (normalizedMode !== savedMode) {
+          storage.set(THEME_MODE_KEY, normalizedMode);
         }
-        setThemeModeState(savedMode);
-        setDarkVariantState(nextVariant);
+        document.documentElement.classList.toggle('dark', normalizedMode === 'dark');
+        setThemeModeState(normalizedMode);
       };
 
       const setThemeMode = (mode) => {
-        storage.set(THEME_MODE_KEY, mode);
-        if (!storage.get(DARK_VARIANT_KEY, null)) {
-          storage.set(DARK_VARIANT_KEY, 'blue');
-        }
-        applyTheme();
-      };
-
-      const setDarkVariant = (variant) => {
-        storage.set(DARK_VARIANT_KEY, variant);
-        applyTheme();
+        const normalizedMode = mode === 'dark' ? 'dark' : 'light';
+        storage.set(THEME_MODE_KEY, normalizedMode);
+        document.documentElement.classList.toggle('dark', normalizedMode === 'dark');
+        setThemeModeState(normalizedMode);
       };
 
       useEffect(() => {
@@ -6775,7 +6754,7 @@ return (
               onBrowse={() => setLockedInDismissed(true)}
             />
           )}
-          <div className="app-root bg-gray-50 flex flex-col overflow-hidden">
+          <div className="app-root flex flex-col overflow-hidden">
             <div className="app-main">
               <InlineMessage message={tab === 'home' && inlineMessage === 'Workout saved.' ? null : inlineMessage} />
               <UndoToast message={undoToast?.message} onUndo={handleUndoAction} />
@@ -6804,7 +6783,7 @@ return (
               )}
               <div className="page-stack">
                 <div className={`page ${showAnalytics ? 'active' : ''}`} aria-hidden={!showAnalytics}>
-                  <div className="h-full flex flex-col bg-gray-50">
+                  <div className="h-full flex flex-col">
                     <div className="bg-white border-b border-gray-200 p-4 flex items-center gap-3">
                       <button onClick={() => setShowAnalytics(false)} className="p-2 rounded-full bg-gray-100">
                         <Icon name="ChevronLeft" className="w-5 h-5 text-gray-700" />
@@ -6901,10 +6880,9 @@ return (
                     settings={settings}
                     setSettings={setSettings}
                     themeMode={themeMode}
-                    darkVariant={darkVariant}
                     setThemeMode={setThemeMode}
-                    setDarkVariant={setDarkVariant}
                     colorfulExerciseCards={colorfulExerciseCards}
+                    onBack={() => setTab('home')}
                     onToggleColorfulExerciseCards={setColorfulExerciseCards}
                     onViewAnalytics={() => {
                       setShowPatterns(false);
