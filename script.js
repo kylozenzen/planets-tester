@@ -2046,7 +2046,7 @@ const Home = ({
   ]), []);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 home-screen">
+    <div className="flex flex-col h-full home-screen">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-20 ps-section-glow" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
@@ -2580,7 +2580,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const showCompactSearchInput = showCompactControls && (showCompactSearch || !!searchQuery);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 workout-shell relative">
+    <div className="flex flex-col h-full workout-shell relative">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="px-4 py-4 flex items-center justify-between">
           <div>
@@ -3758,7 +3758,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       };
 
       return (
-        <div className="flex flex-col h-full bg-gray-50 analytics-shell">
+        <div className="flex flex-col h-full analytics-shell">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="p-4">
               <h1 className="text-2xl font-black text-gray-900">Analytics</h1>
@@ -4163,7 +4163,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       ];
 
       return (
-        <div className="flex flex-col h-full bg-gray-50">
+        <div className="flex flex-col h-full">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="ps-settings-header">
               <button
@@ -4446,7 +4446,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       }, [muscleCounts, muscleGroups, totalCount]);
 
       return (
-        <div className="muscle-map-screen flex flex-col h-full bg-gray-50">
+    <div className="muscle-map-screen flex flex-col h-full">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="p-4 flex items-center gap-3">
               <button onClick={onClose} className="p-2 rounded-full bg-gray-100">
@@ -4519,7 +4519,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const patterns = useMemo(() => buildPatternsFromHistory(history, cardioHistory), [history, cardioHistory]);
 
       return (
-        <div className="patterns-screen flex flex-col h-full bg-gray-50">
+        <div className="patterns-screen flex flex-col h-full">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="p-4 flex items-center gap-3">
               <button onClick={onClose} className="p-2 rounded-full bg-gray-100">
@@ -6754,7 +6754,7 @@ return (
               onBrowse={() => setLockedInDismissed(true)}
             />
           )}
-          <div className="app-root bg-gray-50 flex flex-col overflow-hidden">
+          <div className="app-root flex flex-col overflow-hidden">
             <div className="app-main">
               <InlineMessage message={tab === 'home' && inlineMessage === 'Workout saved.' ? null : inlineMessage} />
               <UndoToast message={undoToast?.message} onUndo={handleUndoAction} />
@@ -6783,7 +6783,7 @@ return (
               )}
               <div className="page-stack">
                 <div className={`page ${showAnalytics ? 'active' : ''}`} aria-hidden={!showAnalytics}>
-                  <div className="h-full flex flex-col bg-gray-50">
+                  <div className="h-full flex flex-col">
                     <div className="bg-white border-b border-gray-200 p-4 flex items-center gap-3">
                       <button onClick={() => setShowAnalytics(false)} className="p-2 rounded-full bg-gray-100">
                         <Icon name="ChevronLeft" className="w-5 h-5 text-gray-700" />
