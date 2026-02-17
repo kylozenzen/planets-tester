@@ -2167,7 +2167,7 @@ const Home = ({
   );
 };
 
-const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome }) => {
+const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onLogRestDay, onUndoRestDay, onOpenSettings, onOpenProfile }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
@@ -2218,13 +2218,16 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const sessionHasLogged = sessionEntries.some(entry => (sessionLogsByExercise[entry.exerciseId || entry.id] || []).length > 0);
   const sessionExerciseCount = sessionEntries.length;
   const sessionSetCount = sessionEntries.reduce((sum, entry) => sum + ((sessionLogsByExercise[entry.exerciseId || entry.id] || []).length), 0);
-  const finishSummaryBase = `${sessionExerciseCount} exercises • ${sessionSetCount} sets`;
-  const finishSummaryIntent = sessionIntent === 'calm'
-    ? 'Calm pace'
-    : sessionIntent === 'recovery'
-      ? 'Recovery pace'
-      : '';
-  const finishSummaryText = finishSummaryIntent ? `${finishSummaryBase} • ${finishSummaryIntent}` : finishSummaryBase;
+  const finishSummaryText = `${sessionExerciseCount} exercises • ${sessionSetCount} sets`;
+
+  const handleWorkoutRestToggle = () => {
+    if (isSessionMode) return;
+    if (isRestDay) {
+      onUndoRestDay?.();
+      return;
+    }
+    onLogRestDay?.();
+  };
 
   const filterOptions = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Cardio'];
 
@@ -2585,7 +2588,34 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         <div className="px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black workout-title">Workout</h1>
-            <div className="text-xs workout-muted font-bold">Draft → Start → Active → Finish</div>
+            <div className="text-xs workout-muted font-bold">Plan. Log. Done.</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleWorkoutRestToggle}
+              disabled={isSessionMode}
+              className="home-rest-top-button"
+              title={isSessionMode ? 'Finish workout to update rest day' : (isRestDay ? 'Undo rest day' : 'Log rest day')}
+            >
+              <span aria-hidden="true">😴</span>
+            </button>
+            <button
+              type="button"
+              className="home-settings-top-button"
+              onClick={onOpenSettings}
+              title="Settings"
+            >
+              <span aria-hidden="true">⚙️</span>
+            </button>
+            <button
+              type="button"
+              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
+              onClick={onOpenProfile}
+              title="Profile"
+            >
+              {profile.avatar}
+            </button>
           </div>
         </div>
       </div>
@@ -2594,8 +2624,8 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         {showIdleControls && (
           <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive">
             <div>
-              <div className="text-xs font-bold workout-muted uppercase">Start Today</div>
-              <div className="text-base font-black workout-heading">Build today’s session</div>
+              <div className="text-xs font-bold workout-muted uppercase">Today</div>
+              <div className="text-base font-black workout-heading">Build your workout</div>
             </div>
             <div className="space-y-2">
               <button
@@ -2605,7 +2635,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   (isRestDay || hasTodayWorkout) ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'accent-button'
                 }`}
               >
-                {hasTodayWorkout ? 'Drafted for today' : 'Start Today'}
+                {hasTodayWorkout ? 'Workout ready' : 'Start workout'}
               </button>
               <button
                 onClick={handleBrowseAll}
@@ -2614,7 +2644,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   isRestDay ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' : 'border-gray-200 bg-white text-gray-900'
                 }`}
               >
-                {libraryVisible ? 'Close library' : 'Browse library'}
+                {libraryVisible ? 'Close exercises' : 'Browse exercises'}
               </button>
             </div>
             <div className="relative">
@@ -2629,7 +2659,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               />
             </div>
             {!hasTodayWorkout && !isRestDay && (
-              <div className="text-[11px] workout-muted">Create a draft to add exercises and start logging.</div>
+              <div className="text-[11px] workout-muted">Add exercises, then start logging.</div>
             )}
           </Card>
         )}
@@ -2637,8 +2667,9 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         {showCompactControls && (
           <Card className="workout-card mt-5">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-xs font-bold workout-muted uppercase">
-                {mode === 'draft' ? 'Draft mode' : 'Workout active'}
+              <div className="text-xs font-bold workout-muted uppercase flex items-center gap-2">
+                <span>Today&apos;s workout</span>
+                <span className="session-badge">{mode === 'draft' ? 'Draft' : 'Active'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -2707,7 +2738,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           <Card className="space-y-3 workout-card" ref={sessionCardRef}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold workout-muted uppercase">{isSessionMode ? 'Workout active' : 'Draft workout'}</div>
+                <div className="text-xs font-bold workout-muted uppercase">{isSessionMode ? 'In progress' : 'Ready'}</div>
                 <div className="flex items-center gap-2">
                   <div className="text-lg font-black workout-heading">Today’s Workout</div>
                   {activeSession?.createdFrom === 'generated' && (
@@ -3020,19 +3051,15 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [activeTab, setActiveTab] = useState('workout');
       const [showLogger, setShowLogger] = useState(true);
       const [showPlateCalc, setShowPlateCalc] = useState(false);
-      const [anchorWeight, setAnchorWeight] = useState('');
-      const [anchorReps, setAnchorReps] = useState('');
-      const [anchorAdjusted, setAnchorAdjusted] = useState(false);
       const [loggedSets, setLoggedSets] = useState([]);
       const [setInputs, setSetInputs] = useState({ weight: '', reps: '' });
       const [editingIndex, setEditingIndex] = useState(null);
       const [editValues, setEditValues] = useState({ weight: '', reps: '' });
       const [baselineInputs, setBaselineInputs] = useState({ weight: '', reps: '' });
-      const [baselineConfirmed, setBaselineConfirmed] = useState(sessions.length > 0);
       const [note, setNote] = useState('');
       const [isAddingSet, setIsAddingSet] = useState(false);
       const savedRef = useRef(false);
-      const latestDraftRef = useRef({ loggedSets: [], anchorWeight: '', anchorReps: '', anchorAdjusted: false, note: '' });
+      const latestDraftRef = useRef({ loggedSets: [], note: '' });
       const lastSetSubmitRef = useRef({ key: '', at: 0 });
       const weightInputRef = useRef(null);
       const repsInputRef = useRef(null);
@@ -3042,38 +3069,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const nextTarget = useMemo(() => getNextTarget(profile, id, best), [profile, id, best]);
       const sessionNumber = sessions.length + 1;
 
-      const deriveSessionAnchor = (session) => {
-        if (!session) return { weight: null, reps: null };
-        const weights = safeArray(session.sets).map(s => s.weight || 0).filter(Boolean);
-        const reps = safeArray(session.sets).map(s => s.reps || 0).filter(Boolean);
-        return {
-          weight: session.anchorWeight || (weights.length ? Math.max(...weights) : null),
-          reps: session.anchorReps || (reps.length ? Math.round(reps.reduce((a, b) => a + b, 0) / reps.length) : null)
-        };
-      };
-
-      const baselineFromHistory = useMemo(() => {
-        if (!sessions || sessions.length === 0) return null;
-        const first = sessions[0];
-        const anchor = deriveSessionAnchor(first);
-        if (first?.baselineWeight && first?.baselineReps) {
-          return { weight: first.baselineWeight, reps: first.baselineReps };
-        }
-        if (anchor.weight && anchor.reps) return { weight: anchor.weight, reps: anchor.reps };
-        return null;
-      }, [sessions]);
-
-      const recentAnchor = useMemo(() => {
-        const recent = (sessions || []).slice(-3);
-        if (recent.length === 0) return { weight: null, reps: null };
-        const weights = recent.map(s => deriveSessionAnchor(s).weight).filter(Boolean);
-        const reps = recent.map(s => deriveSessionAnchor(s).reps).filter(Boolean);
-        return {
-          weight: weights.length ? Math.max(...weights) : null,
-          reps: reps.length ? Math.round(reps.sort((a,b) => a-b)[Math.floor(reps.length/2)]) : null
-        };
-      }, [sessions]);
-
       const lastSession = sessions[sessions.length - 1];
       const lastSessionSummary = useMemo(() => {
         if (!insightsEnabled || !lastSession || !lastSession.sets?.length) return null;
@@ -3081,49 +3076,41 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         if (!lastSet?.weight || !lastSet?.reps) return null;
         return `${lastSet.weight} lb × ${lastSet.reps} reps`;
       }, [insightsEnabled, lastSession]);
-      const defaultAnchor = useMemo(() => {
-        const anchor = deriveSessionAnchor(lastSession);
-        if (anchor.weight && anchor.reps) return anchor;
-        if (baselineFromHistory) return baselineFromHistory;
-        return { weight: null, reps: null };
-      }, [lastSession, baselineFromHistory]);
+
+      const recentPerformance = useMemo(() => {
+        const recent = (sessions || []).slice(-3);
+        const allSets = recent.flatMap((session) => safeArray(session?.sets));
+        const weights = allSets.map((set) => Number(set?.weight) || 0).filter(Boolean);
+        const reps = allSets.map((set) => Number(set?.reps) || 0).filter(Boolean);
+        return {
+          weight: weights.length ? Math.max(...weights) : null,
+          reps: reps.length ? reps[reps.length - 1] : null
+        };
+      }, [sessions]);
 
       useEffect(() => {
-        const weight = defaultAnchor.weight ? String(defaultAnchor.weight) : '';
-        const reps = defaultAnchor.reps ? String(defaultAnchor.reps) : '';
-        setAnchorWeight(weight);
-        setAnchorReps(reps);
-        setAnchorAdjusted(false);
+        const lastSet = lastSession?.sets?.[lastSession.sets.length - 1];
+        const initialWeight = lastSet?.weight ? String(lastSet.weight) : '';
+        const initialReps = lastSet?.reps ? String(lastSet.reps) : '';
         setNote('');
-        setSetInputs({ weight: '', reps: '' });
-        setBaselineInputs({
-          weight: baselineFromHistory?.weight ? String(baselineFromHistory.weight) : '',
-          reps: baselineFromHistory?.reps ? String(baselineFromHistory.reps) : ''
-        });
-        setBaselineConfirmed(sessions.length > 0);
+        setSetInputs({ weight: initialWeight, reps: initialReps });
+        setBaselineInputs({ weight: '', reps: '' });
         savedRef.current = false;
-      }, [id, defaultAnchor, baselineFromHistory, sessions.length]);
+      }, [id, lastSession, sessions.length]);
 
       useEffect(() => {
         setLoggedSets(sessionLogs || []);
       }, [sessionLogs]);
 
       useEffect(() => {
-        setSetInputs(prev => ({
-          weight: prev.weight || (anchorWeight || ''),
-          reps: prev.reps || (anchorReps || '')
-        }));
-      }, [anchorWeight, anchorReps]);
-
-      useEffect(() => {
         if (!autoFocusInput) return;
-        const shouldFocusReps = Boolean(setInputs.weight || anchorWeight);
+        const shouldFocusReps = Boolean(setInputs.weight);
         requestAnimationFrame(() => {
           const target = shouldFocusReps ? repsInputRef.current : weightInputRef.current;
           (target || weightInputRef.current || repsInputRef.current)?.focus();
           onAutoFocusComplete?.();
         });
-      }, [autoFocusInput, anchorWeight, onAutoFocusComplete, setInputs.weight]);
+      }, [autoFocusInput, onAutoFocusComplete, setInputs.weight]);
 
       const syncSessionSets = (nextSets) => {
         if (onUpdateSessionLogs) {
@@ -3148,9 +3135,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         });
         const nextWeight = String(w);
         const nextReps = String(r);
-        setAnchorWeight(nextWeight);
-        setAnchorReps(nextReps);
-        setAnchorAdjusted(true);
         setSetInputs({ weight: nextWeight, reps: nextReps });
         const shouldFocusReps = Boolean(nextWeight);
         requestAnimationFrame(() => {
@@ -3204,26 +3188,15 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       };
 
       const buildSessionPayload = (draft) => {
-        const source = draft || { loggedSets, anchorWeight, anchorReps, anchorAdjusted, note };
+        const source = draft || { loggedSets, note };
         const sets = source.loggedSets || [];
         if (sets.length === 0) return null;
-        const basePayload = {
+        return {
           date: new Date().toISOString(),
           type: 'strength',
           sets,
-          anchorWeight: Number(source.anchorWeight),
-          anchorReps: Number(source.anchorReps),
-          adjustedToday: source.anchorAdjusted || false,
           note: source.note || undefined
         };
-        if (sessions.length === 0) {
-          return {
-            ...basePayload,
-            baselineWeight: Number(source.anchorWeight),
-            baselineReps: Number(source.anchorReps)
-          };
-        }
-        return basePayload;
       };
 
       const handleSaveSession = () => {
@@ -3237,8 +3210,8 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       };
 
       useEffect(() => {
-        latestDraftRef.current = { loggedSets, anchorWeight, anchorReps, anchorAdjusted, note };
-      }, [loggedSets, anchorWeight, anchorReps, anchorAdjusted, note]);
+        latestDraftRef.current = { loggedSets, note };
+      }, [loggedSets, note]);
 
       // Keep onSaveRef in sync with latest onSave prop
       useEffect(() => {
@@ -3265,7 +3238,10 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         onClose();
       };
 
-      const isBaselineMode = sessions.length === 0 && !baselineConfirmed;
+      const isBaselineMode = sessions.length === 0
+        && loggedSets.length === 0
+        && !setInputs.weight
+        && !setInputs.reps;
 
       const weightBump = (w) => {
         if (!w) return 5;
@@ -3276,10 +3252,10 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
 
       const overloadSuggestion = useMemo(() => {
         if (sessions.length < 2) return null;
-        const numericAnchorWeight = Number(anchorWeight) || Number(baselineInputs.weight);
-        const numericAnchorReps = Number(anchorReps) || Number(baselineInputs.reps);
-        const baseWeight = recentAnchor.weight || numericAnchorWeight;
-        const baseReps = recentAnchor.reps || numericAnchorReps;
+        const numericWeight = Number(setInputs.weight) || Number(baselineInputs.weight);
+        const numericReps = Number(setInputs.reps) || Number(baselineInputs.reps);
+        const baseWeight = recentPerformance.weight || numericWeight;
+        const baseReps = recentPerformance.reps || numericReps;
         if (!baseWeight || !baseReps) return null;
         const bump = weightBump(baseWeight);
         return {
@@ -3287,16 +3263,16 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
           reps: baseReps,
           rationale: `${sessions.length >= 2 ? '2 consistent sessions' : 'Recent consistency'} → try +${bump} lb`
         };
-      }, [sessions.length, anchorWeight, anchorReps, baselineInputs, recentAnchor]);
+      }, [sessions.length, baselineInputs, recentPerformance, setInputs.reps, setInputs.weight]);
 
       const handleConfirmBaseline = () => {
         const w = Number(baselineInputs.weight);
         const r = Number(baselineInputs.reps);
         if (!w || !r || w <= 0 || r <= 0) return;
-        setAnchorWeight(String(w));
-        setAnchorReps(String(r));
-        setBaselineConfirmed(true);
-        setAnchorAdjusted(false);
+        setSetInputs({ weight: String(w), reps: String(r) });
+        requestAnimationFrame(() => {
+          repsInputRef.current?.focus();
+        });
       };
 
       const getPlateLoadingForSet = (weight) => {
@@ -3405,21 +3381,8 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                           {!isBaselineMode && (
                             <>
                               <div className="p-3 rounded-2xl workout-accent-surface space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="text-[10px] font-black uppercase workout-accent-text">Anchored weight</div>
-                                    <div className="text-base font-black text-gray-900">
-                                      {anchorWeight && anchorReps ? `${anchorWeight} lb × ${anchorReps} reps` : 'Set your anchor'}
-                                    </div>
-                                    {anchorAdjusted && <div className="text-[11px] workout-accent-text font-semibold">Adjusted today</div>}
-                                  </div>
-                                </div>
-
                                 <div className="flex items-center justify-between text-sm font-semibold text-gray-900">
                                   <span>Sets completed: {loggedSets.length}</span>
-                                  {anchorWeight && anchorReps && (
-                                    <span className="text-[11px] workout-accent-text font-bold">Using: {anchorWeight} lb × {anchorReps} reps</span>
-                                  )}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-2">
@@ -3462,9 +3425,9 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                     e.stopPropagation();
                                     handleQuickAddSet();
                                   }}
-                                  disabled={!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet}
+                                  disabled={!setInputs.weight || !setInputs.reps || isAddingSet}
                                   className={`w-full py-3 rounded-xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 ${
-                                    (!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-solid shadow-lg'
+                                    (!setInputs.weight || !setInputs.reps || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-solid shadow-lg'
                                   }`}
                                 >
                                   <span className="text-lg">＋</span>
@@ -6894,6 +6857,10 @@ return (
                     onApplyTemplate={applyTemplatePlan}
                     openTemplatesFromHome={openTemplatesFromHome}
                     onConsumedOpenTemplatesFromHome={() => setOpenTemplatesFromHome(false)}
+                    onLogRestDay={logRestDay}
+                    onUndoRestDay={undoRestDay}
+                    onOpenSettings={handleOpenSettingsFromHome}
+                    onOpenProfile={() => setTab('profile')}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
