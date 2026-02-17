@@ -80,24 +80,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     };
     ensureAppleTouchIcon();
 
-    // Register service worker
-    // Register service worker only on supported origins (not file://)
-    const isSecureContextOk = location.protocol === 'https:' || location.hostname === 'localhost';
-    if (isSecureContextOk && 'serviceWorker' in navigator) {
-      const SW_CODE = `
-        const CACHE = 'ps-v2';
-        self.addEventListener('install', e => {
-          e.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['./', 'https://cdn.tailwindcss.com'])));
-        });
-        self.addEventListener('fetch', e => {
-          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-        });
-      `;
-      const swBlob = new Blob([SW_CODE], { type: 'application/javascript' });
-      const swURL = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swURL).catch(() => {});
-    }
-
     // PWA Install Prompt Component
     const InstallPrompt = () => {
       const [show, setShow] = useState(false);
@@ -4090,7 +4072,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROFILE TAB ==========
-    const ProfileView = ({ settings, setSettings, themeMode, darkVariant, setThemeMode, setDarkVariant, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding }) => {
+    const ProfileView = ({ settings, setSettings, themeMode, darkVariant, setThemeMode, setDarkVariant, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
       const [workoutOpen, setWorkoutOpen] = useState(false);
       const [appearanceOpen, setAppearanceOpen] = useState(false);
       const [analyticsOpen, setAnalyticsOpen] = useState(false);
@@ -4124,7 +4106,17 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       return (
         <div className="flex flex-col h-full bg-gray-50">
           <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-            <h1 className="text-2xl font-black text-gray-900 p-4 py-5">Profile & Settings</h1>
+            <div className="px-4 py-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onBack}
+                className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                title="Back"
+              >
+                <Icon name="ChevronLeft" className="w-5 h-5" />
+              </button>
+              <h1 className="text-2xl font-black text-gray-900">Profile & Settings</h1>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
@@ -5192,6 +5184,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [history, setHistory] = useState({});
       const [cardioHistory, setCardioHistory] = useState({});
       const [tab, setTab] = useState('home');
+      const [lastTabBeforeProfile, setLastTabBeforeProfile] = useState('home');
       const [activeEquipment, setActiveEquipment] = useState(null);
       const [activeCardio, setActiveCardio] = useState(null);
       const [pendingAutoFocusExercise, setPendingAutoFocusExercise] = useState(null);
@@ -5200,6 +5193,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [showPatterns, setShowPatterns] = useState(false);
       const [showMuscleMap, setShowMuscleMap] = useState(false);
       const [openTemplatesFromHome, setOpenTemplatesFromHome] = useState(false);
+      const [didAutoResume, setDidAutoResume] = useState(false);
       const [homeRequestedAnalyticsTab, setHomeRequestedAnalyticsTab] = useState(null);
       const [showMatrix, setShowMatrix] = useState(false);
       const [showPowerUp, setShowPowerUp] = useState(false);
@@ -5731,6 +5725,27 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         if (lastWorkoutLabel === 'Today') return 'calm';
         return 'standard';
       }, [isRestDay, lastWorkoutLabel]);
+
+      useEffect(() => {
+        if (!loaded || didAutoResume) return;
+        if (isRestDay) {
+          setDidAutoResume(true);
+          return;
+        }
+
+        const s = activeSessionToday;
+        const hasMeaningfulSession =
+          !!s
+          && (s.status === 'draft' || s.status === 'active')
+          && (
+            (s.items && s.items.length > 0)
+            || (s.logsByExercise && Object.values(s.logsByExercise).some(arr => (arr || []).length > 0))
+          );
+
+        if (hasMeaningfulSession) setTab('workout');
+        setDidAutoResume(true);
+      }, [loaded, didAutoResume, activeSessionToday, isRestDay]);
+
       const homeQuote = useMemo(() => getDailyQuote(homeQuotes, 'home'), [todayKey]);
       const suggestedFocus = useMemo(() => {
         const muscleGroups = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core'];
@@ -6223,7 +6238,12 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         setShowAnalytics(true);
       };
 
-      const handleOpenSettingsFromHome = () => setTab('profile');
+      const openProfileFrom = (fromTab) => {
+        setLastTabBeforeProfile(fromTab || tab || 'home');
+        setTab('profile');
+      };
+
+      const handleOpenSettingsFromHome = () => openProfileFrom('home');
 
       const startEmptySession = () => {
         if (isRestDay) {
@@ -6726,7 +6746,20 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         input.click();
       };
 
-      if (!loaded) return null;if (view === 'onboarding') return <OnboardingFlow profile={profile} setProfile={setProfile} onFinish={completeOnboarding} />;
+
+      useEffect(() => {
+        const el = document.getElementById('boot-splash');
+        if (!el) return;
+        if (loaded) {
+          el.style.transition = 'opacity 160ms ease';
+          el.style.opacity = '0';
+          el.style.pointerEvents = 'none';
+          setTimeout(() => el?.parentNode?.removeChild(el), 220);
+        }
+      }, [loaded]);
+
+      if (!loaded) return <div className="min-h-screen" style={{ background: '#070B14' }} />;
+      if (view === 'onboarding') return <OnboardingFlow profile={profile} setProfile={setProfile} onFinish={completeOnboarding} />;
 
       
 return (
@@ -6859,8 +6892,8 @@ return (
                     onConsumedOpenTemplatesFromHome={() => setOpenTemplatesFromHome(false)}
                     onLogRestDay={logRestDay}
                     onUndoRestDay={undoRestDay}
-                    onOpenSettings={handleOpenSettingsFromHome}
-                    onOpenProfile={() => setTab('profile')}
+                    onOpenSettings={() => openProfileFrom('workout')}
+                    onOpenProfile={() => openProfileFrom('workout')}
                   />
                 </div>
                 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
@@ -6892,6 +6925,7 @@ return (
                     onImportData={handleImportData}
                     onResetApp={handleReset}
                     onResetOnboarding={handleResetOnboarding}
+                    onBack={() => setTab(lastTabBeforeProfile || 'home')}
                   />
                 </div>
               </div>
