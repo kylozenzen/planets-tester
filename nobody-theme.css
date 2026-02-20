@@ -1,0 +1,316 @@
+/* ============================================================
+   NOBODY THEME — Planet Strength Override
+   Drop this AFTER style.css in index.html.
+   Zero changes to script.js required.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@1,400;1,600&display=swap');
+
+/* ── 1. Force dark mode always ── */
+html { color-scheme: dark; }
+
+/* ── 2. Rewrite every CSS token ── */
+:root,
+body,
+body.dark-mode {
+  --bg: #0a0a0a;
+  --bg-gradient: linear-gradient(180deg, #0a0a0a 0%, #0d0d0d 100%);
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --card-gradient: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.18) 100%);
+  --text: #e8e8e8;
+  --text-strong: #f5f5f5;
+  --muted: #555555;
+  --border: #222222;
+  --hairline: rgba(255,255,255,0.04);
+  --accent: #facc15;
+  --accent-hover: #fbbf24;
+  --accent-soft: rgba(250, 204, 21, 0.14);
+  --focus-ring: 0 0 0 3px rgba(250, 204, 21, 0.28);
+  --tint-chest: #fb7185;
+  --tint-back: #7dd3fc;
+  --tint-legs: #6ee7b7;
+  --tint-core: #38bdf8;
+  --tint-arms: #d8b4fe;
+  --tint-shoulders: #facc15;
+  --shadow-card: 0 8px 24px rgba(0,0,0,0.5);
+  --shadow-card-soft: 0 6px 18px rgba(0,0,0,0.55);
+  --shadow-card-strong: 0 16px 40px rgba(0,0,0,0.6);
+  --radius-card: 6px;
+  --radius-control: 4px;
+  --radius-small: 4px;
+  --glass-bg: rgba(17, 17, 17, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  --glass-blur: 16px;
+  --font-display: 'Bebas Neue', sans-serif;
+  --surface-grad: linear-gradient(180deg, #131313 0%, #111111 100%);
+}
+
+/* ── 3. Body ── */
+body {
+  font-family: 'Space Mono', monospace;
+  background: #0a0a0a;
+  color: var(--text);
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #0a0a0a 0%, #0d0d0d 100%);
+}
+
+/* ── 4. Display font: Bebas Neue ── */
+.home-section-title,
+.weekly-activity-title,
+.weekly-activity-total,
+.stat-number,
+.home-section-subtitle,
+.onboarding-title,
+.field-label,
+.filter-chip,
+.session-badge,
+.session-cancel-button,
+.quick-chip,
+.quick-generator-button,
+.cues-title,
+.home-primary-button,
+.home-secondary-button,
+.home-rest-action,
+.accent-button,
+.settings-action-button,
+h1, h2, h3, h4 {
+  font-family: 'Bebas Neue', sans-serif !important;
+  letter-spacing: 0.06em;
+}
+
+/* ── 5. Mono for body/data ── */
+input, textarea, .session-entry-row,
+.tile-action, .session-action-button, .pill-button {
+  font-family: 'Space Mono', monospace !important;
+  font-size: 0.78rem;
+}
+
+/* ── 6. Italic serif for quotes ── */
+.quote-text,
+.coach-strip-text,
+.home-quote .quote-text {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-style: italic;
+  font-size: 1.05rem !important;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+}
+
+/* ── 7. Yellow on purple overrides ── */
+.bg-purple-600 {
+  background: var(--accent) !important;
+  color: #000 !important;
+}
+
+.text-purple-600,
+.text-purple-700,
+.text-purple-800,
+.text-purple-900 {
+  color: var(--accent) !important;
+}
+
+.bg-purple-50 {
+  background: rgba(250, 204, 21, 0.07) !important;
+  border-color: rgba(250, 204, 21, 0.16) !important;
+}
+
+.border-purple-200,
+.border-purple-300,
+.border-purple-400 {
+  border-color: rgba(250, 204, 21, 0.22) !important;
+}
+
+/* ── 8. Black text on yellow buttons ── */
+.home-primary-button,
+.accent-button,
+.settings-action-button,
+.workout-accent-solid {
+  color: #000 !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── 9. Tabbar ── */
+.tabbar {
+  background: #0a0a0a !important;
+  border-top: 1px solid #1c1c1c !important;
+  box-shadow: none !important;
+}
+
+/* ── 10. Hard-edge cards ── */
+.bg-white,
+.ps-card,
+.home-section-card,
+.home-mini-card,
+.workout-card,
+.rest-card,
+.pattern-card,
+.quote-card {
+  border-radius: var(--radius-card) !important;
+  border-color: var(--border) !important;
+}
+
+/* ── 11. Square pills ── */
+.filter-chip, .accent-pill,
+.session-cancel-button, .tile-action,
+.session-action-button, .quick-chip {
+  border-radius: 4px !important;
+}
+
+/* ── 12. Coach strip — Nobody voice ── */
+.coach-strip {
+  background: #0f0f0f !important;
+  border: 1px solid #2a2a2a !important;
+  border-left: 3px solid var(--accent) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.coach-strip-label {
+  font-family: 'Bebas Neue', sans-serif !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.12em;
+  color: var(--accent) !important;
+}
+
+/* ── 13. Primary button ── */
+.home-primary-button {
+  border-radius: 4px !important;
+  font-size: 1.1rem !important;
+  letter-spacing: 0.14em;
+  box-shadow: 0 0 28px rgba(250, 204, 21, 0.18) !important;
+}
+
+/* ── 14. Section labels ── */
+.home-section-title,
+.weekly-activity-title {
+  letter-spacing: 0.22em !important;
+  font-size: 0.62rem !important;
+  color: #3a3a3a !important;
+}
+
+/* ── 15. Inputs ── */
+input, textarea, .input-surface {
+  background: #141414 !important;
+  border-color: #262626 !important;
+  color: var(--text) !important;
+  border-radius: 4px !important;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.14) !important;
+}
+
+/* ── 16. Prevent light backgrounds leaking ── */
+.bg-gray-50 { background: #141414 !important; }
+.bg-gray-100 { background: #181818 !important; }
+.bg-gray-200 { background: #1e1e1e !important; }
+
+/* ── 17. Session rows ── */
+.session-entry-row {
+  border-radius: 4px !important;
+  background: #131313 !important;
+  border-color: #1e1e1e !important;
+}
+
+/* ── 18. Toast ── */
+.toast-host .toast {
+  background: #111 !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 4px !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 0.7rem !important;
+}
+
+/* ── 19. Post-workout ── */
+.post-workout-card {
+  background: #111 !important;
+  border: 1px solid #252525 !important;
+  border-radius: 6px !important;
+}
+
+/* ── 20. Empty state ── */
+.empty-state-card {
+  border-color: rgba(250, 204, 21, 0.12) !important;
+  border-radius: 4px !important;
+}
+
+/* ── 21. Cues card stripe ── */
+.cues-card {
+  border-left: 3px solid var(--accent) !important;
+  border-radius: 4px !important;
+}
+
+/* ── 22. Muscle map ── */
+.muscle-map-toggle.active {
+  background: rgba(250, 204, 21, 0.1) !important;
+  color: var(--accent) !important;
+}
+
+/* ── 23. Pattern icon ── */
+.pattern-icon {
+  background: rgba(250, 204, 21, 0.08) !important;
+  color: var(--accent) !important;
+  border-radius: 4px !important;
+}
+
+/* ── 24. Install prompt ── */
+.install-prompt {
+  background: var(--accent) !important;
+  color: #000 !important;
+  border-radius: 4px !important;
+  font-family: 'Bebas Neue', sans-serif !important;
+  letter-spacing: 0.08em;
+}
+
+/* ── 25. Onboarding progress ── */
+.onboarding-progress .dot.active {
+  background: var(--accent) !important;
+  box-shadow: 0 0 0 5px rgba(250, 204, 21, 0.16) !important;
+}
+
+/* ── 26. Onboarding card ── */
+.onboarding-card {
+  border-radius: 6px !important;
+  box-shadow:
+    0 0 0 1px #222,
+    0 30px 90px rgba(0,0,0,0.6),
+    0 0 40px rgba(250,204,21,0.05) !important;
+}
+
+/* ── 27. Weekly bars ── */
+.weekly-activity-bar {
+  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.28) !important;
+}
+
+/* ── 28. Workout banner ── */
+.workout-banner {
+  border-left: 4px solid var(--accent) !important;
+  border-radius: 4px !important;
+}
+
+/* ── 29. Scrollbar ── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #252525; border-radius: 2px; }
+
+/* ── 30. Focus rings ── */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: none !important;
+  box-shadow: var(--focus-ring) !important;
+}
+
+/* ── 31. Quick chip ── */
+.quick-chip {
+  border-radius: 4px !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.1em;
+}
+
+/* ── END NOBODY THEME ── */
