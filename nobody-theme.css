@@ -1366,3 +1366,189 @@ textarea[class*="workout-accent-focus"] {
 
 /* ===== DARK MODE COMPAT (keep same in this theme) ===== */
 body.dark-mode { /* Already dark, no change needed */ }
+
+/* ===================================================
+   PLANET STRENGTH — HERO HEADER + TICKER
+   New single-row header with background image
+   =================================================== */
+
+/* ===== HERO HEADER ===== */
+.ps-hero-header {
+  position: relative;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  min-height: 72px;
+}
+
+/* Hero image layer */
+.ps-hero-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center 30%;
+  filter: grayscale(100%) contrast(130%) brightness(35%);
+  z-index: 0;
+}
+
+/* Gradient overlay — darkens toward bottom so text reads clean */
+.ps-hero-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10,10,10,0.35) 0%,
+    rgba(10,10,10,0.65) 100%
+  );
+  z-index: 1;
+}
+
+/* Inner layout: text left, icons right */
+.ps-hero-header__inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 18px;
+}
+
+/* Left column: brand + welcome stacked */
+.ps-hero-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ps-hero-header__brand {
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.28em !important;
+  color: var(--yellow) !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8) !important;
+}
+
+.ps-hero-header__welcome {
+  font-family: var(--font-mono) !important;
+  font-size: 15px !important;
+  color: var(--muted-bright) !important;
+  letter-spacing: 0.04em !important;
+  white-space: nowrap !important;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9) !important;
+}
+
+.ps-hero-header__name {
+  font-weight: 700 !important;
+  color: var(--white) !important;
+}
+
+/* Right column: icon buttons stacked */
+.ps-hero-header__icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+/* Icon button circles — frosted glass on hero image */
+.ps-nav-icon-btn {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  background: rgba(15,15,15,0.75) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: border-color 0.15s, background 0.15s !important;
+  color: var(--muted-bright) !important;
+}
+
+.ps-nav-icon-btn:hover {
+  border-color: var(--yellow) !important;
+  color: var(--yellow) !important;
+}
+
+.ps-nav-icon-btn--avatar {
+  color: var(--yellow) !important;
+  border-color: rgba(250,204,21,0.3) !important;
+}
+
+/* ===== MANIFESTO TICKER ===== */
+.ps-manifesto-ticker {
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: var(--black);
+  height: 26px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ps-ticker-track {
+  display: flex;
+  animation: psTicker 40s linear infinite;
+  white-space: nowrap;
+}
+
+.ps-ticker-track:hover { animation-play-state: paused; }
+
+@keyframes psTicker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.ps-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ps-ticker-item--hi { color: var(--yellow); }
+
+.ps-ticker-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--yellow);
+  flex-shrink: 0;
+}
+
+/* ===== TEMPLATES TILE — 4-line layout ===== */
+.home-mini-label {
+  font-family: var(--font-mono) !important;
+  font-size: 9px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+  color: var(--muted) !important;
+  margin-bottom: 2px !important;
+}
+
+.home-mini-accent {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--yellow) !important;
+  margin-top: 2px !important;
+}

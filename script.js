@@ -2047,16 +2047,15 @@ const Home = ({
 
   return (
     <div className="flex flex-col h-full bg-gray-50 home-screen">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.2em] select-none">
-              PLANET STRENGTH
+      <div className="ps-hero-header sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="ps-hero-header__inner">
+          <div className="ps-hero-header__left">
+            <div className="ps-hero-header__brand select-none">PLANET STRENGTH</div>
+            <div className="ps-hero-header__welcome">
+              Welcome back, <span className="ps-hero-header__name">{profile.username || 'Athlete'}.</span>
             </div>
-            <h1 className="text-xl font-black text-gray-900">Welcome back, {profile.username || 'Athlete'}</h1>
-            <div className="text-xs text-gray-500 font-semibold mt-1">A session on your terms.</div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="ps-hero-header__icons">
             <button
               type="button"
               onClick={handleRestDayClick}
@@ -2065,28 +2064,29 @@ const Home = ({
               onMouseDown={handleRestDayTouchStart}
               onMouseUp={handleRestDayTouchEnd}
               onMouseLeave={handleRestDayTouchEnd}
-              className="home-rest-top-button"
-              style={{
-                transform: isHoldingRestDay ? 'scale(0.9)' : 'scale(1)',
-                transition: 'all 0.1s ease'
-              }}
+              className="ps-nav-icon-btn"
+              style={{ transform: isHoldingRestDay ? 'scale(0.9)' : 'scale(1)', transition: 'all 0.1s ease' }}
               title={isRestDay ? 'Undo rest day' : 'Log rest day'}
             >
-              <span aria-hidden="true">😴</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+              </svg>
             </button>
             <button
               type="button"
-              className="home-settings-top-button"
+              className="ps-nav-icon-btn"
               onClick={onOpenSettingsFromHome}
               title="Settings"
             >
-              <span aria-hidden="true">⚙️</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
             </button>
-            <div 
-              className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl border border-purple-200 cursor-pointer select-none transition-transform active:scale-95"
+            <div
+              className="ps-nav-icon-btn ps-nav-icon-btn--avatar"
               style={{
                 transform: isHolding ? 'scale(0.9)' : 'scale(1)',
-                boxShadow: isHolding ? '0 0 20px rgba(147, 51, 234, 0.5)' : 'none',
                 transition: 'all 0.1s ease'
               }}
               onTouchStart={handleAvatarTouchStart}
@@ -2094,10 +2094,30 @@ const Home = ({
               onMouseDown={handleAvatarTouchStart}
               onMouseUp={handleAvatarTouchEnd}
               onMouseLeave={handleAvatarTouchEnd}
+              title="Profile"
             >
-              {profile.avatar}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
             </div>
           </div>
+        </div>
+      </div>
+      <div className="ps-manifesto-ticker">
+        <div className="ps-ticker-track">
+          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+            <span key={i} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
+              <span className="ps-ticker-dot" />
+              {item}
+            </span>
+          ))}
+          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+            <span key={`r${i}`} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
+              <span className="ps-ticker-dot" />
+              {item}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -2134,9 +2154,10 @@ const Home = ({
           <div className="home-section-card">
             <div className="flex gap-3">
               <button type="button" className="home-mini-tile" onClick={handleHomeTemplatesClick}>
+                <div className="home-mini-label">Quick Start</div>
                 <div className="home-mini-title">Templates</div>
-                {/* Future enhancement: add info tooltip explaining templates */}
-                <div className="home-mini-subtitle">Get started without thinking</div>
+                <div className="home-mini-accent">Start</div>
+                <div className="home-mini-subtitle">Without Thinking</div>
               </button>
 
               <button type="button" className="home-mini-tile" onClick={handleHomeLastSessionClick}>
@@ -2581,12 +2602,49 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
 
   return (
     <div className="flex flex-col h-full bg-gray-50 workout-shell relative">
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-black workout-title">Workout</h1>
-            <div className="text-xs workout-muted font-bold">Draft → Start → Active → Finish</div>
+      <div className="ps-hero-header sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="ps-hero-header__inner">
+          <div className="ps-hero-header__left">
+            <div className="ps-hero-header__brand select-none">PLANET STRENGTH</div>
+            <div className="ps-hero-header__welcome">
+              Workout, <span className="ps-hero-header__name">Let's build.</span>
+            </div>
           </div>
+          <div className="ps-hero-header__icons">
+            <button type="button" className="ps-nav-icon-btn" title="Rest day">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+              </svg>
+            </button>
+            <button type="button" className="ps-nav-icon-btn" title="Settings">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+            <div className="ps-nav-icon-btn ps-nav-icon-btn--avatar" title="Profile">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="ps-manifesto-ticker">
+        <div className="ps-ticker-track">
+          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+            <span key={i} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
+              <span className="ps-ticker-dot" />
+              {item}
+            </span>
+          ))}
+          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+            <span key={`r${i}`} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
+              <span className="ps-ticker-dot" />
+              {item}
+            </span>
+          ))}
         </div>
       </div>
 
