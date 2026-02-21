@@ -1627,3 +1627,38 @@ body.dark-mode { /* Already dark, no change needed */ }
   color: var(--yellow) !important;
   font-family: var(--font-mono) !important;
 }
+
+/* ===== BACK BUTTON (settings) ===== */
+.ps-back-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: var(--card) !important;
+  border: 1px solid var(--border-bright) !important;
+  color: var(--white) !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  transition: border-color 0.15s, color 0.15s !important;
+}
+
+.ps-back-btn:hover {
+  border-color: var(--yellow) !important;
+  color: var(--yellow) !important;
+}
+
+/* ===== HERO HEADER — safe area fix ===== */
+/* Move safe-area padding into ::before so it doesn't shrink the visible image */
+.ps-hero-header {
+  height: calc(160px + env(safe-area-inset-top)) !important;
+}
+
+.ps-hero-header::before {
+  top: env(safe-area-inset-top) !important;
+}
+
+.ps-hero-header__inner {
+  padding-bottom: 12px !important;
+}
