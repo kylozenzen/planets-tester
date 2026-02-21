@@ -2121,57 +2121,38 @@ const Home = ({
         </div>
       </div>
 
-      <div className="flex-1 p-4 pb-6 home-content">
-        <div className="home-stack">
-          <div className="home-muscle-section">
-            <div className="home-card-row no-scrollbar">
-            {muscleGroups.map(group => {
-              return (
-                <div key={group.key} className="home-mini-card home-muscle-card">
-                  <div className="home-muscle-card-title">
-                    {renderMuscleBadge(group.label)}
-                    <span>{group.label}</span>
-                  </div>
+      <div className="flex-1 home-content ps-home-scroll">
+        <div className="ps-home-stack">
+          <div className="home-card-row no-scrollbar ps-muscle-row">
+            {muscleGroups.map(group => (
+              <div key={group.key} className="home-mini-card home-muscle-card">
+                <div className="home-muscle-card-title">
+                  {renderMuscleBadge(group.label)}
+                  <span>{group.label}</span>
                 </div>
-              );
-            })}
-            </div>
+              </div>
+            ))}
           </div>
-          {coachMessage && (
-            <div className="coach-strip card-enter">
-              <span className="coach-strip-label">Coach</span>
-              <span className="coach-strip-text">{coachMessage}</span>
-            </div>
-          )}
-          <div className="home-section-card card-enter">
-            <div className="home-section-title">
-              {homeStartSubtext}
-            </div>
-            <button onClick={onStartWorkout} className="home-primary-button">
-              Build Today's Workout
+          <button onClick={onStartWorkout} className="home-primary-button ps-cta-btn card-enter">
+            Build Today's Workout
+          </button>
+          <div className="ps-mini-tiles">
+            <button type="button" className="home-mini-tile" onClick={handleHomeTemplatesClick}>
+              <div className="home-mini-label">Quick Start</div>
+              <div className="home-mini-title">Templates</div>
+              <div className="home-mini-accent">Start</div>
+              <div className="home-mini-subtitle">Without Thinking</div>
             </button>
-          </div>
-          <div className="home-section-card">
-            <div className="flex gap-3">
-              <button type="button" className="home-mini-tile" onClick={handleHomeTemplatesClick}>
-                <div className="home-mini-label">Quick Start</div>
-                <div className="home-mini-title">Templates</div>
-                <div className="home-mini-accent">Start</div>
-                <div className="home-mini-subtitle">Without Thinking</div>
-              </button>
-
-              <button type="button" className="home-mini-tile" onClick={handleHomeLastSessionClick}>
-                <div className="home-mini-title">Last Session</div>
-                <div className="home-lastsession-wrapper">
-                  <div className="home-lastsession-top">
-                    {lastSessionShortLabel || lastWorkoutLabel || '—'}
-                  </div>
-                  <div className="home-lastsession-bottom">
-                    {lastSessionDetail || '—'}
-                  </div>
-                </div>
-              </button>
-            </div>
+            <button type="button" className="home-mini-tile" onClick={handleHomeLastSessionClick}>
+              <div className="home-mini-label">Previous</div>
+              <div className="home-mini-title">Last Session</div>
+              <div className="home-lastsession-top">
+                {lastSessionShortLabel || lastWorkoutLabel || '—'}
+              </div>
+              <div className="home-lastsession-bottom">
+                {lastSessionDetail || '—'}
+              </div>
+            </button>
           </div>
           {homeQuote && (
             <div className="home-section-card home-quote">
