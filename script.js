@@ -2640,7 +2640,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 onClick={handleBrowseAll}
                 disabled={isRestDay}
                 className={`w-full py-3 rounded-xl border font-bold active:scale-[0.98] ${
-                  isRestDay ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' : 'accent-button'
+                  isRestDay ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' : 'ps-browse-library-btn'
                 }`}
               >
                 {libraryVisible ? 'Close library' : 'Browse library'}
