@@ -73,10 +73,10 @@ html, body, #root {
 /* ===== APP SHELL ===== */
 .app-root {
   background: var(--black) !important;
-  max-width: 390px;
-  margin: 0 auto;
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  max-width: 100%;
+  margin: 0;
+  border-left: none;
+  border-right: none;
 }
 
 .app-main { background: var(--black) !important; }
@@ -596,7 +596,7 @@ button[class*="border-gray"][class*="font-bold"]:not([class*="accent"]):not([cla
   bottom: 64px !important;
   left: 0 !important;
   right: 0 !important;
-  max-width: 390px !important;
+  max-width: 100% !important;
   margin: 0 auto !important;
   padding: 10px 16px !important;
   background: linear-gradient(180deg, transparent 0%, var(--black) 40%) !important;
@@ -1377,7 +1377,7 @@ body.dark-mode { /* Already dark, no change needed */ }
 .ps-hero-header {
   position: relative;
   flex-shrink: 0;
-  height: 160px;
+  height: 96px;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
 }
@@ -1406,7 +1406,7 @@ body.dark-mode { /* Already dark, no change needed */ }
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 0 14px 12px;
+  padding: 0 14px 10px;
   gap: 10px;
 }
 
@@ -1414,17 +1414,17 @@ body.dark-mode { /* Already dark, no change needed */ }
 .ps-hero-header__left {
   display: inline-flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   background: rgba(6,6,6,0.58);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border-radius: 6px;
-  padding: 7px 11px;
+  padding: 5px 10px;
 }
 
 .ps-hero-header__brand {
   font-family: var(--font-mono) !important;
-  font-size: 10px !important;
+  font-size: 9px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.3em !important;
@@ -1434,10 +1434,10 @@ body.dark-mode { /* Already dark, no change needed */ }
 
 .ps-hero-header__welcome {
   font-family: var(--font-mono) !important;
-  font-size: 15px !important;
+  font-size: 13px !important;
   color: var(--muted-bright) !important;
   letter-spacing: 0.02em !important;
-  line-height: 1.1 !important;
+  line-height: 1.2 !important;
 }
 
 .ps-hero-header__name {
@@ -1445,24 +1445,24 @@ body.dark-mode { /* Already dark, no change needed */ }
   color: var(--white) !important;
 }
 
-/* RIGHT pill — stacked icons, bottom-right */
+/* RIGHT pill — icons HORIZONTAL now */
 .ps-hero-header__icons {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
   background: rgba(6,6,6,0.58);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border-radius: 6px;
-  padding: 7px 8px;
+  padding: 5px 8px;
 }
 
 /* Icon buttons */
 .ps-nav-icon-btn {
-  width: 30px !important;
-  height: 30px !important;
+  width: 28px !important;
+  height: 28px !important;
   border-radius: 50% !important;
   background: transparent !important;
   border: 1px solid rgba(255,255,255,0.2) !important;
@@ -1649,11 +1649,4 @@ body.dark-mode { /* Already dark, no change needed */ }
   color: var(--yellow) !important;
 }
 
-/* ===== HERO HEADER — safe area fix ===== */
-.ps-hero-header {
-  height: 160px !important;
-}
-
-.ps-hero-header__inner {
-  padding-bottom: 12px !important;
-}
+/* HERO HEADER height set in main block above */
