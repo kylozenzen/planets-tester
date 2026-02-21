@@ -2123,16 +2123,6 @@ const Home = ({
 
       <div className="flex-1 home-content ps-home-scroll">
         <div className="ps-home-stack">
-          <div className="home-card-row no-scrollbar ps-muscle-row">
-            {muscleGroups.map(group => (
-              <div key={group.key} className="home-mini-card home-muscle-card">
-                <div className="home-muscle-card-title">
-                  {renderMuscleBadge(group.label)}
-                  <span>{group.label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
           <button onClick={onStartWorkout} className="home-primary-button ps-cta-btn card-enter">
             Build Today's Workout
           </button>
@@ -2650,7 +2640,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 onClick={handleBrowseAll}
                 disabled={isRestDay}
                 className={`w-full py-3 rounded-xl border font-bold active:scale-[0.98] ${
-                  isRestDay ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' : 'border-gray-200 bg-white text-gray-900'
+                  isRestDay ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' : 'accent-button'
                 }`}
               >
                 {libraryVisible ? 'Close library' : 'Browse library'}
