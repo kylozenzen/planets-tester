@@ -2047,7 +2047,7 @@ const Home = ({
 
   return (
     <div className="flex flex-col h-full bg-gray-50 home-screen">
-      <div className="ps-hero-header sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div className="ps-hero-header sticky top-0 z-20">
         <div className="ps-hero-header__inner">
           <div className="ps-hero-header__left">
             <div className="ps-hero-header__brand select-none">PLANET STRENGTH</div>
@@ -2573,7 +2573,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
 
   return (
     <div className="flex flex-col h-full bg-gray-50 workout-shell relative">
-      <div className="ps-hero-header sticky top-0 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div className="ps-hero-header sticky top-0 z-20">
         <div className="ps-hero-header__inner">
           <div className="ps-hero-header__left">
             <div className="ps-hero-header__brand select-none">PLANET STRENGTH</div>
