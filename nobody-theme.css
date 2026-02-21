@@ -1373,75 +1373,71 @@ body.dark-mode { /* Already dark, no change needed */ }
    =================================================== */
 
 /* ===== HERO HEADER ===== */
+/* ===== HERO HEADER — social banner style ===== */
 .ps-hero-header {
   position: relative;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
+  height: 160px;
   overflow: hidden;
-  min-height: 47px;
+  border-bottom: 1px solid var(--border);
 }
 
-/* Hero image — visible, bright, let it show */
+/* Full-bleed image — nothing covers it */
 .ps-hero-header::before {
   content: '';
   position: absolute;
   inset: 0;
   background-image: url('https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?q=80&w=2070&auto=format&fit=crop');
   background-size: cover;
-  background-position: center 25%;
-  filter: grayscale(100%) contrast(110%) brightness(85%);
+  background-position: center 35%;
+  filter: grayscale(100%) contrast(108%) brightness(88%);
   z-index: 0;
 }
 
-/* No full-bleed overlay at all — image shows completely */
-.ps-hero-header::after {
-  content: none;
-}
+.ps-hero-header::after { content: none; }
 
-/* Inner layout: text left, icons right */
+/* Row pinned to bottom of banner */
 .ps-hero-header__inner {
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 2;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 10px 10px;
+  padding: 0 14px 12px;
+  gap: 10px;
 }
 
-/* Left pill — just enough dark to read text, image visible around it */
+/* LEFT pill — content-width only */
 .ps-hero-header__left {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 0 1 auto;
-  background: rgba(10,10,10,0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border-radius: 5px;
-  padding: 5px 9px;
-  align-self: center;
+  gap: 3px;
+  background: rgba(6,6,6,0.58);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 6px;
+  padding: 7px 11px;
 }
 
 .ps-hero-header__brand {
   font-family: var(--font-mono) !important;
-  font-size: 13px !important;
+  font-size: 10px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.28em !important;
+  letter-spacing: 0.3em !important;
   color: var(--yellow) !important;
   line-height: 1 !important;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.8) !important;
 }
 
 .ps-hero-header__welcome {
   font-family: var(--font-mono) !important;
   font-size: 15px !important;
   color: var(--muted-bright) !important;
-  letter-spacing: 0.04em !important;
-  white-space: nowrap !important;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.9) !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.1 !important;
 }
 
 .ps-hero-header__name {
@@ -1449,30 +1445,26 @@ body.dark-mode { /* Already dark, no change needed */ }
   color: var(--white) !important;
 }
 
-/* Right pill — same treatment as left */
+/* RIGHT pill — stacked icons, bottom-right */
 .ps-hero-header__icons {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
-  background: rgba(10,10,10,0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border-radius: 5px;
-  padding: 5px 7px;
-  align-self: center;
+  background: rgba(6,6,6,0.58);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 6px;
+  padding: 7px 8px;
 }
 
-/* Icon button circles — minimal, pill provides the backdrop */
+/* Icon buttons */
 .ps-nav-icon-btn {
-  width: 28px !important;
-  height: 28px !important;
+  width: 30px !important;
+  height: 30px !important;
   border-radius: 50% !important;
   background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(255,255,255,0.2) !important;
   display: flex !important;
   align-items: center !important;
@@ -1480,7 +1472,6 @@ body.dark-mode { /* Already dark, no change needed */ }
   cursor: pointer !important;
   transition: border-color 0.15s !important;
   color: var(--white) !important;
-}
 }
 
 .ps-nav-icon-btn:hover {
@@ -1490,8 +1481,10 @@ body.dark-mode { /* Already dark, no change needed */ }
 
 .ps-nav-icon-btn--avatar {
   color: var(--yellow) !important;
-  border-color: rgba(250,204,21,0.3) !important;
+  border-color: rgba(250,204,21,0.45) !important;
 }
+
+
 
 /* ===== MANIFESTO TICKER ===== */
 .ps-manifesto-ticker {
