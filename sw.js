@@ -1,7 +1,7 @@
 // Planet Strength — Service Worker
 // Hosted at: kylozenzen.github.io/planets-tester/
 
-const CACHE_NAME = 'planet-strength-v4';
+const CACHE_NAME = 'planet-strength-v5';
 const BASE = '/planets-tester';
 
 const ASSETS_TO_CACHE = [
