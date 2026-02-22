@@ -1683,3 +1683,70 @@ body.dark-mode { /* Already dark, no change needed */ }
   border-color: var(--border) !important;
   border-left-color: var(--tint-shoulders) !important;
 }
+
+/* ===== LOADING SCREEN ===== */
+#ps-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  transition: opacity 0.4s ease;
+}
+
+#ps-loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Gym image fills top 65% */
+#ps-loading-img {
+  position: absolute;
+  inset: 0;
+  bottom: 35%;
+  background-image: url('https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center 25%;
+  filter: grayscale(100%) contrast(110%) brightness(60%);
+}
+
+/* Gradient fade from image into black */
+#ps-loading-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, #0a0a0a 100%);
+}
+
+/* Text block in the bottom third */
+#ps-loading-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 24px 60px;
+  width: 100%;
+  text-align: left;
+}
+
+#ps-loading-brand {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #facc15;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+#ps-loading-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}

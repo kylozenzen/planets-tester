@@ -1094,21 +1094,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return null;
     };
 
-    const getCoachMessage = ({ streak, sessionsThisWeek }) => {
-      if (streak >= 4) {
-        return `You're on a ${streak}-day streak. Keep it alive.`;
-      }
-
-      if (sessionsThisWeek === 0) {
-        return 'First session of the week. Set the tone.';
-      }
-
-      if (sessionsThisWeek >= 3) {
-        return `You've logged ${sessionsThisWeek} sessions this week. Momentum is on your side.`;
-      }
-
-      return 'Show up, log the work, and let the numbers build for you.';
-    };
+    // getCoachMessage is defined in data/copy.js
 
     const Card = ({ children, className = '', onClick, style }) => (
       <div
@@ -1402,11 +1388,7 @@ const OnboardingForm = ({ profile, setProfile, onComplete, onBack, step, total }
 
 const OnboardingFlow = ({ profile, setProfile, onFinish }) => {
   const [step, setStep] = useState(0);
-  const steps = [
-    { type: 'intro', title: 'Planet Strength', subhead: 'A workout tracker that stays out of your way', body: 'Log strength and cardio fast.\nSee your progress over time.\nNo programs. No guilt. No noise.', emoji: '🪐' },
-    { type: 'intro', title: 'Progress is you vs. you', subhead: null, body: 'Add a rep. Add a little weight.\nOr just show up again.\nInsights are optional. Tracking always works.', emoji: '💫' },
-    { type: 'form' }
-  ];
+  const steps = COPY_ONBOARDING_STEPS;
 
   const total = steps.length;
 
@@ -2106,13 +2088,13 @@ const Home = ({
       </div>
       <div className="ps-manifesto-ticker">
         <div className="ps-ticker-track">
-          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+          {COPY_TICKER.map((item, i) => (
             <span key={i} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
               <span className="ps-ticker-dot" />
               {item}
             </span>
           ))}
-          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+          {COPY_TICKER.map((item, i) => (
             <span key={`r${i}`} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
               <span className="ps-ticker-dot" />
               {item}
@@ -2604,13 +2586,13 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
       </div>
       <div className="ps-manifesto-ticker">
         <div className="ps-ticker-track">
-          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+          {COPY_TICKER.map((item, i) => (
             <span key={i} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
               <span className="ps-ticker-dot" />
               {item}
             </span>
           ))}
-          {['Trust Nobody', 'Progress is a private conversation between you and the weights', 'No logins. No noise. No participation trophies.', 'Show up. Log the work. Repeat.', 'Built by Nobody', 'Maintenance is a biological requirement. Do the work.', 'Nobody asked. We shipped anyway.', 'Your data stays yours. Always.'].map((item, i) => (
+          {COPY_TICKER.map((item, i) => (
             <span key={`r${i}`} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
               <span className="ps-ticker-dot" />
               {item}
@@ -3501,7 +3483,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                 </button>
 
                                 <div className="text-[10px] workout-accent-muted font-semibold">
-                                  Add sets fast. You can edit or delete any set below.
+                                  
                                 </div>
                               </div>
                               {eq.type === 'barbell' && (
@@ -3524,7 +3506,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                   )}
                                 </div>
                                 {loggedSets.length === 0 ? (
-                                  <div className="text-sm text-gray-500">No sets logged yet.</div>
+                                  <div className="text-sm text-gray-500">{COPY_LOGGER.noSetsYet}</div>
                                 ) : (
                                   <div className="space-y-2">
                                     {loggedSets.map((s, idx) => (
@@ -3602,27 +3584,14 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                 )}
                               </div>
 
-                              <div className="p-3 rounded-2xl bg-white border border-gray-100 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="text-[10px] font-black uppercase text-gray-500">Finish</div>
-                                    <div className="text-[11px] text-gray-500">Auto-saves when you close.</div>
-                                  </div>
-                                  <button
-                                    onClick={handleClose}
-                                    className="px-4 py-2 rounded-lg workout-accent-solid font-bold active:scale-95"
-                                  >
-                                    Workout logged
-                                  </button>
-                                </div>
-                                <label className="text-[11px] text-gray-500 font-semibold">Add note (optional)</label>
-                                <textarea
-                                  value={note}
-                                  onChange={(e) => setNote(e.target.value)}
-                                  placeholder="How did this feel?"
-                                  className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 workout-accent-focus outline-none"
-                                  rows={2}
-                                />
+                              <div className="p-3 rounded-2xl bg-white border border-gray-100">
+                                <button
+                                  onClick={handleClose}
+                                  className="w-full px-4 py-3 rounded-xl workout-accent-solid font-bold text-sm uppercase tracking-widest active:scale-95"
+                                >
+                                  {COPY_LOGGER.finishCta}
+                                </button>
+                              </div>
                               </div>
                             </>
                           )}
@@ -5654,13 +5623,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         if (lastOpen) {
           const diffDays = Math.floor((now - new Date(lastOpen)) / (1000 * 60 * 60 * 24));
           if (diffDays >= 4) {
-            pushMessage('Welcome back. No rush.');
+            pushMessage(COPY_PUSH.welcomeBackLong);
           } else if (diffDays >= 1 && Math.random() < 0.35) {
-            const options = ['Welcome back.', 'Good to see you.', 'Ready when you are.'];
+            const options = COPY_PUSH.welcomeBack;
             pushMessage(options[Math.floor(Math.random() * options.length)]);
           }
         } else if (Math.random() < 0.25) {
-          pushMessage('Ready when you are.');
+          pushMessage(COPY_PUSH.readyDefault);
         }
         storage.set(LAST_OPEN_KEY, now.toISOString());
       }, [loaded]);
@@ -6051,7 +6020,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         if (postWorkoutTimerRef.current) clearTimeout(postWorkoutTimerRef.current);
         postWorkoutTimerRef.current = setTimeout(() => setShowPostWorkout(false), 3600);
         setTab('home');
-        pushMessage('Workout saved.');
+        pushMessage(COPY_PUSH.workoutSaved);
         showToast('Session saved. Future you says thanks.');
       };
 
@@ -6218,7 +6187,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         setActiveEquipment(null);
         setActiveCardio(null);
         setTab('workout');
-        pushMessage('Rest day logged.');
+        pushMessage(COPY_PUSH.restDayLogged);
       };
 
       const undoRestDay = () => {
@@ -6233,7 +6202,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           delete next[todayKey];
           return next;
         });
-        pushMessage('Rest day removed.');
+        pushMessage(COPY_PUSH.restDayRemoved);
       };
 
       const applyTemplatePlan = (plan) => {
@@ -6532,10 +6501,10 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
               const responses = ['More than last time.', 'That’s progress.'];
               pushMessage(responses[Math.floor(Math.random() * responses.length)]);
             } else {
-              pushMessage('Workout saved.');
+              pushMessage(COPY_PUSH.workoutSaved);
             }
           } else {
-            pushMessage('Workout saved.');
+            pushMessage(COPY_PUSH.workoutSaved);
           }
         }
         // Stay on suggested workout screen if user is there
@@ -7045,5 +7014,12 @@ return (
 
     ReactDOM.render(
       React.createElement(App),
-      document.getElementById('root')
+      document.getElementById('root'),
+      () => {
+        const loader = document.getElementById('ps-loading');
+        if (loader) {
+          loader.classList.add('hidden');
+          setTimeout(() => loader.remove(), 450);
+        }
+      }
     );
