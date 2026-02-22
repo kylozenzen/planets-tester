@@ -2765,7 +2765,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 {sessionEntries.map((entry, idx) => {
                   const entryId = entry.exerciseId || entry.id;
                   const entrySetCount = (sessionLogsByExercise[entryId] || []).length;
-                  const categoryClass = resolveCategoryClass(entry.muscleGroup || EQUIPMENT_DB[entryId]?.target || '');
+                  const categoryClass = colorfulExerciseCards ? resolveCategoryClass(entry.muscleGroup || EQUIPMENT_DB[entryId]?.target || '') : '';
                   return (
                   <div
                     key={entryId}

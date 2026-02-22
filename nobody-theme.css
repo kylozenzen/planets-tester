@@ -1373,53 +1373,40 @@ body.dark-mode { /* Already dark, no change needed */ }
    =================================================== */
 
 /* ===== HERO HEADER ===== */
-/* ===== HERO HEADER — social banner style ===== */
+/* ===== HERO HEADER — solid dark, no image ===== */
 .ps-hero-header {
   position: relative;
   flex-shrink: 0;
-  height: 96px;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
+  background: var(--off-black);
   border-bottom: 1px solid var(--border);
 }
 
-/* Full-bleed image — nothing covers it */
-.ps-hero-header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?q=80&w=2070&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center 35%;
-  filter: grayscale(100%) contrast(108%) brightness(88%);
-  z-index: 0;
-}
+.ps-hero-header::before { content: none; }
+.ps-hero-header::after  { content: none; }
 
-.ps-hero-header::after { content: none; }
-
-/* Row pinned to bottom of banner */
+/* Single row: text left, icons right — vertically centered */
 .ps-hero-header__inner {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 2;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  padding: 0 14px 10px;
+  padding: 10px 14px 10px;
   gap: 10px;
 }
 
-/* LEFT pill — content-width only */
+/* LEFT — no pill, just text */
 .ps-hero-header__left {
   display: inline-flex;
   flex-direction: column;
   gap: 2px;
-  background: rgba(6,6,6,0.58);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-radius: 6px;
-  padding: 5px 10px;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .ps-hero-header__brand {
@@ -1434,7 +1421,7 @@ body.dark-mode { /* Already dark, no change needed */ }
 
 .ps-hero-header__welcome {
   font-family: var(--font-mono) !important;
-  font-size: 13px !important;
+  font-size: 15px !important;
   color: var(--muted-bright) !important;
   letter-spacing: 0.02em !important;
   line-height: 1.2 !important;
@@ -1445,33 +1432,33 @@ body.dark-mode { /* Already dark, no change needed */ }
   color: var(--white) !important;
 }
 
-/* RIGHT pill — icons HORIZONTAL now */
+/* RIGHT — no pill, icons horizontal */
 .ps-hero-header__icons {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
-  background: rgba(6,6,6,0.58);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-radius: 6px;
-  padding: 5px 8px;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 /* Icon buttons */
 .ps-nav-icon-btn {
-  width: 28px !important;
-  height: 28px !important;
+  width: 32px !important;
+  height: 32px !important;
   border-radius: 50% !important;
-  background: transparent !important;
-  border: 1px solid rgba(255,255,255,0.2) !important;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition: border-color 0.15s !important;
-  color: var(--white) !important;
+  transition: border-color 0.15s, color 0.15s !important;
+  color: var(--muted-bright) !important;
 }
 
 .ps-nav-icon-btn:hover {
@@ -1650,3 +1637,49 @@ body.dark-mode { /* Already dark, no change needed */ }
 }
 
 /* HERO HEADER height set in main block above */
+
+/* ===== EXERCISE COLOR CODING — left border on session rows ===== */
+/* Override the default flat border with a vivid left accent per muscle group */
+/* Works when colorful exercise cards toggle is ON */
+
+.session-entry-row.category-chest {
+  border-left: 3px solid var(--tint-chest) !important;
+  background: var(--off-black) !important;
+  border-color: var(--border) !important;
+  border-left-color: var(--tint-chest) !important;
+}
+
+.session-entry-row.category-back {
+  border-left: 3px solid var(--tint-back) !important;
+  background: var(--off-black) !important;
+  border-color: var(--border) !important;
+  border-left-color: var(--tint-back) !important;
+}
+
+.session-entry-row.category-legs {
+  border-left: 3px solid var(--tint-legs) !important;
+  background: var(--off-black) !important;
+  border-color: var(--border) !important;
+  border-left-color: var(--tint-legs) !important;
+}
+
+.session-entry-row.category-core {
+  border-left: 3px solid var(--tint-core) !important;
+  background: var(--off-black) !important;
+  border-color: var(--border) !important;
+  border-left-color: var(--tint-core) !important;
+}
+
+.session-entry-row.category-arms {
+  border-left: 3px solid var(--tint-arms) !important;
+  background: var(--off-black) !important;
+  border-color: var(--border) !important;
+  border-left-color: var(--tint-arms) !important;
+}
+
+.session-entry-row.category-shoulders {
+  border-left: 3px solid var(--tint-shoulders) !important;
+  background: var(--off-black) !important;
+  border-color: var(--border) !important;
+  border-left-color: var(--tint-shoulders) !important;
+}
