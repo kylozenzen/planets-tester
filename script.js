@@ -3592,7 +3592,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                   {COPY_LOGGER.finishCta}
                                 </button>
                               </div>
-                              </div>
                             </>
                           )}
                         </div>
