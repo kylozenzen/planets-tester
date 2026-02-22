@@ -1,7 +1,7 @@
 // Planet Strength — Service Worker
 // Hosted at: kylozenzen.github.io/planets-tester/
 
-const CACHE_NAME = 'planet-strength-v5';
+const CACHE_NAME = 'planet-strength-v6';
 const BASE = '/planets-tester';
 
 const ASSETS_TO_CACHE = [
@@ -23,21 +23,19 @@ const ASSETS_TO_CACHE = [
   `${BASE}/hooks/useDebounce.js`,
   `${BASE}/hooks/usePersistedState.js`,
   `${BASE}/components/Icon.jsx`,
-  `${BASE}/icons/icon-16.png`,
-  `${BASE}/icons/icon-32.png`,
-  `${BASE}/icons/icon-48.png`,
-  `${BASE}/icons/icon-72.png`,
-  `${BASE}/icons/icon-96.png`,
-  `${BASE}/icons/icon-128.png`,
-  `${BASE}/icons/icon-144.png`,
-  `${BASE}/icons/icon-152.png`,
-  `${BASE}/icons/icon-180.png`,
-  `${BASE}/icons/icon-192.png`,
-  `${BASE}/icons/icon-256.png`,
-  `${BASE}/icons/icon-384.png`,
-  `${BASE}/icons/icon-512.png`,
-  `${BASE}/icons/icon-32.png?v=2`,
-  `${BASE}/icons/icon-180.png?v=2`,
+  `${BASE}/icons/icon-16.png?v=3`,
+  `${BASE}/icons/icon-32.png?v=3`,
+  `${BASE}/icons/icon-48.png?v=3`,
+  `${BASE}/icons/icon-72.png?v=3`,
+  `${BASE}/icons/icon-96.png?v=3`,
+  `${BASE}/icons/icon-128.png?v=3`,
+  `${BASE}/icons/icon-144.png?v=3`,
+  `${BASE}/icons/icon-152.png?v=3`,
+  `${BASE}/icons/icon-180.png?v=3`,
+  `${BASE}/icons/icon-192.png?v=3`,
+  `${BASE}/icons/icon-256.png?v=3`,
+  `${BASE}/icons/icon-384.png?v=3`,
+  `${BASE}/icons/icon-512.png?v=3`,
 ];
 
 const EXTERNAL_ASSETS = [
