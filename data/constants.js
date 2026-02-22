@@ -158,61 +158,7 @@ const CARDIO_TYPES = {
 };
 
 // ========== MOTIVATIONAL QUOTES ==========
-const homeQuotes = [
-  { text: "Get busy living, or get busy dying.", movie: "The Shawshank Redemption" },
-  { text: "Do. Or do not. There is no try.", movie: "Star Wars: The Empire Strikes Back" },
-  { text: "Why do we fall? So we can learn to pick ourselves up.", movie: "Batman Begins" },
-  { text: "Just keep swimming.", movie: "Finding Nemo" },
-  { text: "Carpe diem. Seize the day, boys.", movie: "Dead Poets Society" }
-];
-
-const postWorkoutQuotes = [
-  { text: "It's what you do right now that makes a difference.", movie: "Black Hawk Down" },
-  { text: "It's not who I am underneath, but what I do that defines me.", movie: "Batman Begins" },
-  { text: "You are what you choose to be.", movie: "The Iron Giant" },
-  { text: "Every man dies. Not every man really lives.", movie: "Braveheart" },
-  { text: "A hero can be anyone.", movie: "The Dark Knight Rises" }
-];
-
-const restDayQuotes = [
-  { text: "There's a time for daring and there's a time for caution.", movie: "Dead Poets Society" },
-  { text: "Tomorrow is another day.", movie: "Gone with the Wind" },
-  { text: "This is the beginning of a beautiful friendship.", movie: "Casablanca" },
-  { text: "Hakuna Matata.", movie: "The Lion King" },
-  { text: "Keep breathing.", movie: "Gravity" }
-];
-
-const motivationalQuotes = [
-  { quote: "Get busy living, or get busy dying.", author: "The Shawshank Redemption" },
-  { quote: "It's not about how hard you hit. It's about how hard you can get hit and keep moving forward.", author: "Rocky Balboa" },
-  { quote: "Do, or do not. There is no try.", author: "Star Wars: The Empire Strikes Back" },
-  { quote: "Why do we fall? So we can learn to pick ourselves up.", author: "Batman Begins" },
-  { quote: "Great men are not born great, they grow great.", author: "The Godfather" },
-  { quote: "You're capable of more than you know.", author: "A League of Their Own" },
-  { quote: "The future is not set. There is no fate but what we make for ourselves.", author: "Terminator 2: Judgment Day" },
-  { quote: "Sometimes it is the people no one expects anything from who do things no one can imagine.", author: "The Imitation Game" },
-  { quote: "It's what you do right now that makes a difference.", author: "Black Hawk Down" },
-  { quote: "Carpe diem. Seize the day, boys. Make your lives extraordinary.", author: "Dead Poets Society" },
-  { quote: "We are who we choose to be. Now choose.", author: "Spider-Man" },
-  { quote: "Our lives are defined by opportunities, even the ones we miss.", author: "The Curious Case of Benjamin Button" },
-  { quote: "Hope is a good thing. Maybe the best of things.", author: "The Shawshank Redemption" },
-  { quote: "You have power over your mind—not outside events. Realize this, and you will find strength.", author: "Gladiator" },
-  { quote: "It ain't about how fast I get there. It ain't about what I see along the way. It's the climb.", author: "Hannah Montana: The Movie" },
-  { quote: "Every man dies. Not every man really lives.", author: "Braveheart" },
-  { quote: "You are what you choose to be.", author: "Iron Giant" },
-  { quote: "It matters not what someone is born, but what they grow to be.", author: "Harry Potter and the Goblet of Fire" },
-  { quote: "Even the smallest person can change the course of the future.", author: "The Lord of the Rings: The Fellowship of the Ring" },
-  { quote: "You mustn't be afraid to dream a little bigger, darling.", author: "Inception" },
-  { quote: "The moment you doubt whether you can fly, you cease forever to be able to do it.", author: "Peter Pan" },
-  { quote: "It's only after we've lost everything that we're free to do anything.", author: "Fight Club" },
-  { quote: "Sometimes you gotta run before you can walk.", author: "Iron Man" },
-  { quote: "No one knows what they're capable of until they try.", author: "Gattaca" },
-  { quote: "What we do in life echoes in eternity.", author: "Gladiator" },
-  { quote: "Your destiny is within you. You just have to be brave enough to see it.", author: "Brave" },
-  { quote: "We are not meant to save the world. We are meant to live in it.", author: "Interstellar" },
-  { quote: "Life moves pretty fast. If you don't stop and look around once in a while, you could miss it.", author: "Ferris Bueller's Day Off" },
-  { quote: "Today, we celebrate our independence!", author: "Independence Day" },
-  { quote: "You have to believe in yourself.", author: "Rocky II" }
-];
+// NOTE: homeQuotes, postWorkoutQuotes, restDayQuotes, motivationalQuotes
+// and getCoachMessage have moved to data/copy.js
 
 // NOTE: MUSCLE_BADGE_CONFIG remains in script.js as it contains JSX elements
