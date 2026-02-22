@@ -1,8 +1,10 @@
+/*
 // Planet Strength — Service Worker
 // Full offline support with proper cache versioning
 // Updated to remove old SVG icon caching and force icon refresh
+*/
 
-const CACHE_NAME = 'planet-strength-v3'; // bump version anytime icons or manifest change
+const CACHE_NAME = 'planet-strength-v3'; // bump when icons/manifest change
 
 const ASSETS_TO_CACHE = [
   '/',
@@ -10,7 +12,9 @@ const ASSETS_TO_CACHE = [
   '/style.css',
   '/nobody-theme.css',
   '/script.js',
-  '/manifest.json',
+
+  // Manifest (versioned for cache-busting)
+  '/manifest.json?v=3',
 
   // Data files
   '/data/constants.js',
@@ -29,24 +33,22 @@ const ASSETS_TO_CACHE = [
   // Components
   '/components/Icon.jsx',
 
-  // Correct PNG icons (removes old SVG references)
+  // Correct PNG icons (no SVGs)
   '/icons/icon-32.png',
   '/icons/icon-180.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
 ];
 
-// Install Event
+// Install: cache app shell
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Activate Event — clears old caches
+// Activate: clear old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -60,11 +62,17 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Event — cache first strategy
+// Fetch: cache-first strategy with navigation fallback
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(event.request).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('/index.html');
+        }
+      });
     })
   );
 });
