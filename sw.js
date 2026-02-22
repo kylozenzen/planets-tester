@@ -1,7 +1,7 @@
 // Planet Strength — Service Worker
 // Caches all app assets on first load for full offline support
 
-const CACHE_NAME = 'planet-strength-v1';
+const CACHE_NAME = 'planet-strength-v2';
 
 const ASSETS_TO_CACHE = [
   '/',
