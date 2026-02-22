@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -29,6 +30,7 @@
 <body class="app-shell">
 
   <!-- Loading screen — hidden once React mounts -->
+
   <div id="ps-loading">
     <div id="ps-loading-img"></div>
     <div id="ps-loading-content">
@@ -41,34 +43,48 @@
   <div id="install-prompt" aria-live="polite"></div>
 
   <!-- Data files (plain JS, no JSX needed) -->
+
   <script src="data/constants.js"></script>
+
   <script src="data/copy.js"></script>
+
   <script src="data/equipment.js"></script>
+
   <script src="data/workoutPlans.js"></script>
 
   <!-- Custom hooks (plain JS, uses global React) -->
+
   <script src="hooks/storage.js"></script>
+
   <script src="hooks/useDebounce.js"></script>
+
   <script src="hooks/usePersistedState.js"></script>
+
   <script src="hooks/useToast.js"></script>
+
   <script src="hooks/useModal.js"></script>
 
   <!-- Contexts (JSX, needs Babel) -->
+
   <script type="text/babel" src="hooks/SettingsContext.jsx"></script>
 
   <!-- Components (JSX, needs Babel) -->
+
   <script type="text/babel" src="components/Icon.jsx"></script>
 
   <!-- App logic -->
+
   <script type="text/babel" data-presets="env,react" src="script.js"></script>
 
   <!-- Service Worker registration -->
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
       });
     }
   </script>
+
 </body>
 </html>
