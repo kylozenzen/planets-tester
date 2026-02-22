@@ -36,6 +36,8 @@ const ASSETS_TO_CACHE = [
 `${BASE}/icons/icon-256.png`,
 `${BASE}/icons/icon-384.png`,
 `${BASE}/icons/icon-512.png`,
+`${BASE}/icons/icon-32.png?v=2`,
+`${BASE}/icons/icon-180.png?v=2`,
 ];
 
 const EXTERNAL_ASSETS = [
