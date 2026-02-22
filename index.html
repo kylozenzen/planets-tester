@@ -7,14 +7,15 @@
   <title>Planet Strength</title>
   <meta name="application-name" content="Planet Strength" />
   <meta name="apple-mobile-web-app-title" content="Planet Strength" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="description" content="Planet Strength is a calm, simple tracker for Today's Workout." />
   <meta name="theme-color" content="#facc15" />
   <meta name="color-scheme" content="dark" />
-  <link id="manifest-placeholder" rel="manifest" href="manifest.json" />
-  <link id="app-icon" rel="icon" href="icons/icon-32.png?v=2" />
-  <link id="apple-touch-icon" rel="apple-touch-icon" href="icons/icon-180.png?v=2" />
+  <link rel="manifest" href="manifest.json?v=3" />
+  <link rel="icon" href="icons/icon-32.png?v=3" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png?v=3" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@1,600;1,700&display=swap" rel="stylesheet">
@@ -30,7 +31,6 @@
 <body class="app-shell">
 
   <!-- Loading screen — hidden once React mounts -->
-
   <div id="ps-loading">
     <div id="ps-loading-img"></div>
     <div id="ps-loading-content">
@@ -43,41 +43,28 @@
   <div id="install-prompt" aria-live="polite"></div>
 
   <!-- Data files (plain JS, no JSX needed) -->
-
   <script src="data/constants.js"></script>
-
   <script src="data/copy.js"></script>
-
   <script src="data/equipment.js"></script>
-
   <script src="data/workoutPlans.js"></script>
 
   <!-- Custom hooks (plain JS, uses global React) -->
-
   <script src="hooks/storage.js"></script>
-
   <script src="hooks/useDebounce.js"></script>
-
   <script src="hooks/usePersistedState.js"></script>
-
   <script src="hooks/useToast.js"></script>
-
   <script src="hooks/useModal.js"></script>
 
   <!-- Contexts (JSX, needs Babel) -->
-
   <script type="text/babel" src="hooks/SettingsContext.jsx"></script>
 
   <!-- Components (JSX, needs Babel) -->
-
   <script type="text/babel" src="components/Icon.jsx"></script>
 
   <!-- App logic -->
-
   <script type="text/babel" data-presets="env,react" src="script.js"></script>
 
   <!-- Service Worker registration -->
-
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
