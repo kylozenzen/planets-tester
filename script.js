@@ -2277,37 +2277,16 @@ const PerfectWeek = ({ show, onClose }) => {
 };
 
     // ========== HOME LOCKER WIDGET ==========
-    const GYM_CONFIGS = [
-      { label: 'Planet Fitness', url: 'planetfitness://', fallback: 'https://www.planetfitness.com' },
-      { label: 'LA Fitness',     url: 'laf://',           fallback: 'https://www.lafitness.com' },
-      { label: 'Anytime Fitness',url: 'anytimefitness://',fallback: 'https://www.anytimefitness.com' },
-      { label: 'Equinox',        url: 'equinox://',       fallback: 'https://www.equinox.com' },
-      { label: 'YMCA',           url: 'ymca://',          fallback: 'https://www.ymca.org' },
-      { label: 'Gold\'s Gym',   url: 'goldsgym://',      fallback: 'https://www.goldsgym.com' },
-      { label: '24 Hour Fitness',url: '24hourfitness://', fallback: 'https://www.24hourfitness.com' },
-      { label: 'Crunch',         url: 'crunch://',        fallback: 'https://www.crunchfitness.com' },
-    ];
-
     const HomeLockerWidget = () => {
       const [combo, setCombo] = usePersistedState('ps_locker_combo', '');
-      const [gymKey, setGymKey] = usePersistedState('ps_locker_gymkey', '');
       const [gymCardImg, setGymCardImg] = usePersistedState('ps_locker_gymcard', '');
       const [expanded, setExpanded] = React.useState(false);
       const [showCombo, setShowCombo] = React.useState(false);
-      const [activePanel, setActivePanel] = React.useState(null); // 'combo' | 'card' | 'gym' | null
+      const [activePanel, setActivePanel] = React.useState(null);
       const [tempCombo, setTempCombo] = React.useState('');
-      const [tempGymKey, setTempGymKey] = React.useState('');
       const [cardFullscreen, setCardFullscreen] = React.useState(false);
       const fileInputRef = React.useRef(null);
       const comboInputRef = React.useRef(null);
-
-      const gymConfig = GYM_CONFIGS.find(g => g.label === gymKey);
-
-      const handleGymLaunch = () => {
-        if (!gymConfig) return;
-        window.location.href = gymConfig.url;
-        setTimeout(() => { window.location.href = gymConfig.fallback; }, 1200);
-      };
 
       const handleInstagram = () => {
         window.location.href = 'instagram://camera';
@@ -2319,19 +2298,11 @@ const PerfectWeek = ({ show, onClose }) => {
         setActivePanel(null);
       };
 
-      const handleSaveGym = () => {
-        setGymKey(tempGymKey);
-        setActivePanel(null);
-      };
-
       const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
-          setGymCardImg(ev.target.result);
-          setActivePanel(null);
-        };
+        reader.onload = (ev) => { setGymCardImg(ev.target.result); setActivePanel(null); };
         reader.readAsDataURL(file);
       };
 
@@ -2341,225 +2312,194 @@ const PerfectWeek = ({ show, onClose }) => {
         }
       }, [activePanel]);
 
-      const isSetup = combo || gymCardImg || gymKey;
+      const dots = [combo, gymCardImg].filter(Boolean).length;
+
+      const ROW_STYLE = {
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '11px 12px',
+        background: 'var(--off-black)',
+        border: '1px solid var(--border)',
+        borderRadius: 6,
+        cursor: 'pointer',
+        transition: 'border-color 0.15s',
+        width: '100%',
+      };
+
+      const LABEL_STYLE = {
+        fontFamily: 'var(--font-mono)',
+        fontSize: 10,
+        textTransform: 'uppercase',
+        letterSpacing: '0.15em',
+        color: 'var(--muted)',
+        fontWeight: 700,
+      };
+
+      const VALUE_STYLE = (active) => ({
+        fontFamily: 'var(--font-mono)',
+        fontSize: 10,
+        color: active ? 'var(--yellow)' : 'var(--muted)',
+        marginLeft: 'auto',
+        letterSpacing: active ? '0.05em' : '0.25em',
+      });
+
+      const iconStyle = (active) => ({
+        flexShrink: 0,
+        color: active ? 'var(--yellow)' : 'var(--muted)',
+      });
 
       return (
-        <div className="home-section-card" style={{ padding: 0, overflow: 'hidden', borderColor: expanded ? 'var(--border-bright)' : 'var(--border)' }}>
+        <div className="home-section-card" style={{ padding: 0, overflow: 'hidden' }}>
 
-          {/* ── HEADER ROW ── */}
+          {/* ── HEADER ── */}
           <button
             type="button"
             onClick={() => { setExpanded(e => !e); if (!expanded) setActivePanel(null); }}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer'
-            }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--muted)', fontWeight: 700 }}>LOCKER</span>
-              {!expanded && isSetup && (
-                <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
-                  {combo && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--yellow)', display: 'inline-block' }} />}
-                  {gymCardImg && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--yellow)', display: 'inline-block' }} />}
-                  {gymKey && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--yellow)', display: 'inline-block' }} />}
+              {!expanded && dots > 0 && (
+                <div style={{ display: 'flex', gap: 3, marginLeft: 2 }}>
+                  {Array.from({ length: dots }).map((_, i) => (
+                    <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--yellow)', display: 'inline-block' }} />
+                  ))}
                 </div>
               )}
             </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-              style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0 }}>
               <path d="m6 9 6 6 6-6"/>
             </svg>
           </button>
 
-          {/* ── EXPANDED CONTENT ── */}
+          {/* ── EXPANDED ── */}
           {expanded && (
-            <div style={{ borderTop: '1px solid var(--border)', padding: '12px' }}>
+            <div style={{ borderTop: '1px solid var(--border)', padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
 
-              {/* ACTION GRID */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: activePanel ? 12 : 0 }}>
-
-                {/* COMBO TILE */}
+              {/* ── ROW 1: LOCKER COMBO ── */}
+              <div>
                 <button
                   type="button"
-                  onClick={() => setActivePanel(activePanel === 'combo' ? null : 'combo')}
                   onPointerDown={() => combo && activePanel !== 'combo' ? setShowCombo(true) : null}
                   onPointerUp={() => setShowCombo(false)}
                   onPointerLeave={() => setShowCombo(false)}
+                  onClick={() => setActivePanel(activePanel === 'combo' ? null : 'combo')}
                   style={{
-                    background: activePanel === 'combo' ? 'rgba(250,204,21,0.08)' : 'var(--off-black)',
-                    border: `1px solid ${activePanel === 'combo' ? 'var(--yellow)' : 'var(--border)'}`,
-                    borderRadius: 6, padding: '12px 10px', cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                    transition: 'border-color 0.15s, background 0.15s'
+                    ...ROW_STYLE,
+                    borderColor: activePanel === 'combo' ? 'var(--yellow)' : 'var(--border)',
+                    background: activePanel === 'combo' ? 'rgba(250,204,21,0.06)' : 'var(--off-black)',
                   }}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={combo ? 'var(--yellow)' : 'var(--muted)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={iconStyle(!!combo)}>
                     <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--muted)', marginBottom: 2 }}>Combo</div>
-                    {combo ? (
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: showCombo ? 13 : 11, fontWeight: 700, color: showCombo ? 'var(--yellow)' : 'var(--muted-bright)', letterSpacing: showCombo ? '0.1em' : '0.3em', transition: 'all 0.15s' }}>
-                        {showCombo ? combo : '● ● ●'}
-                      </div>
-                    ) : (
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)' }}>tap to set</div>
-                    )}
-                  </div>
+                  <span style={LABEL_STYLE}>Combo</span>
+                  <span style={VALUE_STYLE(!!combo && showCombo)}>
+                    {combo
+                      ? (showCombo ? combo : '● ● ●')
+                      : <span style={{ color: 'var(--border-bright)', fontSize: 9 }}>not set</span>
+                    }
+                  </span>
                 </button>
 
-                {/* GYM CARD TILE */}
+                {activePanel === 'combo' && (
+                  <div style={{ marginTop: 6, background: 'var(--black)', border: '1px solid var(--yellow)', borderRadius: 6, padding: '10px 12px' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--yellow)', marginBottom: 8 }}>Locker combination</div>
+                    <input
+                      ref={comboInputRef}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9\-]*"
+                      placeholder="e.g.  23 - 5 - 17"
+                      value={tempCombo}
+                      onChange={e => setTempCombo(e.target.value)}
+                      style={{
+                        width: '100%', background: 'var(--off-black)',
+                        border: '1px solid var(--border-bright)', borderRadius: 4,
+                        padding: '10px 12px', fontFamily: 'var(--font-mono)',
+                        fontSize: 22, fontWeight: 700, textAlign: 'center',
+                        letterSpacing: '0.2em', color: 'var(--white)', outline: 'none',
+                        marginBottom: 8,
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={handleSaveCombo} style={{ flex: 1, background: 'var(--yellow)', color: '#000', border: 'none', borderRadius: 4, padding: '8px 0', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', cursor: 'pointer' }}>Save</button>
+                      {combo && <button onClick={() => { setCombo(''); setActivePanel(null); }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 9, cursor: 'pointer' }}>Clear</button>}
+                      <button onClick={() => setActivePanel(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 9, cursor: 'pointer' }}>✕</button>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', textAlign: 'center', marginTop: 8, letterSpacing: '0.1em' }}>Hold the row above to peek at your combo</div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── ROW 2: GYM CARD ── */}
+              <div>
                 <button
                   type="button"
                   onClick={() => gymCardImg ? setCardFullscreen(true) : setActivePanel(activePanel === 'card' ? null : 'card')}
                   style={{
-                    background: gymCardImg ? 'var(--off-black)' : (activePanel === 'card' ? 'rgba(250,204,21,0.08)' : 'var(--off-black)'),
-                    border: `1px solid ${activePanel === 'card' ? 'var(--yellow)' : 'var(--border)'}`,
-                    borderRadius: 6, padding: gymCardImg ? 6 : '12px 10px', cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                    overflow: 'hidden', position: 'relative',
-                    transition: 'border-color 0.15s, background 0.15s'
+                    ...ROW_STYLE,
+                    borderColor: activePanel === 'card' ? 'var(--yellow)' : 'var(--border)',
+                    background: activePanel === 'card' ? 'rgba(250,204,21,0.06)' : 'var(--off-black)',
+                    overflow: 'hidden',
                   }}
                 >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={iconStyle(!!gymCardImg)}>
+                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                  </svg>
+                  <span style={LABEL_STYLE}>Gym Card</span>
                   {gymCardImg ? (
-                    <>
-                      <img src={gymCardImg} alt="Gym card" style={{ width: '100%', height: 70, objectFit: 'cover', borderRadius: 4, display: 'block' }} />
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--muted)', paddingBottom: 2 }}>Tap to scan</div>
-                    </>
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <img src={gymCardImg} alt="" style={{ height: 28, width: 44, objectFit: 'cover', borderRadius: 3, opacity: 0.85 }} />
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--yellow)', letterSpacing: '0.1em' }}>tap to scan</span>
+                    </div>
                   ) : (
-                    <>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-                      </svg>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--muted)', marginBottom: 2 }}>Gym Card</div>
-                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)' }}>tap to set</div>
-                      </div>
-                    </>
+                    <span style={{ ...VALUE_STYLE(false), letterSpacing: '0.05em' }}>
+                      <span style={{ color: 'var(--border-bright)', fontSize: 9 }}>not set</span>
+                    </span>
                   )}
                 </button>
 
-                {/* GYM APP TILE */}
-                <button
-                  type="button"
-                  onClick={() => gymKey ? handleGymLaunch() : setActivePanel(activePanel === 'gym' ? null : 'gym')}
-                  style={{
-                    background: activePanel === 'gym' ? 'rgba(250,204,21,0.08)' : 'var(--off-black)',
-                    border: `1px solid ${activePanel === 'gym' ? 'var(--yellow)' : (gymKey ? 'var(--border-bright)' : 'var(--border)')}`,
-                    borderRadius: 6, padding: '12px 10px', cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                    transition: 'border-color 0.15s, background 0.15s'
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gymKey ? 'var(--yellow)' : 'var(--muted)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8Z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-                  </svg>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--muted)', marginBottom: 2 }}>Gym App</div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: gymKey ? 10 : 9, fontWeight: gymKey ? 700 : 400, color: gymKey ? 'var(--yellow)' : 'var(--muted)' }}>
-                      {gymKey || 'tap to set'}
+                {activePanel === 'card' && (
+                  <div style={{ marginTop: 6, background: 'var(--black)', border: '1px solid var(--yellow)', borderRadius: 6, padding: '10px 12px' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--yellow)', marginBottom: 6 }}>Membership card screenshot</div>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 10 }}>
+                      Screenshot your gym's membership screen (Club Pass, barcode, QR code), then save it here. Tap the row to go full-screen for scanning.
+                    </p>
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => fileInputRef.current?.click()} style={{ flex: 1, background: 'var(--yellow)', color: '#000', border: 'none', borderRadius: 4, padding: '8px 0', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', cursor: 'pointer' }}>Choose Screenshot</button>
+                      {gymCardImg && <button onClick={() => { setGymCardImg(''); setActivePanel(null); }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 9, cursor: 'pointer' }}>Clear</button>}
+                      <button onClick={() => setActivePanel(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 10px', fontFamily: 'var(--font-mono)', fontSize: 9, cursor: 'pointer' }}>✕</button>
                     </div>
                   </div>
-                </button>
-
-                {/* INSTAGRAM TILE */}
-                <button
-                  type="button"
-                  onClick={handleInstagram}
-                  style={{
-                    background: 'var(--off-black)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 6, padding: '12px 10px', cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                    transition: 'border-color 0.15s'
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    stroke="url(#igGrad)">
-                    <defs>
-                      <linearGradient id="igGrad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#833ab4"/>
-                        <stop offset="50%" stopColor="#fd1d1d"/>
-                        <stop offset="100%" stopColor="#fcb045"/>
-                      </linearGradient>
-                    </defs>
-                    <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                  </svg>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--muted)', marginBottom: 2 }}>Instagram</div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)' }}>post the proof</div>
-                  </div>
-                </button>
-
+                )}
               </div>
 
-              {/* ── INLINE PANELS ── */}
-
-              {activePanel === 'combo' && (
-                <div style={{ background: 'var(--black)', border: '1px solid var(--yellow)', borderRadius: 6, padding: 12 }}>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--yellow)', marginBottom: 8 }}>Set Locker Combo</div>
-                  <input
-                    ref={comboInputRef}
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder="e.g. 23-5-17"
-                    value={tempCombo}
-                    onChange={e => setTempCombo(e.target.value)}
-                    style={{
-                      width: '100%', background: 'var(--off-black)', border: '1px solid var(--border-bright)',
-                      borderRadius: 4, padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: 20,
-                      fontWeight: 700, textAlign: 'center', letterSpacing: '0.15em', color: 'var(--white)',
-                      outline: 'none', marginBottom: 8
-                    }}
-                  />
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={handleSaveCombo} style={{ flex: 1, background: 'var(--yellow)', color: '#000', border: 'none', borderRadius: 4, padding: '8px 0', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', cursor: 'pointer' }}>Save</button>
-                    {combo && <button onClick={() => { setCombo(''); setActivePanel(null); }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, cursor: 'pointer' }}>Clear</button>}
-                    <button onClick={() => setActivePanel(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, cursor: 'pointer' }}>✕</button>
-                  </div>
-                </div>
-              )}
-
-              {activePanel === 'card' && (
-                <div style={{ background: 'var(--black)', border: '1px solid var(--yellow)', borderRadius: 6, padding: 12 }}>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--yellow)', marginBottom: 8 }}>Save Gym Card</div>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)', lineHeight: 1.5, marginBottom: 10 }}>Screenshot your membership card (e.g. Planet Fitness Club Pass), then upload it here. We'll store it locally for quick scanning.</p>
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => fileInputRef.current?.click()} style={{ flex: 1, background: 'var(--yellow)', color: '#000', border: 'none', borderRadius: 4, padding: '10px 0', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', cursor: 'pointer' }}>Choose Screenshot</button>
-                    {gymCardImg && <button onClick={() => { setGymCardImg(''); setActivePanel(null); }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, cursor: 'pointer' }}>Clear</button>}
-                    <button onClick={() => setActivePanel(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, cursor: 'pointer' }}>✕</button>
-                  </div>
-                </div>
-              )}
-
-              {activePanel === 'gym' && (
-                <div style={{ background: 'var(--black)', border: '1px solid var(--yellow)', borderRadius: 6, padding: 12 }}>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--yellow)', marginBottom: 8 }}>Select Gym</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                    {GYM_CONFIGS.map(g => (
-                      <button key={g.label} onClick={() => setTempGymKey(g.label)}
-                        style={{
-                          fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700,
-                          padding: '5px 10px', borderRadius: 999,
-                          background: tempGymKey === g.label ? 'var(--yellow)' : 'var(--off-black)',
-                          color: tempGymKey === g.label ? '#000' : 'var(--muted)',
-                          border: `1px solid ${tempGymKey === g.label ? 'var(--yellow)' : 'var(--border)'}`,
-                          cursor: 'pointer', transition: 'all 0.15s'
-                        }}
-                      >{g.label}</button>
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={handleSaveGym} disabled={!tempGymKey} style={{ flex: 1, background: tempGymKey ? 'var(--yellow)' : 'var(--border)', color: '#000', border: 'none', borderRadius: 4, padding: '8px 0', fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', cursor: tempGymKey ? 'pointer' : 'default' }}>Save</button>
-                    {gymKey && <button onClick={() => { setGymKey(''); setActivePanel(null); }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, cursor: 'pointer' }}>Clear</button>}
-                    <button onClick={() => setActivePanel(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 4, padding: '8px 12px', fontFamily: 'var(--font-mono)', fontSize: 10, cursor: 'pointer' }}>✕</button>
-                  </div>
-                </div>
-              )}
+              {/* ── ROW 3: INSTAGRAM ── */}
+              <button
+                type="button"
+                onClick={handleInstagram}
+                style={{ ...ROW_STYLE }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <defs>
+                    <linearGradient id="igG" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#833ab4"/>
+                      <stop offset="50%" stopColor="#fd1d1d"/>
+                      <stop offset="100%" stopColor="#fcb045"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#igG)"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" stroke="url(#igG)"/>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="url(#igG)"/>
+                </svg>
+                <span style={LABEL_STYLE}>Post the Proof</span>
+                <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '0.1em' }}>open camera →</span>
+              </button>
 
             </div>
           )}
@@ -2568,22 +2508,17 @@ const PerfectWeek = ({ show, onClose }) => {
           {cardFullscreen && (
             <div
               onClick={() => setCardFullscreen(false)}
-              style={{
-                position: 'fixed', inset: 0, zIndex: 9998,
-                background: 'rgba(0,0,0,0.96)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: 20
-              }}
+              style={{ position: 'fixed', inset: 0, zIndex: 9998, background: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}
             >
-              <img src={gymCardImg} alt="Gym card" style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: 12, objectFit: 'contain', boxShadow: '0 0 60px rgba(0,0,0,0.8)' }} />
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)', marginTop: 20 }}>Tap anywhere to close</p>
-              {gymCardImg && (
+              <img src={gymCardImg} alt="Gym card" style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} />
+              <div style={{ display: 'flex', gap: 12, marginTop: 20, alignItems: 'center' }}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); setActivePanel('card'); setCardFullscreen(false); setExpanded(true); }}
-                  style={{ marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)', background: 'transparent', border: '1px solid var(--border)', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                  onClick={e => { e.stopPropagation(); setActivePanel('card'); setCardFullscreen(false); setExpanded(true); }}
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
                   Replace
                 </button>
-              )}
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>tap anywhere to close</span>
+              </div>
             </div>
           )}
 
