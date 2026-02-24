@@ -4736,6 +4736,21 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [aboutOpen, setAboutOpen] = useState(false);
       const [dataToolsOpen, setDataToolsOpen] = useState(false);
       const [advancedOpen, setAdvancedOpen] = useState(false);
+      const [devUnlocked, setDevUnlocked] = useState(false);
+      const [devTapCount, setDevTapCount] = useState(0);
+      const devTapRef = useRef(null);
+
+      const handleDevTap = () => {
+        const next = devTapCount + 1;
+        setDevTapCount(next);
+        if (devTapRef.current) clearTimeout(devTapRef.current);
+        devTapRef.current = setTimeout(() => setDevTapCount(0), 1500);
+        if (next >= 5) {
+          setDevUnlocked(true);
+          setDevTapCount(0);
+          clearTimeout(devTapRef.current);
+        }
+      };
 
       const accentOptions = [
         { id: 'red', label: 'Red', color: '#ef4444' },
@@ -4907,6 +4922,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               <button
                 onClick={() => setAdvancedOpen(prev => !prev)}
                 className="w-full flex items-center justify-between text-left"
+                style={{ display: devUnlocked ? 'flex' : 'none' }}
               >
                 <div>
                   <div className="text-xs font-bold text-gray-500 uppercase">Developer options</div>
@@ -4914,7 +4930,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                 </div>
                 <Icon name="ChevronDown" className={`w-4 h-4 text-gray-400 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
               </button>
-              {advancedOpen && (
+              {devUnlocked && advancedOpen && (
                 <div className="space-y-3 animate-expand">
                   <ToggleRow
                     icon="BarChart"
@@ -4960,17 +4976,27 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               </button>
               {aboutOpen && (
                 <div className="space-y-3 animate-expand">
-                  <div className="text-sm text-gray-600">A calm, no-noise workout tracker focused on simple logging and steady progress.</div>
-                  <div className="text-xs text-gray-500">Version {APP_VERSION}</div>
+                  <div className="text-sm text-gray-600">No logins. No noise. No participation trophies. Just logs of every pound you've moved. Built by Nobody Studios, San Antonio TX.</div>
+                  <div
+                    className="text-xs text-gray-400 font-mono cursor-default select-none"
+                    onClick={handleDevTap}
+                    title=""
+                  >
+                    Version {APP_VERSION}{devTapCount > 0 && devTapCount < 5 ? ` · ${devTapCount}/5` : ''}{devUnlocked ? ' · 🔓' : ''}
+                    {' '}— Your data stays on your device. Always.
+                  </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <a href={`mailto:${FEEDBACK_EMAIL}`} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
-                      Send feedback
+                    <a href={`mailto:${FEEDBACK_EMAIL}?subject=Planet Strength Feedback (v${APP_VERSION})`} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
+                      🐛 Report a bug or send feedback
+                    </a>
+                    <a href={`mailto:${FEEDBACK_EMAIL}?subject=Planet Strength — Need Help`} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
+                      💬 Get help — we actually reply
                     </a>
                     <a href={FOLLOW_URL} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
-                      Follow updates
+                      📡 Follow Nobody Studios for updates
                     </a>
                     <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
-                      Support the app
+                      ⚡ Support the app (optional, no pressure)
                     </a>
                   </div>
                 </div>

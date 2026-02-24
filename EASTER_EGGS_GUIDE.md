@@ -1,6 +1,6 @@
 # 🎉 Planet Strength Easter Eggs Guide
 
-All 7 Easter eggs are now live! Here's how to trigger each one:
+All 8 Easter eggs are now live! Here's how to trigger each one:
 
 ## 1. 😎 Kung Fu (Matrix)
 **How:** Tap "Add" on the "Kung Fu" workout in the exercise list
@@ -42,6 +42,12 @@ All 7 Easter eggs are now live! Here's how to trigger each one:
 **Duration:** 5 seconds
 **Note:** Only shows once per achievement (won't repeat same day)
 
+## 8. 🔓 Developer Mode
+**How:** Tap the version number in Settings → About **5 times**
+**Effect:** Unlocks "Developer Options" section with demo data toggle
+**Indicator:** Version number shows tap count (e.g. "v1.0.0 · 3/5") then "🔓" when unlocked
+**Note:** Resets on app reload — intentionally not persistent
+
 ---
 
 ## Quick Reference
@@ -59,6 +65,9 @@ All 7 Easter eggs are now live! Here's how to trigger each one:
 
 **During Workout:**
 - Log 69/420 weight → Nice
+
+**In Settings → About:**
+- Tap version number 5x → Developer Mode 🔓
 
 **Automatic:**
 - 7 consecutive workout days → Perfect Week
