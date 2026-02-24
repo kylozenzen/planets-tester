@@ -1051,33 +1051,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       );
     };
 
-    const LockedInGate = ({ onLockedIn, onBrowse }) => (
-      <div className="locked-in-gate">
-        <div className="locked-in-card card-enter">
-          <h1 className="locked-in-title">Ready to lock in?</h1>
-          <p className="locked-in-text">
-            Turn this session into a promise. Once you tap in, you're here to work.
-          </p>
-          <div className="locked-in-actions">
-            <button
-              type="button"
-              className="btn-primary ps-tap"
-              onClick={onLockedIn}
-            >
-              I'm Locked In
-            </button>
-            <button
-              type="button"
-              className="btn-secondary-flat ps-tap"
-              onClick={onBrowse}
-            >
-              I'm Just Browsing
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-
     const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
       if (!isOpen) return null;
 
@@ -4109,15 +4082,13 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROFILE TAB ==========
-    const ProfileView = ({ settings, setSettings, themeMode, darkVariant, setThemeMode, setDarkVariant, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
+    const ProfileView = ({ settings, setSettings, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
       const [workoutOpen, setWorkoutOpen] = useState(false);
       const [appearanceOpen, setAppearanceOpen] = useState(false);
       const [analyticsOpen, setAnalyticsOpen] = useState(false);
       const [learnOpen, setLearnOpen] = useState(false);
       const [aboutOpen, setAboutOpen] = useState(false);
       const [dataToolsOpen, setDataToolsOpen] = useState(false);
-      const [advancedOpen, setAdvancedOpen] = useState(false);
-      const [devUnlocked, setDevUnlocked] = useState(false);
       const [devTapCount, setDevTapCount] = useState(0);
       const devTapRef = useRef(null);
 
@@ -4126,33 +4097,65 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         setDevTapCount(next);
         if (devTapRef.current) clearTimeout(devTapRef.current);
         devTapRef.current = setTimeout(() => setDevTapCount(0), 1500);
-        if (next >= 5) {
-          setDevUnlocked(true);
-          setDevTapCount(0);
-          clearTimeout(devTapRef.current);
-        }
       };
-
-      const accentOptions = [
-        { id: 'red', label: 'Red', color: '#ef4444' },
-        { id: 'yellow', label: 'Yellow', color: '#f59e0b' },
-        { id: 'blue', label: 'Blue', color: '#3b82f6' },
-      ];
-      const isDarkMode = themeMode === 'dark';
 
       const learnItems = [
         {
-          title: 'How Insights Work',
-          body: 'Insights are based only on your own history. No demographics, no comparisons—just you vs. you.'
+          title: 'How to add weight',
+          body: 'Add 5 lbs to upper body lifts and 10 lbs to lower body lifts when a weight feels easy for 3 sets. Small jumps add up fast.'
         },
         {
-          title: 'Staying Consistent',
-          body: 'Log a little each session. Consistency beats intensity.'
+          title: 'Reps vs. weight — what matters more?',
+          body: 'Both. A good rule: if you can do more than 12 reps easily, increase the weight. If you can\'t finish 6, lower it. Stay in the 6–12 range for most strength work.'
         },
         {
-          title: 'Editing a Log',
-          body: 'Tap a set to edit it, or delete if it was an off day.'
-        }
+          title: 'Rest between sets',
+          body: 'For strength (heavy weight, low reps): rest 2–3 minutes. For hypertrophy (moderate weight, 8–12 reps): rest 60–90 seconds. Shorter rest = more cardio effect.'
+        },
+        {
+          title: 'Push / Pull / Legs',
+          body: 'Planet Strength rotates Push, Pull, and Legs automatically. Push = chest, shoulders, triceps. Pull = back, biceps. Legs = quads, hamstrings, glutes. This split gives each muscle group 48 hours of recovery.'
+        },
+        {
+          title: 'What is progressive overload?',
+          body: 'It\'s the only thing that makes you stronger. Add a little more weight or one more rep each week. Your body adapts to stress — if the stress never increases, neither do you.'
+        },
+        {
+          title: 'How many sets should I do?',
+          body: '3 working sets per exercise is the sweet spot for most people. One warm-up set at a lower weight, then 3 sets at your working weight. More isn\'t always better — recovery matters.'
+        },
+        {
+          title: 'Compound vs. isolation exercises',
+          body: 'Compound moves (squat, bench, deadlift, row) work multiple muscle groups and give you the most return for your time. Isolations (curls, extensions) are finishing work. Lead with compounds.'
+        },
+        {
+          title: 'Why Planet Fitness works for strength',
+          body: 'Despite the reputation, Planet Fitness has everything you need: dumbbells up to 75–80 lbs, machines for every muscle group, and cables. You can build serious strength here if you log your work and stay consistent.'
+        },
+        {
+          title: 'Logging your sets',
+          body: 'Tap an exercise to open the logging panel. Enter weight and reps, then tap the checkmark. Your best set is tracked automatically and used to calculate your Strength Score.'
+        },
+        {
+          title: 'What is my Strength Score?',
+          body: 'Your Strength Score is a 0–100 number that reflects how much progress you\'ve made across all exercises you\'ve logged. It\'s you vs. you — not a comparison to anyone else.'
+        },
+        {
+          title: 'Using Templates',
+          body: 'Templates are pre-built Push, Pull, and Legs workouts. Tap Templates on the home screen to start one. The app will automatically queue up the right exercises for today\'s rotation.'
+        },
+        {
+          title: 'The Locker',
+          body: 'Store your locker combination and gym card screenshot in the Locker widget on the home screen. Your combo is hidden behind a hold-to-peek gesture. Your gym card opens full-screen for scanning at the front desk.'
+        },
+        {
+          title: 'Rest days',
+          body: 'Tap the moon icon in the top right to log a rest day. Rest is not a failure — it\'s when your muscles actually grow. The app tracks rest days in your streak so an intentional rest doesn\'t break your consistency.'
+        },
+        {
+          title: 'Your data never leaves your phone',
+          body: 'Everything is stored locally on your device. No account, no cloud sync, no server. Use the Export feature in Data Tools to back up your history as a JSON file you can restore anytime.'
+        },
       ];
 
       return (
@@ -4185,42 +4188,12 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               {appearanceOpen && (
                 <div className="space-y-3 animate-expand">
                   <ToggleRow
-                    icon="Moon"
-                    title="Dark Mode"
-                    subtitle="Low-glare interface"
-                    enabled={isDarkMode}
-                    onToggle={(next) => setThemeMode(next ? 'dark' : 'light')}
-                  />
-                  <ToggleRow
                     icon="Sparkles"
                     title="Colorful exercise cards"
                     subtitle="Show muscle group colors on exercise cards"
                     enabled={colorfulExerciseCards}
                     onToggle={onToggleColorfulExerciseCards}
                   />
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Dark mode accent</div>
-                    <div className="flex gap-2">
-                      {accentOptions.map(opt => (
-                        <button
-                          key={opt.id}
-                          onClick={() => isDarkMode && setDarkVariant(opt.id)}
-                          disabled={!isDarkMode}
-                          aria-disabled={!isDarkMode}
-                          className={`flex-1 accent-pill ${isDarkMode && darkVariant === opt.id ? 'active' : ''} rounded-xl p-2 flex items-center gap-2 ${isDarkMode ? '' : 'opacity-50 pointer-events-none'}`}
-                        >
-                          <span className="w-6 h-6 rounded-lg" style={{ background: opt.color }}></span>
-                          <span className="text-sm font-semibold text-gray-800">{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mt-3">Theme preview</div>
-                    <div className="theme-preview">
-                      <div className="preview-btn">Primary</div>
-                      <div className="preview-chip">Chip</div>
-                      <div className="preview-card">Card border</div>
-                    </div>
-                  </div>
                 </div>
               )}
             </Card>
@@ -4248,13 +4221,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     subtitle="Offer a quick nudge for running logs"
                     enabled={settings.smartSuggestionsEnabled !== false}
                     onToggle={(next) => setSettings({ ...settings, smartSuggestionsEnabled: next })}
-                  />
-                  <ToggleRow
-                    icon="Lock"
-                    title="Locked-In Mode"
-                    subtitle="Show a focus gate every time you open the app."
-                    enabled={settings.lockedInMode}
-                    onToggle={(next) => setSettings({ ...settings, lockedInMode: next })}
                   />
                   <ToggleRow
                     icon="List"
@@ -4301,31 +4267,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
 
             <Card className="space-y-3">
               <button
-                onClick={() => setAdvancedOpen(prev => !prev)}
-                className="w-full flex items-center justify-between text-left"
-                style={{ display: devUnlocked ? 'flex' : 'none' }}
-              >
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase">Developer options</div>
-                  <div className="text-sm text-gray-500">Advanced preview tools</div>
-                </div>
-                <Icon name="ChevronDown" className={`w-4 h-4 text-gray-400 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {devUnlocked && advancedOpen && (
-                <div className="space-y-3 animate-expand">
-                  <ToggleRow
-                    icon="BarChart"
-                    title="Use Demo Data (30 days)"
-                    subtitle="Preview analytics and patterns with seeded data"
-                    enabled={settings.useDemoData}
-                    onToggle={(next) => setSettings({ ...settings, useDemoData: next })}
-                  />
-                </div>
-              )}
-            </Card>
-
-            <Card className="space-y-3">
-              <button
                 onClick={() => setLearnOpen(prev => !prev)}
                 className="w-full flex items-center justify-between text-left"
               >
@@ -4363,7 +4304,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     onClick={handleDevTap}
                     title=""
                   >
-                    Version {APP_VERSION}{devTapCount > 0 && devTapCount < 5 ? ` · ${devTapCount}/5` : ''}{devUnlocked ? ' · 🔓' : ''}
+                    Version {APP_VERSION}{devTapCount > 0 && devTapCount < 5 ? ` · ${devTapCount}/5` : ''}
                     {' '}— Your data stays on your device. Always.
                   </div>
                   <div className="grid grid-cols-1 gap-2">
@@ -5233,8 +5174,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       });
 
       const [settings, setSettings] = useState({ ...SETTINGS_DEFAULTS });
-      const [themeMode, setThemeModeState] = useState('light');
-      const [darkVariant, setDarkVariantState] = useState('blue');
       const [colorfulExerciseCards, setColorfulExerciseCards] = useState(() => {
         try {
           const raw = localStorage.getItem('ps_colorfulExerciseCards');
@@ -5294,7 +5233,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [dismissedDraftDate, setDismissedDraftDate] = useState(null);
       const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * motivationalQuotes.length));
       const [generatorOptions, setGeneratorOptions] = useState({ goal: '', duration: 45, equipment: '' });
-      const [lockedInDismissed, setLockedInDismissed] = useState(false);
 
       useEffect(() => {
         if (!DEBUG_LOG) return;
@@ -5579,12 +5517,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         };
       }, [sessionStartNotice]);
 
-      useEffect(() => {
-        if (!settings.lockedInMode) {
-          setLockedInDismissed(false);
-        }
-      }, [settings.lockedInMode]);
-
       const pushMessage = (text) => {
         if (!text || text === 'Workout saved.') return;
         setInlineMessage(text);
@@ -5644,37 +5576,8 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         storage.set(LAST_OPEN_KEY, now.toISOString());
       }, [loaded]);
 
-      const applyTheme = () => {
-        const savedMode = storage.get(THEME_MODE_KEY, 'light');
-        const storedVariant = storage.get(DARK_VARIANT_KEY, 'blue');
-        const nextVariant = storedVariant || 'blue';
-        const themeClasses = ['theme-red', 'theme-yellow', 'theme-blue'];
-        document.body.classList.remove(...themeClasses);
-        if (savedMode === 'dark') {
-          document.body.classList.add('dark-mode');
-          document.body.classList.add(`theme-${nextVariant}`);
-        } else {
-          document.body.classList.remove('dark-mode');
-        }
-        setThemeModeState(savedMode);
-        setDarkVariantState(nextVariant);
-      };
-
-      const setThemeMode = (mode) => {
-        storage.set(THEME_MODE_KEY, mode);
-        if (!storage.get(DARK_VARIANT_KEY, null)) {
-          storage.set(DARK_VARIANT_KEY, 'blue');
-        }
-        applyTheme();
-      };
-
-      const setDarkVariant = (variant) => {
-        storage.set(DARK_VARIANT_KEY, variant);
-        applyTheme();
-      };
-
       useEffect(() => {
-        applyTheme();
+        const effectiveData = true; // theme application removed
       }, []);
 
       const effectiveData = useMemo(() => getEffectiveData({
@@ -5744,8 +5647,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         () => getCoachMessage({ streak, sessionsThisWeek }),
         [streak, sessionsThisWeek]
       );
-      const shouldShowLockedInGate = settings.lockedInMode && !lockedInDismissed;
-
       const recordDayEntry = (dayKey, type = 'workout', extras = {}) => {
         setDayEntries(prev => {
           const existing = prev[dayKey];
@@ -6786,12 +6687,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 return (
         <>
           <InstallPrompt />
-          {shouldShowLockedInGate && (
-            <LockedInGate
-              onLockedIn={() => setLockedInDismissed(true)}
-              onBrowse={() => setLockedInDismissed(true)}
-            />
-          )}
           <div className="app-root bg-gray-50 flex flex-col overflow-hidden">
             <div className="app-main">
               <InlineMessage message={tab === 'home' && inlineMessage === 'Workout saved.' ? null : inlineMessage} />
@@ -6919,10 +6814,6 @@ return (
                   <ProfileView
                     settings={settings}
                     setSettings={setSettings}
-                    themeMode={themeMode}
-                    darkVariant={darkVariant}
-                    setThemeMode={setThemeMode}
-                    setDarkVariant={setDarkVariant}
                     colorfulExerciseCards={colorfulExerciseCards}
                     onToggleColorfulExerciseCards={setColorfulExerciseCards}
                     onBack={() => setTab('home')}
