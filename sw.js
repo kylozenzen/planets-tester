@@ -1,7 +1,7 @@
 // Planet Strength — Service Worker
 // Hosted at: kylozenzen.github.io/planets-tester/
 
-const CACHE_NAME = 'planet-strength-v6';
+const CACHE_NAME = 'planet-strength-v9';
 const BASE = '/planets-tester';
 
 const ASSETS_TO_CACHE = [
@@ -23,6 +23,9 @@ const ASSETS_TO_CACHE = [
   `${BASE}/hooks/useDebounce.js`,
   `${BASE}/hooks/usePersistedState.js`,
   `${BASE}/components/Icon.jsx`,
+  `${BASE}/components/onboarding.js`,
+  `${BASE}/components/easter-eggs.js`,
+  `${BASE}/data/search.js`,
   `${BASE}/icons/icon-16.png?v=3`,
   `${BASE}/icons/icon-32.png?v=3`,
   `${BASE}/icons/icon-48.png?v=3`,

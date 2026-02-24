@@ -22,11 +22,20 @@
   <link rel="stylesheet" href="style.css" />
   <script>tailwind = { disableWarning: true }</script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+
   <!-- Nobody Studios Theme — must come AFTER Tailwind to override -->
   <link rel="stylesheet" href="nobody-theme.css" />
-  <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="app-shell">
 
@@ -60,6 +69,11 @@
 
   <!-- Components (JSX, needs Babel) -->
   <script type="text/babel" src="components/Icon.jsx"></script>
+  <script type="text/babel" src="components/onboarding.js"></script>
+  <script type="text/babel" src="components/easter-eggs.js"></script>
+
+  <!-- Data utilities (plain JS, no JSX needed) -->
+  <script src="data/search.js"></script>
 
   <!-- App logic -->
   <script type="text/babel" data-presets="env,react" src="script.js"></script>

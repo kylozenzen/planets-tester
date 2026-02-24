@@ -1474,51 +1474,49 @@ body.dark-mode { /* Already dark, no change needed */ }
 
 
 /* ===== MANIFESTO TICKER ===== */
-.ps-manifesto-ticker {
-  overflow: hidden;
-  border-bottom: 1px solid var(--border);
+.ps-manifesto-list {
+  margin-top: 8px;
+  padding: 20px 16px 28px;
+  border-top: 1px solid var(--border);
   background: var(--black);
-  height: 26px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  border-radius: var(--radius);
 }
 
-.ps-ticker-track {
-  display: flex;
-  animation: psTicker 40s linear infinite;
-  white-space: nowrap;
-}
-
-.ps-ticker-track:hover { animation-play-state: paused; }
-
-@keyframes psTicker {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-.ps-ticker-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 18px;
+.ps-manifesto-list__label {
   font-family: var(--font-mono);
   font-size: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--muted);
-  white-space: nowrap;
+  letter-spacing: 0.22em;
+  color: var(--yellow);
+  margin-bottom: 14px;
 }
 
-.ps-ticker-item--hi { color: var(--yellow); }
+.ps-manifesto-list__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 5px 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  line-height: 1.5;
+}
 
-.ps-ticker-dot {
+.ps-manifesto-list__item--hi {
+  color: var(--yellow);
+}
+
+.ps-manifesto-list__dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
   background: var(--yellow);
   flex-shrink: 0;
+  margin-top: 4px;
 }
+
 
 /* ===== TEMPLATES TILE — 4-line layout ===== */
 .home-mini-label {
