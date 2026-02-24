@@ -7,7 +7,7 @@
 const COPY_BRAND = {
   name: 'Planet Strength',
   tagline: 'Built by Nobody.',
-  subtagline: 'For everybody.',
+  subtagline: 'For the ones who show up.',
 };
 
 // ── MANIFESTO TICKER ────────────────────────────────────────
@@ -41,7 +41,7 @@ const COPY_ONBOARDING_STEPS = [
     emoji: '💪',
     title: 'You vs. You.',
     subhead: null,
-    body: 'Add a rep. Add a little weight.\nOr just show up again.\nThat\'s the whole game.',
+    body: 'Add a rep. Add five pounds.\nOr just show up again.\nThe bar doesn\'t care about your excuses.',
   },
   { type: 'form' },
 ];

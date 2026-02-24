@@ -1,7 +1,7 @@
 // ========== APP METADATA ==========
 const APP_VERSION = '1.0.0';
-const FEEDBACK_EMAIL = 'hirebencampbell@gmail.com';
-const FOLLOW_URL = 'https://www.instagram.com/bensoup/';
+const FEEDBACK_EMAIL = 'planetstrength@nobodystudios.com';
+const FOLLOW_URL = 'https://www.instagram.com/nobodystudios/';
 const DONATE_URL = 'https://account.venmo.com/u/bensoup';
 
 // ========== TIMING CONSTANTS ==========
