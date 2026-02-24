@@ -14,11 +14,9 @@ const COPY_BRAND = {
 // Scrolls across the top of every screen.
 // Alternating items get yellow highlight treatment.
 const COPY_TICKER = [
-  'Trust Nobody.',
   'Progress is a private conversation between you and the weights.',
   'No logins. No noise. No participation trophies.',
   'Show up. Log the work. Repeat.',
-  'Built by Nobody.',
   'Maintenance is a biological requirement. Do the work.',
   'Nobody asked. We built it anyway.',
   'Your data stays yours. Always.',
