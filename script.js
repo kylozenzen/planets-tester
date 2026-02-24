@@ -1555,6 +1555,90 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
 // Intro + onboarding flow
 // ONBOARDING COMPONENTS → moved to components/onboarding.js
 
+    // ========== CALCULATIONS ==========
+    const getBestForEquipment = (sessions = []) => {
+      let best = 0;
+      sessions.forEach(s => {
+        (Array.isArray(s.sets) ? s.sets : []).forEach(set => { if (set.weight > best) best = set.weight; });
+      });
+      return best || null;
+    };
+
+    const getStrongWeightForEquipment = (_profile, equipId, sessions = []) => {
+      const best = getBestForEquipment(sessions);
+      if (best) return best;
+      const eq = EQUIPMENT_DB[equipId];
+      const starter = eq?.tags?.includes('Legs') ? 45 : 15;
+      return clampTo5(starter);
+    };
+
+    const getNextTarget = (_profile, equipId, best) => {
+      const eq = EQUIPMENT_DB[equipId];
+      const increment = eq?.tags?.includes('Legs') ? 10 : 5;
+      return clampTo5((best || getStrongWeightForEquipment({}, equipId, [])) + increment);
+    };
+
+    const computeStrengthScore = (_profile, history) => {
+      const ids = Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio');
+      const logged = ids.filter(id => Array.isArray(history[id]) && history[id].length > 0);
+
+      if (logged.length === 0) {
+        return { score: 0, avgPct: 0, coveragePct: 0, loggedCount: 0, total: ids.length };
+      }
+
+      const ratios = logged.map(id => {
+        const sessions = Array.isArray(history[id]) ? history[id] : [];
+        if (sessions.length === 0) return 0;
+        const first = sessions[0];
+        const best = getBestForEquipment(sessions);
+        const firstBest = getBestForEquipment([first]);
+        if (!firstBest || !best) return 0.3;
+        const improvement = Math.max(0, best - firstBest);
+        const pct = Math.min(1, (improvement / (firstBest || 1)) * 0.5 + 0.5);
+        return pct;
+      });
+
+      const avg = ratios.reduce((a,b)=>a+b,0) / ratios.length;
+      const coverage = logged.length / ids.length;
+      const score01 = (avg * 0.7) + (coverage * 0.3);
+      const score = Math.round(score01 * 100);
+
+      return { score, avgPct: Math.round(avg*100), coveragePct: Math.round(coverage*100), loggedCount: logged.length, total: ids.length };
+    };
+
+    const computeAchievements = ({ history, cardioHistory = {}, strengthScoreObj, streakObj }) => {
+      const days = uniqueDayKeysFromHistory(history, cardioHistory);
+      const strengthSessions = Object.values(history || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
+      const cardioSessions = Object.values(cardioHistory || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
+      const sessionsTotal = strengthSessions + cardioSessions;
+      const equipmentLogged = Object.keys(EQUIPMENT_DB).filter(id => Array.isArray(history[id]) && history[id].length > 0).length;
+
+      const unlocks = [
+        { id: 'first', title: 'First Log', desc: 'Logged your first session', unlocked: sessionsTotal >= 1, emoji: '✅' },
+        { id: '3days', title: '3-Day Streak', desc: '3 consecutive training days', unlocked: streakObj.best >= 3, emoji: '🔥' },
+        { id: '7days', title: '7-Day Streak', desc: '7 consecutive training days', unlocked: streakObj.best >= 7, emoji: '🏆' },
+        { id: 'score50', title: 'Strength Tier 50', desc: 'Strength Score hit 50', unlocked: strengthScoreObj.score >= 50, emoji: '💪' },
+        { id: 'score75', title: 'Strength Tier 75', desc: 'Strength Score hit 75', unlocked: strengthScoreObj.score >= 75, emoji: '⚡' },
+        { id: 'equipment5', title: 'Explorer', desc: 'Logged 5+ exercises', unlocked: equipmentLogged >= 5, emoji: '🧭' },
+        { id: 'days10', title: 'Show Up Club', desc: 'Trained on 10 different days', unlocked: days.length >= 10, emoji: '📅' },
+      ];
+
+      return unlocks;
+    };
+
+    const getTodaysWorkoutType = (history, appState) => {
+      const order = ["Push","Pull","Legs"];
+      const lastType = appState?.lastWorkoutType || null;
+      const lastDayKey = appState?.lastWorkoutDayKey || null;
+      const todayKey = toDayKey(new Date());
+
+      if (lastDayKey === todayKey && lastType) return lastType;
+      if (!lastType) return "Push";
+
+      const idx = order.indexOf(lastType);
+      return order[(idx + 1) % order.length] || "Push";
+    };
+
 const GeneratorOptions = ({ options, onUpdate, compact = false }) => {
   const goalOptions = [
     { id: 'strength', label: 'Strength' },
