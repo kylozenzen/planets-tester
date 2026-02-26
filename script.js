@@ -3766,6 +3766,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     <Icon name="Clock" className="w-4 h-4 text-gray-400" />
                   </div>
                   {(() => {
+                    try {
                     const sortedSessions = [...combinedSessions].sort((a, b) => new Date(b.date) - new Date(a.date));
                     
                     if (sortedSessions.length === 0) {
@@ -3843,6 +3844,9 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                         })}
                       </div>
                     );
+                  } catch(e) {
+                    return <div className="text-sm text-gray-500 text-center py-4">Unable to load history. Try reloading.</div>;
+                  }
                   })()}
                 </Card>
               </>
@@ -3947,25 +3951,47 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                 })()}
 
                 {/* Workout Summary Cards - Compact Grid */}
-                <div className="grid grid-cols-3 gap-2">
-                  <Card className="p-3">
-                    <div className="text-xs text-gray-400 font-bold uppercase mb-1">Score</div>
-                    <div className="text-2xl font-black text-purple-600">{strengthScoreObj.score}</div>
-                    <div className="text-[9px] text-gray-500">/ 100</div>
-                  </Card>
-                  
-                  <Card className="p-3">
-                    <div className="text-xs text-gray-400 font-bold uppercase mb-1">Tracked</div>
-                    <div className="text-2xl font-black text-gray-900">{equipmentWithHistory}</div>
-                    <div className="text-[9px] text-gray-500">/ {allEquipment.length}</div>
-                  </Card>
-                  
-                  <Card className="p-3">
-                    <div className="text-xs text-gray-400 font-bold uppercase mb-1">Avg</div>
-                    <div className="text-2xl font-black text-gray-900">{strengthScoreObj.avgPct}%</div>
-                    <div className="text-[9px] text-gray-500">strength</div>
-                  </Card>
-                </div>
+                {(() => {
+                  let totalWeightMoved = 0;
+                  let totalSessions = 0;
+                  let totalSetsLogged = 0;
+                  Object.values(history || {}).forEach(arr => {
+                    safeArray(arr).forEach(session => {
+                      if (session.type === 'cardio') return;
+                      totalSessions++;
+                      safeArray(session.sets).forEach(set => {
+                        if (set.weight && set.reps) {
+                          totalWeightMoved += (set.weight * set.reps);
+                          totalSetsLogged++;
+                        }
+                      });
+                    });
+                  });
+                  const formatWeight = (lbs) => {
+                    if (lbs >= 1000000) return `${(lbs/1000000).toFixed(1)}M`;
+                    if (lbs >= 1000) return `${(lbs/1000).toFixed(1)}K`;
+                    return lbs.toLocaleString();
+                  };
+                  return (
+                    <div className="grid grid-cols-3 gap-2">
+                      <Card className="p-3">
+                        <div className="text-xs text-gray-400 font-bold uppercase mb-1">Weight</div>
+                        <div className="text-2xl font-black text-purple-600">{formatWeight(totalWeightMoved)}</div>
+                        <div className="text-[9px] text-gray-500">lbs moved</div>
+                      </Card>
+                      <Card className="p-3">
+                        <div className="text-xs text-gray-400 font-bold uppercase mb-1">Sessions</div>
+                        <div className="text-2xl font-black text-gray-900">{totalSessions}</div>
+                        <div className="text-[9px] text-gray-500">total logged</div>
+                      </Card>
+                      <Card className="p-3">
+                        <div className="text-xs text-gray-400 font-bold uppercase mb-1">Sets</div>
+                        <div className="text-2xl font-black text-gray-900">{totalSetsLogged.toLocaleString()}</div>
+                        <div className="text-[9px] text-gray-500">total sets</div>
+                      </Card>
+                    </div>
+                  );
+                })()}
 
                 {/* Recent Workout History */}
                 <Card>
@@ -4254,12 +4280,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     className="settings-action-button"
                   >
                     Muscle map
-                  </button>
-                  <button
-                    onClick={onViewPatterns}
-                    className="settings-action-button"
-                  >
-                    Patterns
                   </button>
                 </div>
               )}
@@ -5338,7 +5358,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const savedProfileRaw = storage.get('ps_v2_profile', null);
         const settingsDefaults = { ...SETTINGS_DEFAULTS };
         const savedSettingsRaw = storage.get('ps_v2_settings', settingsDefaults);
-        const savedSettings = { ...settingsDefaults, ...savedSettingsRaw };
+        const savedSettings = { ...settingsDefaults, ...savedSettingsRaw, useDemoData: false }; // Always force real data
         const savedHistory = storage.get('ps_v2_history', {});
         const savedCardio = storage.get('ps_v2_cardio', {});
         const savedState = storage.get('ps_v2_state', { lastWorkoutType: null, lastWorkoutDayKey: null, restDays: [] });
@@ -5613,9 +5633,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const lastWorkoutLabel = useMemo(() => {
         if (!lastWorkoutDate) return null;
         const today = new Date();
+        const todayKey = toDayKey(today);
+        const lastKey = toDayKey(lastWorkoutDate);
+        if (lastKey === todayKey) return 'Today';
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        if (lastKey === toDayKey(yesterday)) return 'Yesterday';
         const diffDays = Math.floor((today - lastWorkoutDate) / 86400000);
-        if (diffDays === 0) return 'Today';
-        if (diffDays === 1) return 'Yesterday';
         if (diffDays < 7) return `${diffDays} days ago`;
         return lastWorkoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       }, [lastWorkoutDate]);
@@ -6390,7 +6414,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         setAppState(prev => ({
           ...prev,
           lastWorkoutType: todayWorkoutType,
-          lastWorkoutDayKey: toDayKey(new Date())
+          lastWorkoutDayKey: sessionDay
         }));
 
         // Unlock beginner mode after first workoutrecordExerciseUse(id, session.sets || []);
@@ -6581,18 +6605,20 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           reader.onload = (event) => {
             try {
               const importedData = JSON.parse(event.target.result);
-              const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
+              const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 
-              // Validate the imported data
-              if (!isPlainObject(importedData)
-                || !isPlainObject(importedData.profile)
-                || !isPlainObject(importedData.settings)
-                || !isPlainObject(importedData.history)
-                || !isPlainObject(importedData.cardioHistory)
-              ) {
-                alert('❌ Invalid backup file format.');
+              // Validate the imported data - require at minimum a history or profile object
+              // Be lenient with older exports that may lack cardioHistory or settings
+              if (!isPlainObject(importedData) || (!isPlainObject(importedData.history) && !isPlainObject(importedData.profile))) {
+                alert('❌ Invalid backup file format. Expected a Planet Strength export JSON.');
                 return;
               }
+
+              // Ensure required keys exist with safe defaults for older export formats
+              if (!isPlainObject(importedData.history)) importedData.history = {};
+              if (!isPlainObject(importedData.cardioHistory)) importedData.cardioHistory = {};
+              if (!isPlainObject(importedData.settings)) importedData.settings = {};
+              if (!isPlainObject(importedData.profile)) importedData.profile = {};
 
               if (confirm('⚠️ Import will replace all current data. Continue?')) {
                 // Restore all data
