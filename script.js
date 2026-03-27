@@ -2745,6 +2745,15 @@ const Home = ({
   );
 };
 
+const resolveCategoryClass = (label = '') => {
+  const normalizedCategory = normalizeMuscleGroup(label);
+  if (!normalizedCategory) return '';
+  if (['chest', 'back', 'legs', 'core', 'arms', 'shoulders'].includes(normalizedCategory)) {
+    return `category-${normalizedCategory}`;
+  }
+  return '';
+};
+
 const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
@@ -2969,15 +2978,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   );
-
-  const resolveCategoryClass = (label = '') => {
-    const normalizedCategory = normalizeMuscleGroup(label);
-    if (!normalizedCategory) return '';
-    if (['chest', 'back', 'legs', 'core', 'arms', 'shoulders'].includes(normalizedCategory)) {
-      return `category-${normalizedCategory}`;
-    }
-    return '';
-  };
 
   const getLastStrengthSet = useCallback((exerciseId) => {
     const sessions = safeArray(history?.[exerciseId]);
@@ -4273,6 +4273,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [analyticsTab, setAnalyticsTab] = useState(initialAnalyticsTab);
       const [exerciseHistoryQuery, setExerciseHistoryQuery] = useState('');
       const [exerciseHistoryExpanded, setExerciseHistoryExpanded] = useState(null);
+
       useEffect(() => {
         if (initialAnalyticsTab && initialAnalyticsTab !== analyticsTab) {
           setAnalyticsTab(initialAnalyticsTab);
@@ -4280,7 +4281,11 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         }
       }, [initialAnalyticsTab]);
 
-      const allEquipment = Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio');
+      const allEquipment = useMemo(
+        () => Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio'),
+        []
+      );
+
       const combinedSessions = useMemo(() => {
         const sessions = [];
         const seen = new Set();
@@ -4309,25 +4314,62 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         return sessions;
       }, [history, cardioHistory]);
 
-      const equipmentWithHistory = allEquipment.filter(id => safeArray(history[id]).length > 0).length;
+      const equipmentWithHistory = useMemo(
+        () => allEquipment.filter(id => safeArray(history[id]).length > 0).length,
+        [allEquipment, history]
+      );
+
+      const workoutDaySet = useMemo(() => {
+        const days = new Set();
+        combinedSessions.forEach(s => {
+          if (s.date) { try { days.add(toDayKey(new Date(s.date))); } catch {} }
+        });
+        return days;
+      }, [combinedSessions]);
+
+      const heatmapWeeks = useMemo(() => {
+        const today = new Date();
+        const todayKey = toDayKey(today);
+        const weeks = [];
+        for (let w = 7; w >= 0; w--) {
+          const week = [];
+          for (let d = 6; d >= 0; d--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - (w * 7 + d));
+            const key = toDayKey(date);
+            week.push({ key, hasWorkout: workoutDaySet.has(key), isToday: key === todayKey, isFuture: key > todayKey });
+          }
+          weeks.push(week);
+        }
+        return weeks;
+      }, [workoutDaySet]);
+
+      const groupedHistory = useMemo(() => {
+        const sorted = [...combinedSessions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const groups = {};
+        sorted.forEach(session => {
+          try {
+            const key = toDayKey(new Date(session.date));
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(session);
+          } catch {}
+        });
+        return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
+      }, [combinedSessions]);
 
       const MiniChart = ({ equipId }) => {
         const sessions = safeArray(history[equipId]);
         if (sessions.length < 2) return <p className="text-sm text-gray-400 text-center py-8">Log at least 2 sessions to chart progress</p>;
-
         const dataPoints = sessions.map(s => {
           let maxWeight = 0;
           safeArray(s.sets).forEach(set => { if (set.weight > maxWeight) maxWeight = set.weight; });
           return { date: new Date(s.date), weight: maxWeight };
         }).filter(d => d.weight > 0).slice(-10);
-
         if (dataPoints.length < 2) return <p className="text-sm text-gray-400 text-center py-8">Need more data points</p>;
-
         const weights = dataPoints.map(d => d.weight);
         const minW = Math.min(...weights) - 10;
         const maxW = Math.max(...weights) + 10;
         const range = (maxW - minW) || 1;
-
         const width = 280, height = 120, padding = 20;
         const points = dataPoints.map((d, i) => {
           const x = padding + (i / (dataPoints.length - 1)) * (width - padding * 2);
@@ -4335,7 +4377,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
           return { x, y };
         });
         const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-
         return (
           <div>
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
@@ -4358,205 +4399,176 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         );
       };
 
+      const tabs = [
+        { id: 'overview', label: 'Overview' },
+        { id: 'history', label: 'History' },
+        { id: 'exercise', label: 'Exercises' },
+      ];
+
       return (
-        <div className="flex flex-col h-full bg-gray-50 analytics-shell">
-          <div className="bg-white border-b border-gray-100 sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-            <div className="p-4">
-              <h1 className="text-2xl font-black text-gray-900">Analytics</h1>
-              <div className="text-xs text-gray-500 font-bold">Your strength journey</div>
-            </div>
-            
-            <div className="flex gap-2 px-4 pb-3">
+        <div className="flex flex-col h-full analytics-shell">
+          <div className="analytics-tab-bar">
+            {tabs.map(t => (
               <button
-                onClick={() => {
-                  setSelectedEquipment(null);
-                  setAnalyticsTab('overview');
-                }}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  analyticsTab === 'overview' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'
-                }`}
+                key={t.id}
+                onClick={() => { setSelectedEquipment(null); setAnalyticsTab(t.id); }}
+                className={`analytics-tab-btn ${analyticsTab === t.id ? 'active' : ''}`}
               >
-                Overview
+                {t.label}
               </button>
-              <button
-                onClick={() => {
-                  setSelectedEquipment(null);
-                  setAnalyticsTab('history');
-                }}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  analyticsTab === 'history' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                History
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedEquipment(null);
-                  setAnalyticsTab('exercise');
-                }}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  analyticsTab === 'exercise' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                Exercise History
-              </button>
-            </div>
+            ))}
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-3">
-            {analyticsTab === 'history' ? (
-              <>
-                <Card>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-gray-900">Workout History</h3>
-                    <Icon name="Clock" className="w-4 h-4 text-gray-400" />
-                  </div>
-                  {(() => {
-                    const sortedSessions = [...combinedSessions].sort((a, b) => new Date(b.date) - new Date(a.date));
-                    
-                    if (sortedSessions.length === 0) {
-                      return (
-                        <div className="empty-state-card card-enter">
-                          <div className="empty-state-title">No workouts yet</div>
-                          <div className="empty-state-text">Log a few sessions and we’ll start showing your trends here.</div>
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <div className="space-y-2">
-                        {sortedSessions.map((session, idx) => {
-                          const isCardio = session.type === 'cardio';
-                          const eq = EQUIPMENT_DB[session.equipId];
-                          const sets = isCardio ? 0 : safeArray(session.sets).length;
-                          const cardioLabel = isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : null;
-                          const durationLabel = isCardio ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`) : null;
-                          const categoryClass = isCardio ? '' : resolveCategoryClass(eq?.target || '');
 
-                          return (
-                            <div key={idx} className={`p-3 bg-gray-50 rounded-lg border border-gray-100 ${categoryClass}`}>
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="text-xl">{isCardio ? (eq?.emoji || '🏃') : eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</div>
+            {/* ===== HISTORY TAB ===== */}
+            {analyticsTab === 'history' && (
+              <div className="space-y-4">
+                {groupedHistory.length === 0 ? (
+                  <Card>
+                    <div className="analytics-empty-state">
+                      <div className="analytics-empty-icon">📋</div>
+                      <div className="analytics-empty-title">No workouts yet</div>
+                      <div className="analytics-empty-body">Log a few sessions and your history will appear here.</div>
+                    </div>
+                  </Card>
+                ) : (
+                  groupedHistory.map(([dayKey, sessions]) => {
+                    const date = new Date(dayKey + 'T12:00:00');
+                    const dateLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                    return (
+                      <div key={dayKey} className="analytics-day-group">
+                        <div className="analytics-day-header">
+                          <span className="analytics-day-label">{dateLabel}</span>
+                          <span className="analytics-day-count">{sessions.length} {sessions.length === 1 ? 'exercise' : 'exercises'}</span>
+                        </div>
+                        <div className="space-y-2">
+                          {sessions.map((session, idx) => {
+                            const isCardio = session.type === 'cardio';
+                            const eq = EQUIPMENT_DB[session.equipId];
+                            const sets = isCardio ? 0 : safeArray(session.sets).length;
+                            const cardioLabel = isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : null;
+                            const durationLabel = isCardio ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`) : null;
+                            const categoryClass = isCardio ? '' : resolveCategoryClass(eq?.target || '');
+                            const totalVolume = isCardio ? null : safeArray(session.sets).reduce((sum, set) => sum + ((set.weight || 0) * (set.reps || 0)), 0);
+                            return (
+                              <div key={idx} className={`analytics-session-card ${categoryClass}`}>
+                                <div className="analytics-session-left">
+                                  <span className="analytics-session-emoji">
+                                    {isCardio ? (eq?.emoji || '🏃') : eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}
+                                  </span>
                                   <div>
-                                    <div className="text-sm font-bold text-gray-900">{cardioLabel || eq?.name || 'Unknown'}</div>
-                                    <div className="text-xs text-gray-500">
-                                      {new Date(session.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                    <div className="analytics-session-name">{cardioLabel || eq?.name || 'Unknown'}</div>
+                                    <div className="analytics-session-meta">
+                                      {isCardio
+                                        ? durationLabel
+                                        : `${sets} set${sets !== 1 ? 's' : ''}${totalVolume > 0 ? ' · ' + totalVolume.toLocaleString() + ' lbs' : ''}`
+                                      }
                                     </div>
                                   </div>
                                 </div>
-                                {isCardio ? (
-                                  <div className="text-right">
-                                    <div className="text-sm font-bold text-purple-600">{durationLabel}</div>
-                                  </div>
-                                ) : (
-                                  <div className="text-right">
-                                    <div className="text-sm font-bold text-purple-600">{sets} sets</div>
-                                    <div className="text-xs text-gray-500">Strength logged</div>
+                                {!isCardio && sets > 0 && (
+                                  <div className="analytics-session-sets">
+                                    {safeArray(session.sets).slice(0, 3).map((set, i) => (
+                                      <div key={i} className="analytics-set-chip">
+                                        <span className="analytics-set-weight">{set.weight}</span>
+                                        <span className="analytics-set-reps">×{set.reps}</span>
+                                      </div>
+                                    ))}
+                                    {safeArray(session.sets).length > 3 && (
+                                      <div className="analytics-set-chip analytics-set-more">+{safeArray(session.sets).length - 3}</div>
+                                    )}
                                   </div>
                                 )}
                               </div>
-                              
-                              {isCardio ? (
-                                <div className="text-xs text-gray-600">
-                                  {safeArray(session.entries).slice(0, 2).map((entry, i) => {
-                                    const entryDuration = entry.durationMin || entry.minutes;
-                                    const durationLabel = entryDuration ? `${entryDuration} min` : 'Time logged';
-                                    const entryUnit = entry.distanceUnit || (entry.poolType === '25m' || entry.poolType === '50m' ? 'm' : entry.poolType === '25yd' ? 'yd' : '');
-                                    const unitLabel = entryUnit ? ` ${entryUnit}` : '';
-                                    return (
-                                      <div key={i} className="text-gray-500">
-                                        {durationLabel}{entry.distance ? ` • ${entry.distance}${unitLabel}` : ''}
-                                      </div>
-                                    );
-                                  })}
-                                  {safeArray(session.entries).length > 2 && (
-                                    <div className="text-[11px] text-gray-400">+{session.entries.length - 2} more entries</div>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="grid grid-cols-4 gap-1 mt-2">
-                                  {safeArray(session.sets).map((set, i) => (
-                                    <div key={i} className="text-center p-1 bg-white rounded border border-gray-100">
-                                      <div className="text-xs font-bold text-gray-900">{set.weight}</div>
-                                      <div className="text-[10px] text-gray-500">×{set.reps}</div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
                     );
-                  })()}
-                </Card>
-              </>
-            ) : analyticsTab === 'exercise' ? (
-              <>
+                  })
+                )}
+              </div>
+            )}
+
+            {/* ===== EXERCISE HISTORY TAB ===== */}
+            {analyticsTab === 'exercise' && (
+              <div className="space-y-3">
                 <Card className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-gray-500 uppercase">Exercise History</div>
-                      <div className="text-sm text-gray-500">Tap to expand past sets.</div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 uppercase mb-1">Exercise History</div>
+                    <div className="text-sm text-gray-500 mb-3">Tap any exercise to see your progress.</div>
+                    <div className="analytics-search-wrap">
+                      <Icon name="Search" className="analytics-search-icon" />
+                      <input
+                        value={exerciseHistoryQuery}
+                        onChange={(e) => setExerciseHistoryQuery(e.target.value)}
+                        placeholder="Search exercises..."
+                        className="analytics-search-input"
+                      />
                     </div>
-                    <Icon name="Search" className="w-4 h-4 text-gray-400" />
                   </div>
-                  <input
-                    value={exerciseHistoryQuery}
-                    onChange={(e) => setExerciseHistoryQuery(e.target.value)}
-                    placeholder="Search exercises"
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold"
-                  />
                   {(() => {
                     const withHistory = allEquipment.filter(id => safeArray(history[id]).length > 0);
                     const filtered = withHistory.filter(id => (EQUIPMENT_DB[id]?.name || '').toLowerCase().includes(exerciseHistoryQuery.toLowerCase()));
                     if (filtered.length === 0) {
-                      return <div className="text-sm text-gray-500 text-center py-4">No exercises match yet.</div>;
+                      return (
+                        <div className="analytics-empty-state">
+                          <div className="analytics-empty-icon">🔍</div>
+                          <div className="analytics-empty-title">No exercises found</div>
+                          <div className="analytics-empty-body">{withHistory.length === 0 ? 'Start logging workouts to see your exercise history here.' : 'Try a different search term.'}</div>
+                        </div>
+                      );
                     }
                     return (
-                      <div className="exercise-history-grid">
+                      <div className="space-y-2">
                         {filtered.map(id => {
                           const eq = EQUIPMENT_DB[id];
-                          const sessions = safeArray(history[id]).slice(-6).reverse();
+                          const sessions = safeArray(history[id]);
+                          const allSessions = [...sessions].reverse();
+                          const lastSession = allSessions[0];
+                          const maxWeight = sessions.reduce((max, s) => {
+                            const sessionMax = safeArray(s.sets).reduce((m, set) => Math.max(m, set.weight || 0), 0);
+                            return Math.max(max, sessionMax);
+                          }, 0);
                           const isExpanded = exerciseHistoryExpanded === id;
                           const categoryClass = resolveCategoryClass(eq?.target || '');
+                          const lastDate = lastSession?.date ? new Date(lastSession.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
                           return (
-                            <div key={id} className={`exercise-history-card ${categoryClass} ${isExpanded ? 'expanded' : ''}`}>
+                            <div key={id} className={`analytics-exercise-card ${categoryClass} ${isExpanded ? 'expanded' : ''}`}>
                               <button
                                 onClick={() => setExerciseHistoryExpanded(isExpanded ? null : id)}
-                                className="exercise-history-toggle"
+                                className="analytics-exercise-toggle"
                               >
-                                <div>
-                                  <div className="text-xs font-bold text-gray-900">{eq.name}</div>
-                                  <div className="text-[10px] text-gray-500">{sessions.length} sessions</div>
+                                <div className="analytics-exercise-toggle-left">
+                                  <span className="analytics-exercise-emoji">
+                                    {eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}
+                                  </span>
+                                  <div>
+                                    <div className="analytics-exercise-name">{eq?.name}</div>
+                                    <div className="analytics-exercise-sub">
+                                      {sessions.length} session{sessions.length !== 1 ? 's' : ''}{lastDate ? ` · Last: ${lastDate}` : ''}
+                                    </div>
+                                  </div>
                                 </div>
-                                <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} className="w-4 h-4 text-gray-400" />
+                                <div className="analytics-exercise-toggle-right">
+                                  {maxWeight > 0 && <span className="analytics-pr-badge">{maxWeight} lbs</span>}
+                                  <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} className="w-4 h-4 text-gray-400" />
+                                </div>
                               </button>
                               {isExpanded && (
-                                <div className="exercise-history-detail">
-                                  {sessions.length === 0 ? (
-                                    <div className="empty-state-card card-enter-delayed">
-                                      <div className="empty-state-title">No sessions yet</div>
-                                      <div className="empty-state-text">Once you’ve saved a few workouts, this section will show your overview.</div>
-                                    </div>
-                                  ) : (
-                                    <div className="space-y-2">
-                                      {sessions.map((session, idx) => {
-                                        const summary = safeArray(session.sets).map(set => `${set.reps}×${set.weight}`).join(', ');
-                                        return (
-                                          <div key={idx} className="p-2 rounded-lg border border-gray-200 bg-white">
-                                            <div className="text-[11px] font-bold text-gray-900">
-                                              {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                            </div>
-                                            <div className="text-[10px] text-gray-500">{safeArray(session.sets).length} sets</div>
-                                            <div className="text-[11px] text-gray-700">{summary || 'No sets logged.'}</div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
-                                  <div className="text-[10px] text-gray-400 mt-2">Videos coming later.</div>
+                                <div className="analytics-exercise-detail">
+                                  {allSessions.slice(0, 6).map((session, idx) => {
+                                    const summary = safeArray(session.sets).map(set => `${set.reps}×${set.weight}`).join(', ');
+                                    const sessionDate = session.date ? new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+                                    return (
+                                      <div key={idx} className="analytics-history-session">
+                                        <div className="analytics-history-date">{sessionDate}</div>
+                                        <div className="analytics-history-sets">{safeArray(session.sets).length} sets</div>
+                                        <div className="analytics-history-summary">{summary || 'No sets logged'}</div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
@@ -4566,68 +4578,100 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     );
                   })()}
                 </Card>
-              </>
-            ) : !selectedEquipment ? (
+              </div>
+            )}
+
+            {/* ===== OVERVIEW TAB ===== */}
+            {analyticsTab === 'overview' && !selectedEquipment && (
               <>
-                {/* Streak Card */}
                 {(() => {
                   const streakObj = computeStreak(history, cardioHistory);
                   return (
                     <Card>
-                      <div className="flex items-center justify-between">
+                      <div className="analytics-streak-card">
                         <div>
-                          <div className="text-xs text-gray-400 font-bold uppercase">Current Streak</div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Icon name="Flame" className="w-6 h-6 text-orange-500" />
-                            <span className="text-3xl font-black text-gray-900">{streakObj.current}</span>
-                            <span className="text-sm text-gray-500">days</span>
+                          <div className="analytics-streak-label">Current Streak</div>
+                          <div className="analytics-streak-count">
+                            <Icon name="Flame" className="analytics-streak-icon" />
+                            <span>{streakObj.current}</span>
+                            <span className="analytics-streak-unit">days</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-xs text-gray-400 font-semibold">Best</div>
-                          <div className="text-2xl font-black text-purple-600">{streakObj.best}</div>
+                        <div className="analytics-streak-best">
+                          <div className="analytics-streak-best-label">Best</div>
+                          <div className="analytics-streak-best-val">{streakObj.best}</div>
                         </div>
                       </div>
                     </Card>
                   );
                 })()}
 
-                {/* Workout Summary Cards - Compact Grid */}
-                <div className="grid grid-cols-3 gap-2">
-                  <Card className="p-3">
-                    <div className="text-xs text-gray-400 font-bold uppercase mb-1">Score</div>
-                    <div className="text-2xl font-black text-purple-600">{strengthScoreObj.score}</div>
-                    <div className="text-[9px] text-gray-500">/ 100</div>
+                {combinedSessions.length > 0 && (
+                  <Card>
+                    <div className="analytics-heatmap-header">
+                      <span className="text-xs font-bold text-gray-500 uppercase">Activity — Last 8 Weeks</span>
+                      <span className="text-xs text-gray-400">{workoutDaySet.size} day{workoutDaySet.size !== 1 ? 's' : ''} active</span>
+                    </div>
+                    <div className="analytics-heatmap">
+                      {heatmapWeeks.map((week, wi) => (
+                        <div key={wi} className="analytics-heatmap-col">
+                          {week.map(day => (
+                            <div
+                              key={day.key}
+                              className={`analytics-heatmap-cell${day.hasWorkout ? ' workout' : ''}${day.isToday ? ' today' : ''}${day.isFuture ? ' future' : ''}`}
+                              title={day.key}
+                            />
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="analytics-heatmap-legend">
+                      <span className="analytics-heatmap-legend-item">
+                        <span className="analytics-heatmap-cell-sample" />Workout
+                      </span>
+                      <span className="analytics-heatmap-legend-item">
+                        <span className="analytics-heatmap-cell-empty" />Rest
+                      </span>
+                    </div>
                   </Card>
-                  
-                  <Card className="p-3">
-                    <div className="text-xs text-gray-400 font-bold uppercase mb-1">Tracked</div>
-                    <div className="text-2xl font-black text-gray-900">{equipmentWithHistory}</div>
-                    <div className="text-[9px] text-gray-500">/ {allEquipment.length}</div>
+                )}
+
+                <div className="analytics-stats-grid">
+                  <Card className="analytics-stat-card">
+                    <div className="analytics-stat-label">Score</div>
+                    <div className="analytics-stat-value accent">{strengthScoreObj.score}</div>
+                    <div className="analytics-stat-sub">/ 100</div>
                   </Card>
-                  
-                  <Card className="p-3">
-                    <div className="text-xs text-gray-400 font-bold uppercase mb-1">Avg</div>
-                    <div className="text-2xl font-black text-gray-900">{strengthScoreObj.avgPct}%</div>
-                    <div className="text-[9px] text-gray-500">strength</div>
+                  <Card className="analytics-stat-card">
+                    <div className="analytics-stat-label">Tracked</div>
+                    <div className="analytics-stat-value">{equipmentWithHistory}</div>
+                    <div className="analytics-stat-sub">/ {allEquipment.length}</div>
+                  </Card>
+                  <Card className="analytics-stat-card">
+                    <div className="analytics-stat-label">Avg</div>
+                    <div className="analytics-stat-value">{strengthScoreObj.avgPct}%</div>
+                    <div className="analytics-stat-sub">strength</div>
                   </Card>
                 </div>
 
-                {/* Recent Workout History */}
                 <Card>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-gray-900">Recent Workouts</h3>
+                  <div className="analytics-section-header">
+                    <h3 className="analytics-section-title">Recent Workouts</h3>
                     <Icon name="Clock" className="w-4 h-4 text-gray-400" />
                   </div>
                   {(() => {
                     const recentSessions = [...combinedSessions]
                       .sort((a, b) => new Date(b.date) - new Date(a.date))
-                      .slice(0, 10);
-                    
+                      .slice(0, 8);
                     if (recentSessions.length === 0) {
-                      return <p className="text-sm text-gray-500 text-center py-4">No workouts logged yet</p>;
+                      return (
+                        <div className="analytics-empty-state">
+                          <div className="analytics-empty-icon">🏋️</div>
+                          <div className="analytics-empty-title">No workouts logged yet</div>
+                          <div className="analytics-empty-body">Head to the workout tab to start tracking.</div>
+                        </div>
+                      );
                     }
-                    
                     return (
                       <div className="space-y-2">
                         {recentSessions.map((session, idx) => {
@@ -4635,26 +4679,22 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                           const eq = EQUIPMENT_DB[session.equipId];
                           const setCount = isCardio ? null : safeArray(session.sets).length;
                           return (
-                            <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
-                              <div className="flex items-center gap-2">
-                                <div className="text-lg">{isCardio ? (eq?.emoji || '🏃') : eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</div>
+                            <div key={idx} className="analytics-recent-item">
+                              <div className="analytics-recent-left">
+                                <span>{isCardio ? (eq?.emoji || '🏃') : eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</span>
                                 <div>
-                                  <div className="text-xs font-bold text-gray-900">{isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : (eq?.name || 'Unknown')}</div>
-                                  <div className="text-[10px] text-gray-500">
+                                  <div className="analytics-recent-name">{isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : (eq?.name || 'Unknown')}</div>
+                                  <div className="analytics-recent-date">
                                     {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                   </div>
                                 </div>
                               </div>
-                              {isCardio ? (
-                                <div className="text-right">
-                                  <div className="text-xs font-bold text-purple-600">{session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`}</div>
-                                </div>
-                              ) : (
-                                <div className="text-right">
-                                  <div className="text-xs font-bold text-purple-600">{setCount} sets</div>
-                                  <div className="text-[10px] text-gray-500">Strength logged</div>
-                                </div>
-                              )}
+                              <div className="analytics-recent-stat">
+                                {isCardio
+                                  ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`)
+                                  : `${setCount} sets`
+                                }
+                              </div>
                             </div>
                           );
                         })}
@@ -4663,65 +4703,71 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                   })()}
                 </Card>
 
-                {/* Exercise Progress List */}
-                <Card>
-                  <h3 className="font-bold text-gray-900 mb-3">Exercise Progress</h3>
-                  <div className="space-y-2">
-                    {allEquipment.filter(id => safeArray(history[id]).length > 0).slice(0, 5).map(id => {
-                      const eq = EQUIPMENT_DB[id];
-                      const sessions = safeArray(history[id]);
-                      const sessionCount = sessions.length;
-                      const bar = Math.min(100, Math.max(10, sessionCount * 12));
-                      return (
-                        <div key={id} onClick={() => { setSelectedEquipment(id); setAnalyticsTab('overview'); }} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100 cursor-pointer hover:border-purple-200 transition-all">
-                          <div className="flex items-center gap-2">
-                            <div className="text-lg">{eq.type === 'cardio' ? (eq.emoji || '🏃') : eq.type === 'machine' ? '⚙️' : eq.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</div>
-                            <div>
-                              <div className="text-xs font-bold text-gray-900">{eq.name}</div>
-                              <div className="text-[10px] text-gray-500">{sessionCount} sessions logged</div>
+                {equipmentWithHistory > 0 && (
+                  <Card>
+                    <h3 className="analytics-section-title" style={{ marginBottom: 12 }}>Exercise Progress</h3>
+                    <div className="space-y-2">
+                      {allEquipment.filter(id => safeArray(history[id]).length > 0).slice(0, 6).map(id => {
+                        const eq = EQUIPMENT_DB[id];
+                        const sessions = safeArray(history[id]);
+                        const sessionCount = sessions.length;
+                        const bar = Math.min(100, Math.max(10, sessionCount * 12));
+                        const maxWeight = sessions.reduce((max, s) => {
+                          const sm = safeArray(s.sets).reduce((m, set) => Math.max(m, set.weight || 0), 0);
+                          return Math.max(max, sm);
+                        }, 0);
+                        return (
+                          <div key={id} onClick={() => setSelectedEquipment(id)} className="analytics-exercise-progress-item">
+                            <div className="analytics-exercise-progress-left">
+                              <span>{eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</span>
+                              <div>
+                                <div className="analytics-exercise-progress-name">{eq?.name}</div>
+                                <div className="analytics-exercise-progress-sub">
+                                  {sessionCount} session{sessionCount !== 1 ? 's' : ''}{maxWeight > 0 ? ` · PR: ${maxWeight} lbs` : ''}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="analytics-progress-bar-wrap">
+                              <div className="analytics-progress-bar" style={{ width: `${bar}%` }} />
                             </div>
                           </div>
-                          <div className="w-14 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-purple-600 rounded-full" style={{ width: `${bar}%` }}></div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {equipmentWithHistory === 0 && (
-                    <p className="text-sm text-gray-500 text-center py-4">Start logging to track progress</p>
-                  )}
-                </Card>
+                        );
+                      })}
+                    </div>
+                  </Card>
+                )}
               </>
-            ) : (
+            )}
+
+            {/* ===== EQUIPMENT DETAIL ===== */}
+            {analyticsTab === 'overview' && selectedEquipment && (
               <Card>
-                <button onClick={() => { setSelectedEquipment(null); setAnalyticsTab('overview'); }} className="flex items-center gap-2 mb-4 text-purple-600 font-semibold text-sm">
+                <button onClick={() => setSelectedEquipment(null)} className="analytics-back-link">
                   <Icon name="ChevronLeft" className="w-4 h-4" />
                   Back to Overview
                 </button>
-                
                 {(() => {
                   const eq = EQUIPMENT_DB[selectedEquipment];
                   const sessions = safeArray(history[selectedEquipment]);
                   if (sessions.length === 0) {
                     return (
                       <div className="text-center py-8">
-                        <div className="text-4xl mb-2">{eq.type === 'machine' ? '⚙️' : eq.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</div>
-                        <h3 className="font-bold text-gray-900 mb-1">{eq.name}</h3>
+                        <div className="text-4xl mb-2">{eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</div>
+                        <h3 className="font-bold text-gray-900 mb-1">{eq?.name}</h3>
                         <p className="text-sm text-gray-500">No sessions logged yet</p>
                       </div>
                     );
                   }
-                  
                   return (
                     <div>
-                      <h3 className="font-bold text-gray-900 mb-2">{eq.name}</h3>
+                      <h3 className="font-bold text-gray-900 mb-2">{eq?.name}</h3>
                       <MiniChart equipId={selectedEquipment} />
                     </div>
                   );
                 })()}
               </Card>
             )}
+
           </div>
         </div>
       );
@@ -7416,7 +7462,7 @@ return (
                 <div className={`page ${showAnalytics ? 'active' : ''}`} aria-hidden={!showAnalytics}>
                   <div className="h-full flex flex-col bg-gray-50">
                     <div className="bg-white border-b border-gray-200 p-4 flex items-center gap-3">
-                      <button onClick={() => setShowAnalytics(false)} className="p-2 rounded-full bg-gray-100">
+                      <button onClick={() => { setShowAnalytics(false); setHomeRequestedAnalyticsTab(null); }} className="p-2 rounded-full bg-gray-100">
                         <Icon name="ChevronLeft" className="w-5 h-5 text-gray-700" />
                       </button>
                       <div>
