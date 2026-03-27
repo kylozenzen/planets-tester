@@ -4462,7 +4462,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                     <div className="analytics-session-meta">
                                       {isCardio
                                         ? durationLabel
-                                        : `${sets} set${sets !== 1 ? 's' : ''}${totalVolume > 0 ? \` · ${totalVolume.toLocaleString()} lbs\` : ''}`
+                                        : `${sets} set${sets !== 1 ? 's' : ''}${totalVolume > 0 ? ' · ' + totalVolume.toLocaleString() + ' lbs' : ''}`
                                       }
                                     </div>
                                   </div>
