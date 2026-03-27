@@ -2564,7 +2564,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive">
             <div>
               <div className="text-xs font-bold workout-muted uppercase">Start Today</div>
-              <div className="text-base font-black workout-heading">Build today’s session</div>
+              <div className="text-base font-black workout-heading">Build today's session</div>
             </div>
             <div className="space-y-2">
               <button
@@ -2678,7 +2678,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               <div>
                 <div className="text-xs font-bold workout-muted uppercase">{isSessionMode ? 'Workout active' : 'Draft workout'}</div>
                 <div className="flex items-center gap-2">
-                  <div className="text-lg font-black workout-heading">Today’s Workout</div>
+                  <div className="text-lg font-black workout-heading">Today's Workout</div>
                   {activeSession?.createdFrom === 'generated' && (
                     <span className="session-badge">Generated</span>
                   )}
@@ -3713,14 +3713,14 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       };
 
       const tabs = [
-        { id: ‘overview’, label: ‘Overview’ },
-        { id: ‘history’, label: ‘History’ },
-        { id: ‘exercise’, label: ‘Exercises’ },
+        { id: 'overview', label: 'Overview' },
+        { id: 'history', label: 'History' },
+        { id: 'exercise', label: 'Exercises' },
       ];
 
       return (
         <div className="flex flex-col h-full bg-gray-50 analytics-shell">
-          <div className="progress-header sticky top-0 z-10" style={{ paddingTop: ‘env(safe-area-inset-top)’ }}>
+          <div className="progress-header sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <div className="px-4 pt-4 pb-1">
               <h1 className="text-2xl font-black text-gray-900">Progress</h1>
             </div>
@@ -3729,7 +3729,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                 <button
                   key={tab.id}
                   onClick={() => { setSelectedEquipment(null); setAnalyticsTab(tab.id); }}
-                  className={`progress-tab-pill ${analyticsTab === tab.id ? ‘progress-tab-active’ : ‘’}`}
+                  className={`progress-tab-pill ${analyticsTab === tab.id ? 'progress-tab-active' : ''}`}
                 >
                   {tab.label}
                 </button>
@@ -3738,12 +3738,12 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-3">
-            {analyticsTab === ‘history’ ? (
+            {analyticsTab === 'history' ? (
               (() => {
                 try {
                   const byDay = {};
                   combinedSessions.forEach(s => {
-                    const day = (s.date || ‘’).slice(0, 10);
+                    const day = (s.date || '').slice(0, 10);
                     if (!day) return;
                     if (!byDay[day]) byDay[day] = [];
                     byDay[day].push(s);
@@ -3761,18 +3761,18 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                   return (
                     <div className="space-y-4">
                       {days.map(day => {
-                        const dayDate = new Date(day + ‘T12:00:00’);
-                        const dayLabel = dayDate.toLocaleDateString(‘en-US’, { weekday: ‘short’, month: ‘short’, day: ‘numeric’ });
+                        const dayDate = new Date(day + 'T12:00:00');
+                        const dayLabel = dayDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                         return (
                           <div key={day}>
                             <div className="progress-day-header">{dayLabel}</div>
                             <div className="space-y-2">
                               {byDay[day].map((session, idx) => {
-                                const isCardio = session.type === ‘cardio’;
+                                const isCardio = session.type === 'cardio';
                                 const eq = EQUIPMENT_DB[session.equipId];
-                                const name = isCardio ? (session.cardioLabel || eq?.name || ‘Cardio’) : (eq?.name || ‘Unknown’);
-                                const categoryClass = isCardio ? ‘’ : resolveCategoryClass(eq?.target || ‘’);
-                                const muscleGroup = isCardio ? ‘Cardio’ : (eq?.target ? resolveMuscleGroup(eq.target) : null);
+                                const name = isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : (eq?.name || 'Unknown');
+                                const categoryClass = isCardio ? '' : resolveCategoryClass(eq?.target || '');
+                                const muscleGroup = isCardio ? 'Cardio' : (eq?.target ? resolveMuscleGroup(eq.target) : null);
                                 const detail = isCardio
                                   ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`)
                                   : `${safeArray(session.sets).length} sets`;
@@ -3796,7 +3796,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                   return <div className="text-sm text-gray-500 text-center py-4">Unable to load history. Try reloading.</div>;
                 }
               })()
-            ) : analyticsTab === ‘exercise’ ? (
+            ) : analyticsTab === 'exercise' ? (
               <Card className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-bold text-gray-500 uppercase tracking-wide">Exercise History</div>
@@ -3810,7 +3810,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                 />
                 {(() => {
                   const withHistory = allEquipment.filter(id => safeArray(history[id]).length > 0);
-                  const filtered = withHistory.filter(id => (EQUIPMENT_DB[id]?.name || ‘’).toLowerCase().includes(exerciseHistoryQuery.toLowerCase()));
+                  const filtered = withHistory.filter(id => (EQUIPMENT_DB[id]?.name || '').toLowerCase().includes(exerciseHistoryQuery.toLowerCase()));
                   if (filtered.length === 0) {
                     return (
                       <div className="progress-empty-state py-6">
@@ -3825,7 +3825,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                         const allSessions = safeArray(history[id]);
                         const recentSessions = allSessions.slice(-6).reverse();
                         const isExpanded = exerciseHistoryExpanded === id;
-                        const categoryClass = resolveCategoryClass(eq?.target || ‘’);
+                        const categoryClass = resolveCategoryClass(eq?.target || '');
 
                         let prWeight = 0, prReps = 0;
                         allSessions.forEach(s => {
@@ -3839,11 +3839,11 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
 
                         const lastSession = allSessions[allSessions.length - 1];
                         const lastDate = lastSession?.date
-                          ? new Date(lastSession.date).toLocaleDateString(‘en-US’, { month: ‘short’, day: ‘numeric’ })
+                          ? new Date(lastSession.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                           : null;
 
                         return (
-                          <div key={id} className={`progress-exhist-row ${categoryClass} ${isExpanded ? ‘expanded’ : ‘’}`}>
+                          <div key={id} className={`progress-exhist-row ${categoryClass} ${isExpanded ? 'expanded' : ''}`}>
                             <button
                               onClick={() => setExerciseHistoryExpanded(isExpanded ? null : id)}
                               className="progress-exhist-toggle"
@@ -3852,14 +3852,14 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                               <div className="progress-exhist-info">
                                 <div className="text-sm font-bold text-gray-900">{eq.name}</div>
                                 <div className="text-[11px] text-gray-500">
-                                  {allSessions.length} session{allSessions.length !== 1 ? ‘s’ : ‘’}
-                                  {lastDate ? ` · Last ${lastDate}` : ‘’}
+                                  {allSessions.length} session{allSessions.length !== 1 ? 's' : ''}
+                                  {lastDate ? ` · Last ${lastDate}` : ''}
                                 </div>
                               </div>
                               {prWeight > 0 && (
                                 <div className="progress-pr-badge">{prWeight}×{prReps}</div>
                               )}
-                              <Icon name={isExpanded ? ‘ChevronDown’ : ‘ChevronRight’} className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             </button>
                             {isExpanded && (
                               <div className="progress-exhist-detail">
@@ -3869,14 +3869,14 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                   <div className="progress-exhist-timeline">
                                     {recentSessions.map((session, idx) => {
                                       const sets = safeArray(session.sets);
-                                      const summary = sets.map(s => `${s.reps}×${s.weight}`).join(‘, ‘);
+                                      const summary = sets.map(s => `${s.reps}×${s.weight}`).join(', ');
                                       return (
                                         <div key={idx} className="progress-exhist-session">
                                           <div className="text-[11px] font-bold text-gray-900">
-                                            {new Date(session.date).toLocaleDateString(‘en-US’, { month: ‘short’, day: ‘numeric’ })}
+                                            {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                           </div>
                                           <div className="text-[10px] text-gray-500">{sets.length} sets</div>
-                                          <div className="text-[11px] text-gray-700 mt-0.5">{summary || ‘—‘}</div>
+                                          <div className="text-[11px] text-gray-700 mt-0.5">{summary || '—'}</div>
                                         </div>
                                       );
                                     })}
@@ -3905,7 +3905,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     d.setDate(today.getDate() - (6 - i));
                     return d.toISOString().slice(0, 10);
                   });
-                  const sessionDates = new Set(combinedSessions.map(s => (s.date || ‘’).slice(0, 10)));
+                  const sessionDates = new Set(combinedSessions.map(s => (s.date || '').slice(0, 10)));
                   return (
                     <Card>
                       <div className="flex items-center justify-between mb-3">
@@ -3922,11 +3922,11 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                           <div className="progress-week-grid">
                             {last7.map((dayStr, i) => {
                               const hasSession = sessionDates.has(dayStr);
-                              const d = new Date(dayStr + ‘T12:00:00’);
-                              const dayName = d.toLocaleDateString(‘en-US’, { weekday: ‘narrow’ });
+                              const d = new Date(dayStr + 'T12:00:00');
+                              const dayName = d.toLocaleDateString('en-US', { weekday: 'narrow' });
                               return (
                                 <div key={i} className="progress-week-col">
-                                  <div className={`progress-week-dot ${hasSession ? ‘filled’ : ‘hollow’}`}></div>
+                                  <div className={`progress-week-dot ${hasSession ? 'filled' : 'hollow'}`}></div>
                                   <div className="progress-week-label">{dayName}</div>
                                 </div>
                               );
@@ -3945,7 +3945,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                   let totalSetsLogged = 0;
                   Object.values(history || {}).forEach(arr => {
                     safeArray(arr).forEach(session => {
-                      if (session.type === ‘cardio’) return;
+                      if (session.type === 'cardio') return;
                       totalSessions++;
                       safeArray(session.sets).forEach(set => {
                         if (set.weight && set.reps) {
@@ -3991,15 +3991,15 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     <Card>
                       <div className="space-y-1">
                         {recentSessions.map((session, idx) => {
-                          const isCardio = session.type === ‘cardio’;
+                          const isCardio = session.type === 'cardio';
                           const eq = EQUIPMENT_DB[session.equipId];
-                          const name = isCardio ? (session.cardioLabel || eq?.name || ‘Cardio’) : (eq?.name || ‘Unknown’);
-                          const dateLabel = new Date(session.date).toLocaleDateString(‘en-US’, { month: ‘short’, day: ‘numeric’ });
+                          const name = isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : (eq?.name || 'Unknown');
+                          const dateLabel = new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                           const detail = isCardio
                             ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`)
                             : (() => {
                                 const sets = safeArray(session.sets);
-                                if (sets.length === 0) return ‘0 sets’;
+                                if (sets.length === 0) return '0 sets';
                                 const topSet = sets.reduce((best, s) => ((s.weight || 0) > (best.weight || 0) ? s : best), sets[0]);
                                 return `${sets.length} sets · ${topSet.weight}×${topSet.reps}`;
                               })();
@@ -4028,18 +4028,18 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                         const sessions = safeArray(history[id]);
                         const sessionCount = sessions.length;
                         const bar = Math.min(100, Math.max(8, sessionCount * 12));
-                        const categoryClass = resolveCategoryClass(eq?.target || ‘’);
+                        const categoryClass = resolveCategoryClass(eq?.target || '');
                         return (
                           <div
                             key={id}
-                            onClick={() => { setSelectedEquipment(id); setAnalyticsTab(‘overview’); }}
+                            onClick={() => { setSelectedEquipment(id); setAnalyticsTab('overview'); }}
                             className="flex items-center gap-3 p-2 rounded-lg border border-gray-100 cursor-pointer hover:border-purple-200 transition-all"
                           >
                             <div className={`progress-category-dot ${categoryClass}`}></div>
                             <div className="flex-1 min-w-0">
                               <div className="text-xs font-bold text-gray-900 truncate">{eq.name}</div>
                               <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full progress-bar-fill ${categoryClass || ‘progress-bar-default’}`} style={{ width: `${bar}%` }}></div>
+                                <div className={`h-full rounded-full progress-bar-fill ${categoryClass || 'progress-bar-default'}`} style={{ width: `${bar}%` }}></div>
                               </div>
                             </div>
                             <div className="text-[10px] text-gray-400 font-semibold flex-shrink-0">{sessionCount}×</div>
@@ -4052,7 +4052,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               </>
             ) : (
               <Card>
-                <button onClick={() => { setSelectedEquipment(null); setAnalyticsTab(‘overview’); }} className="flex items-center gap-2 mb-4 text-purple-600 font-semibold text-sm">
+                <button onClick={() => { setSelectedEquipment(null); setAnalyticsTab('overview'); }} className="flex items-center gap-2 mb-4 text-purple-600 font-semibold text-sm">
                   <Icon name="ChevronLeft" className="w-4 h-4" />
                   Back to Overview
                 </button>
@@ -4422,7 +4422,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
             <div className="muscle-map-header">
               <div className="text-xl font-black text-gray-900">Muscle Map</div>
-              <div className="text-sm text-gray-500">This chart shows which muscle groups you’ve focused on over the selected time range.</div>
+              <div className="text-sm text-gray-500">This chart shows which muscle groups you've focused on over the selected time range.</div>
             </div>
 
             <div className="muscle-map-range-toggle">
@@ -4440,7 +4440,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
             {totalCount === 0 ? (
               <div className="muscle-map-empty">
                 <div className="muscle-map-empty-title">Nothing to show yet.</div>
-                <div className="muscle-map-empty-body">As you log workouts, this chart will highlight where you’ve been focusing. No streaks, no pressure.</div>
+                <div className="muscle-map-empty-body">As you log workouts, this chart will highlight where you've been focusing. No streaks, no pressure.</div>
               </div>
             ) : (
               <>
@@ -4496,7 +4496,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
             <div className="patterns-coming-soon">
               <div className="patterns-coming-title">Patterns (Coming Soon)</div>
               <div className="patterns-coming-body">
-                This feature is in progress. Soon you’ll see gentle, no-guilt notes about your training style—like time-of-day tendencies and muscle-group balance.
+                This feature is in progress. Soon you'll see gentle, no-guilt notes about your training style—like time-of-day tendencies and muscle-group balance.
               </div>
             </div>
             <div className="pattern-intro bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
@@ -4508,7 +4508,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center text-gray-600">
                 <div className="text-3xl mb-2">🌱</div>
                 <div className="text-sm font-semibold text-gray-900 mb-2">No patterns yet</div>
-                <div className="text-sm text-gray-500">As you log more sessions, we’ll highlight your training patterns here.</div>
+                <div className="text-sm text-gray-500">As you log more sessions, we'll highlight your training patterns here.</div>
               </div>
             ) : (
               <div className="space-y-3">
@@ -4827,7 +4827,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs font-bold text-gray-500 uppercase">{isRunning ? 'Running / Walking' : 'Swimming'}</div>
-              <div className="text-sm text-gray-500">Log today’s entry</div>
+              <div className="text-sm text-gray-500">Log today's entry</div>
             </div>
             <button
               onClick={() => setShowForm(prev => !prev)}
@@ -5123,7 +5123,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
         <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] font-black uppercase text-gray-500">Today’s entries</div>
+            <div className="text-[10px] font-black uppercase text-gray-500">Today's entries</div>
             <div className="text-[11px] workout-accent-text font-semibold">{entries.length} entries</div>
           </div>
           {entries.length === 0 ? (
@@ -6001,7 +6001,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const chosen = type === 'surprise' ? ['legs','push','pull','full'][Math.floor(Math.random()*4)] : type;
         const draft = buildDraftPlan(chosen, generatorOptions || {});
         updateSessionItemsByIds(draft.exercises || [], { status: 'draft', createdFrom: 'generated' });
-        showToast('Added to today’s workout');
+        showToast("Added to today's workout");
         setTab('workout');
       };
 
@@ -6020,7 +6020,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const currentId = draftPlanToday?.exercises?.[index];
         const existingEntry = activeSessionToday?.items?.find(item => (item.exerciseId || item.id) === currentId);
         if (existingEntry?.sets > 0) {
-          const confirmed = window.confirm('This will remove logged sets for this exercise from today’s session.');
+          const confirmed = window.confirm("This will remove logged sets for this exercise from today's session.");
           if (!confirmed) return;
           removeExerciseLogsForToday(currentId, existingEntry.kind);
         }
@@ -6052,7 +6052,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const currentId = draftPlanToday?.exercises?.[index];
         const existingEntry = activeSessionToday?.items?.find(item => (item.exerciseId || item.id) === currentId);
         if (existingEntry?.sets > 0) {
-          const confirmed = window.confirm('This will remove logged sets for this exercise from today’s session.');
+          const confirmed = window.confirm("This will remove logged sets for this exercise from today's session.");
           if (!confirmed) return;
           removeExerciseLogsForToday(currentId, existingEntry.kind);
         }
@@ -6190,7 +6190,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const cancelTodaySession = (isActive = false, hasLoggedSets = false) => {
         if (hasLoggedSets) {
-          const confirmed = window.confirm('Discard today’s session? Your logged sets will be cleared.');
+          const confirmed = window.confirm("Discard today's session? Your logged sets will be cleared.");
           if (!confirmed) return;
         } else if (isActive) {
           const confirmed = window.confirm('Cancel this workout?');
@@ -6335,7 +6335,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         if (!entry) return;
         const entryId = entry.exerciseId || entry.id;
         if ((activeSessionToday.logsByExercise?.[entryId] || []).length > 0) {
-          const confirmed = window.confirm('This will remove logged sets for this exercise from today’s session.');
+          const confirmed = window.confirm("This will remove logged sets for this exercise from today's session.");
           if (!confirmed) return;
           removeExerciseLogsForToday(entry.id, entry.kind);
         }
@@ -6407,7 +6407,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           if (settings.insightsEnabled !== false && lastSession && newMaxWeight !== null) {
             const improved = newMaxWeight > (lastMaxWeight || 0) || (newMaxWeight === lastMaxWeight && newTotalReps > (lastTotalReps || 0));
             if (improved) {
-              const responses = ['More than last time.', 'That’s progress.'];
+              const responses = ['More than last time.', "That's progress."];
               pushMessage(responses[Math.floor(Math.random() * responses.length)]);
             } else {
               pushMessage(COPY_PUSH.workoutSaved);
