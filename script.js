@@ -255,6 +255,15 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return 'other';
     };
 
+    const resolveCategoryClass = (label = '') => {
+      const normalizedCategory = normalizeMuscleGroup(label);
+      if (!normalizedCategory) return '';
+      if (['chest', 'back', 'legs', 'core', 'arms', 'shoulders'].includes(normalizedCategory)) {
+        return `category-${normalizedCategory}`;
+      }
+      return '';
+    };
+
     const resolveMuscleGroup = (raw) => {
       const normalized = normalizeMuscleGroup(raw);
       switch (normalized) {
@@ -2340,15 +2349,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   );
-
-  const resolveCategoryClass = (label = '') => {
-    const normalizedCategory = normalizeMuscleGroup(label);
-    if (!normalizedCategory) return '';
-    if (['chest', 'back', 'legs', 'core', 'arms', 'shoulders'].includes(normalizedCategory)) {
-      return `category-${normalizedCategory}`;
-    }
-    return '';
-  };
 
   const getLastStrengthSet = useCallback((exerciseId) => {
     const sessions = safeArray(history?.[exerciseId]);
