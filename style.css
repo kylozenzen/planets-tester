@@ -1647,6 +1647,12 @@ textarea::placeholder {
   padding: 28px 16px;
 }
 
+.onboarding-scrollable {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  height: 100%;
+}
+
 .onboarding-card {
   width: min(520px, 100%);
   min-height: 520px;
