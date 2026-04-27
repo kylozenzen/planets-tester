@@ -2125,11 +2125,14 @@ const Home = ({
   );
 };
 
-const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay }) => {
+const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay, onQuickLogSet }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
   const [swapState, setSwapState] = useState(null);
+  const [swapSearch, setSwapSearch] = useState('');
+  const [swapMuscleFilter, setSwapMuscleFilter] = useState('all');
+  const [swapEquipmentFilter, setSwapEquipmentFilter] = useState('all');
   const [activeFilter, setActiveFilter] = useState('All');
   const [showCompactSearch, setShowCompactSearch] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
@@ -2137,6 +2140,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const searchResultsRef = useRef(null);
   const sessionCardRef = useRef(null);
   const lastSessionStatusRef = useRef(activeSession?.status || null);
+  const lastQuickLogRef = useRef({ key: '', at: 0 });
 
   useEffect(() => {
     if (openTemplatesFromHome) {
@@ -2364,6 +2368,44 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     return sets[sets.length - 1];
   }, [history]);
 
+  const getExerciseSessionAnchor = useCallback((exerciseId) => {
+    const sessions = safeArray(history?.[exerciseId]);
+    if (!sessions.length) return null;
+    const latest = sessions.reduce((acc, session) => {
+      if (!acc) return session;
+      return new Date(session.date || 0).getTime() > new Date(acc.date || 0).getTime() ? session : acc;
+    }, null);
+    if (!latest) return null;
+    const weights = safeArray(latest.sets).map(s => Number(s?.weight)).filter(w => Number.isFinite(w) && w > 0);
+    const reps = safeArray(latest.sets).map(s => Number(s?.reps)).filter(r => Number.isFinite(r) && r > 0);
+    const weight = Number(latest.anchorWeight) || (weights.length ? Math.max(...weights) : null);
+    const repsValue = Number(latest.anchorReps) || (reps.length ? Math.round(reps.reduce((a, b) => a + b, 0) / reps.length) : null);
+    if (!weight || !repsValue) return null;
+    return { weight, reps: repsValue };
+  }, [history]);
+
+  const getSuggestedSet = useCallback((exerciseId) => {
+    const currentSessionSets = safeArray(sessionLogsByExercise?.[exerciseId]);
+    const sessionLast = currentSessionSets[currentSessionSets.length - 1];
+    const historyLast = getLastStrengthSet(exerciseId);
+    const anchor = getExerciseSessionAnchor(exerciseId);
+    const source = sessionLast || historyLast || anchor;
+    const weight = Number(source?.weight);
+    const reps = Number(source?.reps);
+    if (!weight || !reps) return null;
+    return { weight, reps };
+  }, [sessionLogsByExercise, getLastStrengthSet, getExerciseSessionAnchor]);
+
+  const handleQuickLog = useCallback((exerciseId) => {
+    const suggestion = getSuggestedSet(exerciseId);
+    if (!suggestion) return;
+    const key = `${exerciseId}-${suggestion.weight}-${suggestion.reps}`;
+    const now = Date.now();
+    if (lastQuickLogRef.current.key === key && now - lastQuickLogRef.current.at < 900) return;
+    lastQuickLogRef.current = { key, at: now };
+    onQuickLogSet?.(exerciseId, suggestion);
+  }, [getSuggestedSet, onQuickLogSet]);
+
   const buildExerciseMeta = useCallback((exerciseId) => {
     const eq = EQUIPMENT_DB[exerciseId];
     if (!eq || eq.type === 'cardio') return 'No sets logged yet';
@@ -2483,10 +2525,30 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     const sourceList = sessionEntries.map(entry => entry.exerciseId || entry.id);
     const currentId = sourceList[swapState.index];
     if (!currentId) return [];
-    const current = EQUIPMENT_DB[currentId];
-    const pool = availableEquipment.filter(id => id !== currentId && (!current || (EQUIPMENT_DB[id]?.target === current.target || EQUIPMENT_DB[id]?.tags?.some(t => current.tags?.includes(t)))));
-    return pool.slice(0, 20);
-  }, [swapState, availableEquipment, sessionEntries]);
+    const pool = availableEquipment.filter(id => id !== currentId && EQUIPMENT_DB[id]?.type !== 'cardio');
+    const searched = swapSearch.trim()
+      ? fuzzyMatchExercises(swapSearch, pool)
+      : pool;
+    return searched.filter((id) => {
+      const eq = EQUIPMENT_DB[id];
+      if (!eq) return false;
+      const muscleMatch = swapMuscleFilter === 'all' || resolveGroup(eq) === swapMuscleFilter;
+      const equipmentMatch = swapEquipmentFilter === 'all' || eq.type === swapEquipmentFilter;
+      return muscleMatch && equipmentMatch;
+    }).slice(0, 40);
+  }, [swapState, availableEquipment, sessionEntries, swapSearch, swapMuscleFilter, swapEquipmentFilter, resolveGroup]);
+
+  const swapMuscleOptions = useMemo(() => {
+    const groups = new Set(['all']);
+    availableEquipment.forEach((id) => {
+      const eq = EQUIPMENT_DB[id];
+      if (!eq || eq.type === 'cardio') return;
+      groups.add(resolveGroup(eq));
+    });
+    return Array.from(groups);
+  }, [availableEquipment, resolveGroup]);
+
+  const swapEquipmentOptions = useMemo(() => ['all', 'machine', 'dumbbell', 'barbell'], []);
 
   const handleSearchAdd = (id) => {
     if (!id) return;
@@ -2527,6 +2589,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const showIdleControls = mode === 'idle';
   const showCompactControls = mode !== 'idle';
   const showCompactSearchInput = showCompactControls && (showCompactSearch || !!searchQuery);
+  const workoutHeaderSubtitle = isSessionMode ? 'Workout active' : "Workout, Let's build.";
 
   return (
     <div className="flex flex-col h-full bg-gray-50 workout-shell relative">
@@ -2535,7 +2598,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           <div className="ps-hero-header__left">
             <div className="ps-hero-header__brand select-none">PLANET STRENGTH</div>
             <div className="ps-hero-header__welcome">
-              Workout, <span className="ps-hero-header__name">Let's build.</span>
+              {workoutHeaderSubtitle}
             </div>
           </div>
           <div className="ps-hero-header__icons">
@@ -2705,50 +2768,83 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 {sessionEntries.map((entry, idx) => {
                   const entryId = entry.exerciseId || entry.id;
                   const entrySetCount = (sessionLogsByExercise[entryId] || []).length;
+                  const quickSet = entry.kind !== 'cardio' ? getSuggestedSet(entryId) : null;
                   const categoryClass = colorfulExerciseCards ? resolveCategoryClass(entry.muscleGroup || EQUIPMENT_DB[entryId]?.target || '') : '';
                   return (
                   <div
                     key={entryId}
                     onClick={mode === 'active' ? () => onSelectExercise(entryId, 'session') : undefined}
-                    className={`session-entry-row ${categoryClass}`}
+                    className={`session-entry-row ${mode === 'active' ? 'active-exercise-row' : ''} ${categoryClass}`}
                     role={mode === 'active' ? 'button' : undefined}
                     tabIndex={mode === 'active' ? 0 : undefined}
                     onKeyDown={mode === 'active' ? (e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); } : undefined}
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
-                    <div>
-                      <div className="text-sm font-bold workout-heading">{entry.name || entry.label}</div>
+                    <div className="session-entry-main active-exercise-main">
+                      <div className="text-sm font-bold workout-heading session-entry-title active-exercise-name">{entry.name || entry.label}</div>
                       <div className="text-[11px] workout-muted">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {(mode === 'active' || entrySetCount > 0) && (
-                        <div className={mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-xs font-bold cues-accent'}>
-                          {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
-                        </div>
-                      )}
+                    <div className="active-exercise-actions-wrap">
+                      <div className={`active-exercise-meta ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
+                        {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
+                      </div>
+                      <div className="session-entry-actions active-exercise-actions">
                       {mode === 'active' && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
-                          className="session-action-button"
-                        >
-                          + {entry.kind === 'cardio' ? 'Entry' : 'Set'}
-                        </button>
+                        entry.kind === 'cardio' ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
+                            className="session-row-action session-row-action--primary ps-tap"
+                          >
+                            + Entry
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleQuickLog(entryId);
+                              }}
+                              className="session-row-action session-row-action--primary ps-tap"
+                              disabled={!quickSet}
+                            >
+                              {quickSet ? `+ Set ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onSelectExercise(entryId, 'session');
+                              }}
+                              className="session-row-action session-row-action--secondary ps-tap"
+                            >
+                              Adjust
+                            </button>
+                          </>
+                        )
                       )}
                       {entry.kind !== 'cardio' && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSwapState({ mode: 'session', index: idx }); }}
-                          className="session-action-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSwapSearch('');
+                            setSwapMuscleFilter('all');
+                            setSwapEquipmentFilter('all');
+                            setSwapState({ mode: 'session', index: idx });
+                          }}
+                          className="session-row-action session-row-action--secondary ps-tap"
                         >
                           Swap
                         </button>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); onRemoveSessionExercise?.(entryId); }}
-                        className="session-remove-button"
+                        className="session-row-action session-row-action--danger-icon ps-tap"
                         aria-label={`Remove ${entry.name || entry.label}`}
                       >
                         <Icon name="Trash" className="w-4 h-4" />
                       </button>
+                      </div>
                     </div>
                   </div>
                 )})}
@@ -2844,6 +2940,47 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 <Icon name="X" className="w-4 h-4" />
               </button>
             </div>
+            <div className="space-y-2 mb-3">
+              <input
+                value={swapSearch}
+                onChange={(e) => setSwapSearch(e.target.value)}
+                placeholder="Search exercises"
+                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-sm font-semibold"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={swapMuscleFilter}
+                  onChange={(e) => setSwapMuscleFilter(e.target.value)}
+                  className="w-full p-2 rounded-lg border border-gray-200 bg-white text-xs font-semibold"
+                >
+                  {swapMuscleOptions.map((option) => (
+                    <option key={option} value={option}>{option === 'all' ? 'All muscles' : option}</option>
+                  ))}
+                </select>
+                <select
+                  value={swapEquipmentFilter}
+                  onChange={(e) => setSwapEquipmentFilter(e.target.value)}
+                  className="w-full p-2 rounded-lg border border-gray-200 bg-white text-xs font-semibold"
+                >
+                  {swapEquipmentOptions.map((option) => (
+                    <option key={option} value={option}>{option === 'all' ? 'All equipment' : option}</option>
+                  ))}
+                </select>
+              </div>
+              {swapOptions.length > 0 && (
+                <button
+                  onClick={() => {
+                    const randomId = swapOptions[Math.floor(Math.random() * swapOptions.length)];
+                    if (!randomId) return;
+                    if (swapState?.mode === 'session') onSwapSessionExercise?.(swapState.index, randomId);
+                    setSwapState(null);
+                  }}
+                  className="tile-action ps-tap"
+                >
+                  Surprise me
+                </button>
+              )}
+            </div>
             <div className="space-y-2 max-h-[60vh] overflow-y-auto">
               {swapOptions.map(id => (
                 <button
@@ -2857,7 +2994,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   className="w-full p-3 rounded-xl border border-gray-200 text-left bg-gray-50 active:scale-[0.98]"
                 >
                   <div className="font-bold text-gray-900 text-sm">{EQUIPMENT_DB[id]?.name}</div>
-                  <div className="text-xs text-gray-500">{EQUIPMENT_DB[id]?.target}</div>
+                  <div className="text-xs text-gray-500">{resolveGroup(EQUIPMENT_DB[id])} • {EQUIPMENT_DB[id]?.type}</div>
                 </button>
               ))}
               {swapOptions.length === 0 && (
@@ -3094,6 +3231,14 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         });
       }, [autoFocusInput, anchorWeight, onAutoFocusComplete, setInputs.weight]);
 
+      useEffect(() => {
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+          document.body.style.overflow = previousOverflow;
+        };
+      }, []);
+
       const syncSessionSets = (nextSets) => {
         if (onUpdateSessionLogs) {
           onUpdateSessionLogs(id, nextSets);
@@ -3129,6 +3274,64 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         setTimeout(() => setIsAddingSet(false), 300);
         setEditingIndex(null);
         onShowToast?.('Set saved');
+      };
+
+      const applySetToInputs = (setLike) => {
+        if (!setLike) return;
+        const weight = Number(setLike.weight);
+        const reps = Number(setLike.reps);
+        if (!weight || !reps) return;
+        const nextWeight = String(weight);
+        const nextReps = String(reps);
+        setSetInputs({ weight: nextWeight, reps: nextReps });
+        setAnchorWeight(nextWeight);
+        setAnchorReps(nextReps);
+        setAnchorAdjusted(true);
+      };
+
+      const adjustSetInput = (field, delta) => {
+        setSetInputs(prev => {
+          const anchorValue = field === 'weight' ? Number(anchorWeight) : Number(anchorReps);
+          const base = Number(prev[field]) || anchorValue || 0;
+          const nextRaw = Math.max(0, base + delta);
+          const nextValue = field === 'weight'
+            ? String(Math.round(nextRaw * 100) / 100)
+            : String(Math.round(nextRaw));
+          return { ...prev, [field]: nextValue };
+        });
+      };
+
+      const repeatLastSetCandidate = useMemo(() => {
+        const sessionLast = loggedSets[loggedSets.length - 1];
+        if (sessionLast?.weight && sessionLast?.reps) {
+          return { weight: Number(sessionLast.weight), reps: Number(sessionLast.reps) };
+        }
+        const historyLast = lastSession?.sets?.[lastSession.sets.length - 1];
+        if (historyLast?.weight && historyLast?.reps) {
+          return { weight: Number(historyLast.weight), reps: Number(historyLast.reps) };
+        }
+        if (anchorWeight && anchorReps) {
+          return { weight: Number(anchorWeight), reps: Number(anchorReps) };
+        }
+        return null;
+      }, [loggedSets, lastSession, anchorWeight, anchorReps]);
+
+      const handleRepeatLastSet = () => {
+        if (!repeatLastSetCandidate) return;
+        const w = Number(repeatLastSetCandidate.weight);
+        const r = Number(repeatLastSetCandidate.reps);
+        if (!w || !r) return;
+        const now = Date.now();
+        const key = `repeat-${w}-${r}`;
+        if (lastSetSubmitRef.current.key === key && now - lastSetSubmitRef.current.at < 900) return;
+        lastSetSubmitRef.current = { key, at: now };
+        setLoggedSets(prev => {
+          const next = [...prev, { weight: w, reps: r }];
+          syncSessionSets(next);
+          return next;
+        });
+        applySetToInputs({ weight: w, reps: r });
+        onShowToast?.('Repeated set');
       };
 
       const startEditSet = (idx) => {
@@ -3275,7 +3478,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
 
       return (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white dark-mode-modal w-full max-w-md rounded-t-3xl shadow-2xl flex flex-col animate-slide-up" style={{maxHeight: '90vh'}}>
+          <div className="bg-white dark-mode-modal w-full max-w-md rounded-t-3xl shadow-2xl flex flex-col animate-slide-up logger-sheet" style={{maxHeight: '90dvh'}}>
             <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-3xl flex-shrink-0">
               <div className="flex items-center gap-3">
                 <button onClick={handleClose} className="text-gray-500 hover:text-gray-700 transition-colors">
@@ -3312,7 +3515,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               </button>)}
             </div>
 
-            <div className="flex-1 overflow-y-auto" style={{ minHeight: '500px', maxHeight: '500px' }}>
+            <div className="flex-1 overflow-y-auto logger-sheet-body">
               <div className="p-5 space-y-5 h-full">
                 {activeTab === 'workout' ? (
                   <>
@@ -3392,56 +3595,77 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-2">
-                                  <input
-                                    type="number"
-                                    inputMode="numeric"
-                                    value={setInputs.weight}
-                                    onChange={(e) => setSetInputs(prev => ({ ...prev, weight: e.target.value }))}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        repsInputRef.current?.focus();
-                                      }
-                                    }}
-                                    placeholder="Weight"
-                                    ref={weightInputRef}
-                                    className="w-full p-3 rounded-xl border-2 workout-accent-border bg-white font-black text-center text-gray-900 workout-accent-focus outline-none"
-                                  />
-                                  <input
-                                    type="number"
-                                    inputMode="numeric"
-                                    value={setInputs.reps}
-                                    onChange={(e) => setSetInputs(prev => ({ ...prev, reps: e.target.value }))}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleQuickAddSet();
-                                      }
-                                    }}
-                                    placeholder="Reps"
-                                    ref={repsInputRef}
-                                    className="w-full p-3 rounded-xl border-2 workout-accent-border bg-white font-black text-center text-gray-900 workout-accent-focus outline-none"
-                                  />
+                                  <div className="logger-stepper">
+                                    <div className="logger-stepper-label">Weight</div>
+                                    <div className="logger-stepper-controls">
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('weight', -5)}>-5</button>
+                                      <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        value={setInputs.weight}
+                                        onChange={(e) => setSetInputs(prev => ({ ...prev, weight: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            repsInputRef.current?.focus();
+                                          }
+                                        }}
+                                        placeholder="Weight"
+                                        ref={weightInputRef}
+                                        className="logger-stepper-input workout-accent-focus outline-none"
+                                      />
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('weight', 5)}>+5</button>
+                                    </div>
+                                  </div>
+                                  <div className="logger-stepper">
+                                    <div className="logger-stepper-label">Reps</div>
+                                    <div className="logger-stepper-controls">
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('reps', -1)}>-1</button>
+                                      <input
+                                        type="number"
+                                        inputMode="numeric"
+                                        value={setInputs.reps}
+                                        onChange={(e) => setSetInputs(prev => ({ ...prev, reps: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleQuickAddSet();
+                                          }
+                                        }}
+                                        placeholder="Reps"
+                                        ref={repsInputRef}
+                                        className="logger-stepper-input workout-accent-focus outline-none"
+                                      />
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('reps', 1)}>+1</button>
+                                    </div>
+                                  </div>
                                 </div>
-
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleQuickAddSet();
-                                  }}
-                                  disabled={!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet}
-                                  className={`w-full py-3 rounded-xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 ${
-                                    (!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-solid shadow-lg'
-                                  }`}
-                                >
-                                  <span className="text-lg">＋</span>
-                                  {isAddingSet ? 'Adding...' : 'Add Set'}
-                                </button>
-
-                                <div className="text-[10px] workout-accent-muted font-semibold">
-                                  
+                                <div className="logger-sheet-actions">
+                                  <button
+                                    type="button"
+                                    onClick={handleRepeatLastSet}
+                                    disabled={!repeatLastSetCandidate || isAddingSet}
+                                    className={`w-full py-2 rounded-xl font-bold transition-all logger-repeat-button ps-tap ${
+                                      (!repeatLastSetCandidate || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-surface'
+                                    }`}
+                                  >
+                                    {repeatLastSetCandidate ? `Repeat Last Set (${repeatLastSetCandidate.weight} × ${repeatLastSetCandidate.reps})` : 'Repeat Last Set'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleQuickAddSet();
+                                    }}
+                                    disabled={!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet}
+                                    className={`w-full py-3 rounded-xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                                      (!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-solid shadow-lg'
+                                    }`}
+                                  >
+                                    <span className="text-lg">＋</span>
+                                    {isAddingSet ? 'Logging...' : 'Log Set'}
+                                  </button>
                                 </div>
                               </div>
                               {eq.type === 'barbell' && (
@@ -5210,6 +5434,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const postWorkoutTimerRef = useRef(null);
       const postWorkoutCelebrationRef = useRef(null);
       const rageTapRef = useRef(new Map());
+      const quickLogSubmitRef = useRef({ key: '', at: 0 });
 
       const [appState, setAppState] = useState({
         lastWorkoutType: null,
@@ -5857,6 +6082,22 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           name: EQUIPMENT_DB[exerciseId]?.name || 'Exercise',
           kind: EQUIPMENT_DB[exerciseId]?.type === 'cardio' ? 'cardio' : 'strength'
         }, sets);
+      };
+
+      const quickLogSessionSet = (exerciseId, set) => {
+        const weight = Number(set?.weight);
+        const reps = Number(set?.reps);
+        if (!exerciseId || !weight || !reps) return false;
+        const activeLogs = activeSessionToday?.logsByExercise?.[exerciseId] || [];
+        const dedupeKey = `${exerciseId}-${weight}-${reps}`;
+        const now = Date.now();
+        if (quickLogSubmitRef.current.key === dedupeKey && now - quickLogSubmitRef.current.at < 900) {
+          return false;
+        }
+        quickLogSubmitRef.current = { key: dedupeKey, at: now };
+        updateSessionLogs(exerciseId, [...activeLogs, { weight, reps }]);
+        showToast?.('Set saved');
+        return true;
       };
 
       const ensureWorkoutDayEntry = (exercises = []) => {
@@ -6808,6 +7049,7 @@ return (
                     onConsumedOpenTemplatesFromHome={() => setOpenTemplatesFromHome(false)}
                     onOpenSettings={() => setTab('profile')}
                     onToggleRestDay={isRestDay ? undoRestDay : logRestDay}
+                    onQuickLogSet={quickLogSessionSet}
                   />
                 </div>
 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
