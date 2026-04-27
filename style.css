@@ -2457,6 +2457,35 @@ body.dark-mode .finish-footer .finish-summary {
   flex-shrink: 0;
 }
 
+.active-exercise-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.active-exercise-main {
+  min-width: 0;
+}
+
+.active-exercise-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-exercise-meta {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.active-exercise-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .tile-actions {
   display: flex;
   align-items: center;
@@ -2500,17 +2529,43 @@ body.dark-mode .finish-footer .finish-summary {
   transform: scale(0.97);
 }
 
-.session-action-button--fixed {
-  min-height: 36px;
+.session-row-action {
+  height: 44px;
+  min-width: 64px;
+  padding: 0 14px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
   white-space: nowrap;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--surface-2);
 }
 
-.session-adjust-button {
-  min-height: 36px;
-  white-space: nowrap;
+.session-row-action--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #111;
+}
+
+.session-row-action--secondary {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.session-row-action--danger-icon {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+  border-color: var(--border);
 }
 
 .logger-stepper {
@@ -2579,6 +2634,40 @@ body.dark-mode .finish-footer .finish-summary {
   border: 1px solid color-mix(in srgb, #ef4444 35%, var(--border));
   color: #ef4444;
   background: color-mix(in srgb, #ef4444 8%, transparent);
+}
+
+@media (max-width: 640px) {
+  .active-exercise-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "main meta"
+      "actions actions";
+    row-gap: 10px;
+  }
+
+  .active-exercise-main {
+    grid-area: main;
+  }
+
+  .active-exercise-meta {
+    grid-area: meta;
+  }
+
+  .active-exercise-actions {
+    grid-area: actions;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+
+  .session-row-action {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .session-row-action--danger-icon {
+    flex: 0 0 44px;
+  }
 }
 
 @media (max-width: 768px) {

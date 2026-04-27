@@ -2566,6 +2566,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const showIdleControls = mode === 'idle';
   const showCompactControls = mode !== 'idle';
   const showCompactSearchInput = showCompactControls && (showCompactSearch || !!searchQuery);
+  const workoutHeaderSubtitle = isSessionMode ? 'Workout active' : "Workout, Let's build.";
 
   return (
     <div className="flex flex-col h-full bg-gray-50 workout-shell relative">
@@ -2574,7 +2575,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           <div className="ps-hero-header__left">
             <div className="ps-hero-header__brand select-none">PLANET STRENGTH</div>
             <div className="ps-hero-header__welcome">
-              Workout, <span className="ps-hero-header__name">Let's build.</span>
+              {workoutHeaderSubtitle}
             </div>
           </div>
           <div className="ps-hero-header__icons">
@@ -2750,27 +2751,25 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   <div
                     key={entryId}
                     onClick={mode === 'active' ? () => onSelectExercise(entryId, 'session') : undefined}
-                    className={`session-entry-row ${categoryClass}`}
+                    className={`session-entry-row ${mode === 'active' ? 'active-exercise-row' : ''} ${categoryClass}`}
                     role={mode === 'active' ? 'button' : undefined}
                     tabIndex={mode === 'active' ? 0 : undefined}
                     onKeyDown={mode === 'active' ? (e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); } : undefined}
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
-                    <div className="session-entry-main">
-                      <div className="text-sm font-bold workout-heading session-entry-title">{entry.name || entry.label}</div>
+                    <div className="session-entry-main active-exercise-main">
+                      <div className="text-sm font-bold workout-heading session-entry-title active-exercise-name">{entry.name || entry.label}</div>
                       <div className="text-[11px] workout-muted">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
                     </div>
-                    <div className="session-entry-actions">
-                      {(mode === 'active' || entrySetCount > 0) && (
-                        <div className={mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-xs font-bold cues-accent'}>
-                          {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
-                        </div>
-                      )}
+                    <div className={`active-exercise-meta ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
+                      {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
+                    </div>
+                    <div className="session-entry-actions active-exercise-actions">
                       {mode === 'active' && (
                         entry.kind === 'cardio' ? (
                           <button
                             onClick={(e) => { e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
-                            className="session-action-button"
+                            className="session-row-action session-row-action--primary ps-tap"
                           >
                             + Entry
                           </button>
@@ -2782,7 +2781,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 handleQuickLog(entryId);
                               }}
-                              className="session-action-button session-action-button--fixed ps-tap"
+                              className="session-row-action session-row-action--primary ps-tap"
                               disabled={!quickSet}
                             >
                               {quickSet ? `+ Set ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
@@ -2793,7 +2792,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 onSelectExercise(entryId, 'session');
                               }}
-                              className="tile-action session-adjust-button ps-tap"
+                              className="session-row-action session-row-action--secondary ps-tap"
                             >
                               Adjust
                             </button>
@@ -2803,14 +2802,14 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       {entry.kind !== 'cardio' && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setSwapState({ mode: 'session', index: idx }); }}
-                          className="session-action-button"
+                          className="session-row-action session-row-action--secondary ps-tap"
                         >
                           Swap
                         </button>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); onRemoveSessionExercise?.(entryId); }}
-                        className="session-remove-button"
+                        className="session-row-action session-row-action--danger-icon ps-tap"
                         aria-label={`Remove ${entry.name || entry.label}`}
                       >
                         <Icon name="Trash" className="w-4 h-4" />
