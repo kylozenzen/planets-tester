@@ -2774,26 +2774,29 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   <div
                     key={entryId}
                     onClick={mode === 'active' ? () => onSelectExercise(entryId, 'session') : undefined}
-                    className={`session-entry-row ${mode === 'active' ? 'active-exercise-row' : ''} ${categoryClass}`}
+                    className={`active-workout-row workout-card ${mode === 'active' ? 'active-exercise-row' : ''} ${categoryClass}`}
                     role={mode === 'active' ? 'button' : undefined}
                     tabIndex={mode === 'active' ? 0 : undefined}
                     onKeyDown={mode === 'active' ? (e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); } : undefined}
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
-                    <div className="session-entry-main active-exercise-main">
-                      <div className="text-sm font-bold workout-heading session-entry-title active-exercise-name">{entry.name || entry.label}</div>
-                      <div className="text-[11px] workout-muted">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
+                    <div className="active-workout-main">
+                      <div className="active-workout-name">{entry.name || entry.label}</div>
+                      <div className="active-workout-category">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
                     </div>
-                    <div className="active-exercise-actions-wrap">
-                      <div className={`active-exercise-meta ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
-                        {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
+                    <div className="active-workout-controls">
+                      <div className="active-workout-setcount">
+                        {entrySetCount} {entry.kind === 'cardio' ? 'ENTRIES' : 'SETS'}
                       </div>
-                      <div className="session-entry-actions active-exercise-actions">
-                      {mode === 'active' && (
+                      {mode === 'active' ? (
                         entry.kind === 'cardio' ? (
                           <button
-                            onClick={(e) => { e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
-                            className="session-row-action session-row-action--primary ps-tap"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onSelectExercise(entryId, 'session');
+                            }}
+                            className="active-workout-btn active-workout-btn--primary ps-tap"
                           >
                             + Entry
                           </button>
@@ -2805,10 +2808,10 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 handleQuickLog(entryId);
                               }}
-                              className="session-row-action session-row-action--primary ps-tap"
+                              className="active-workout-btn active-workout-btn--primary ps-tap"
                               disabled={!quickSet}
                             >
-                              {quickSet ? `+ Set ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
+                              + Set
                             </button>
                             <button
                               onClick={(e) => {
@@ -2816,35 +2819,50 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 onSelectExercise(entryId, 'session');
                               }}
-                              className="session-row-action session-row-action--secondary ps-tap"
+                              className="active-workout-btn active-workout-btn--secondary ps-tap"
                             >
                               Adjust
                             </button>
                           </>
                         )
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onSelectExercise(entryId, 'session');
+                          }}
+                          className="active-workout-btn active-workout-btn--secondary ps-tap"
+                        >
+                          Adjust
+                        </button>
                       )}
                       {entry.kind !== 'cardio' && (
                         <button
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             setSwapSearch('');
                             setSwapMuscleFilter('all');
                             setSwapEquipmentFilter('all');
                             setSwapState({ mode: 'session', index: idx });
                           }}
-                          className="session-row-action session-row-action--secondary ps-tap"
+                          className="active-workout-btn active-workout-btn--secondary ps-tap"
                         >
                           Swap
                         </button>
                       )}
                       <button
-                        onClick={(e) => { e.stopPropagation(); onRemoveSessionExercise?.(entryId); }}
-                        className="session-row-action session-row-action--danger-icon ps-tap"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onRemoveSessionExercise?.(entryId);
+                        }}
+                        className="active-workout-btn active-workout-btn--icon ps-tap"
                         aria-label={`Remove ${entry.name || entry.label}`}
                       >
                         <Icon name="Trash" className="w-4 h-4" />
                       </button>
-                      </div>
                     </div>
                   </div>
                 )})}
