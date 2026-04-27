@@ -5,11 +5,16 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
     const DEBUG_LOG = typeof localStorage !== 'undefined' && localStorage.getItem('ps_debug') === 'true';
     const debugLog = (tag, payload) => {
-      if (!DEBUG_LOG) return;
-      if (payload !== undefined) {
-        console.log(`[ps-debug] ${tag}`, payload);
-      } else {
-        console.log(`[ps-debug] ${tag}`);
+      if (DEBUG_LOG) {
+        if (payload !== undefined) {
+          console.log(`[ps-debug] ${tag}`, payload);
+        } else {
+          console.log(`[ps-debug] ${tag}`);
+        }
+      }
+      // Forward custom events to Google Analytics (fires regardless of DEBUG_LOG)
+      if (typeof gtag === 'function') {
+        gtag('event', tag, payload || {});
       }
     };
 
@@ -248,6 +253,15 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       if (value.includes('bicep') || value.includes('tricep') || value.includes('arm') || value.includes('forearm') || value.includes('brach')) return 'arms';
       if (value.includes('core') || value.includes('ab') || value.includes('oblique')) return 'core';
       return 'other';
+    };
+
+    const resolveCategoryClass = (label = '') => {
+      const normalizedCategory = normalizeMuscleGroup(label);
+      if (!normalizedCategory) return '';
+      if (['chest', 'back', 'legs', 'core', 'arms', 'shoulders'].includes(normalizedCategory)) {
+        return `category-${normalizedCategory}`;
+      }
+      return '';
     };
 
     const resolveMuscleGroup = (raw) => {
@@ -1013,88 +1027,9 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     };
 
     const normalizeSearch = (value = '') => value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-    const SEARCH_ALIASES = {
-      rdl: 'romanian deadlift',
-      ohp: 'overhead press',
-      bp: 'bench press',
-      'lat pulldown': 'lat pulldown lat pull-down lat pull down',
-      dl: 'deadlift',
-      squat: 'squat back squat',
-      row: 'row bent-over row',
-    };
+    // SEARCH_ALIASES, fuzzyMatchExercises, calculatePlateLoading, getProgressionAdvice
+    // → moved to data/search.js
 
-    const fuzzyMatchExercises = (query, pool) => {
-      const normalized = normalizeSearch(query);
-      if (!normalized) return pool.slice(0, 20);
-
-      const scores = pool.map((id) => {
-        const eq = EQUIPMENT_DB[id];
-        const haystack = [
-          eq?.name || '',
-          eq?.target || '',
-          (eq?.tags || []).join(' '),
-          Object.entries(SEARCH_ALIASES)
-            .filter(([alias]) => normalized.includes(alias))
-            .map(([, str]) => str)
-            .join(' ')
-        ].join(' ').toLowerCase();
-
-        const baseScore = haystack.startsWith(normalized) ? 2 : (haystack.includes(normalized) ? 1 : 0);
-        return { id, score: baseScore };
-      }).filter(item => item.score > 0);
-
-      return scores.sort((a, b) => b.score - a.score).map(s => s.id).slice(0, 20);
-    };
-
-    const calculatePlateLoading = (targetWeight, barWeight = 45) => {
-      const plateOptions = [45, 35, 25, 10, 5, 2.5];
-      const perSide = (targetWeight - barWeight) / 2;
-      
-      if (perSide <= 0) return { plates: [], perSide: 0, total: barWeight, display: 'Empty bar' };
-      
-      const plates = [];
-      let remaining = perSide;
-      
-      for (const plate of plateOptions) {
-        while (remaining >= plate) {
-          plates.push(plate);
-          remaining -= plate;
-        }
-      }
-      
-      const totalPerSide = plates.reduce((sum, p) => sum + p, 0);
-      const total = barWeight + (totalPerSide * 2);
-      
-      return {
-        plates,
-        perSide: totalPerSide,
-        total,
-        display: plates.length > 0 ? plates.join(' + ') + ' per side' : 'Empty bar'
-      };
-    };
-
-    const getProgressionAdvice = (sessions, currentBest) => {
-      if (!sessions || sessions.length < 2) return null;
-      const recentSessions = sessions.slice(-3);
-      let easyCount = 0, goodCount = 0, hardCount = 0, atBest = 0;
-
-      recentSessions.forEach(session => {
-        (Array.isArray(session.sets) ? session.sets : []).forEach(set => {
-          if (set.weight === currentBest) {
-            atBest++;
-            if (set.difficulty === 'easy') easyCount++;
-            if (set.difficulty === 'good') goodCount++;
-            if (set.difficulty === 'hard') hardCount++;
-          }
-        });
-      });
-
-      if (atBest >= 3 && (easyCount >= 2 || (easyCount + goodCount >= 3))) return { type: 'ready', message: 'Ready to bump weight next time' };
-      if (atBest >= 2 && (goodCount + hardCount >= 2)) return { type: 'building', message: 'Keep building - you are close' };
-      return null;
-    };
-
-    // getCoachMessage is defined in data/copy.js
 
     const Card = ({ children, className = '', onClick, style }) => (
       <div
@@ -1124,33 +1059,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
         </div>
       );
     };
-
-    const LockedInGate = ({ onLockedIn, onBrowse }) => (
-      <div className="locked-in-gate">
-        <div className="locked-in-card card-enter">
-          <h1 className="locked-in-title">Ready to lock in?</h1>
-          <p className="locked-in-text">
-            Turn this session into a promise. Once you tap in, you're here to work.
-          </p>
-          <div className="locked-in-actions">
-            <button
-              type="button"
-              className="btn-primary ps-tap"
-              onClick={onLockedIn}
-            >
-              I'm Locked In
-            </button>
-            <button
-              type="button"
-              className="btn-secondary-flat ps-tap"
-              onClick={onBrowse}
-            >
-              I'm Just Browsing
-            </button>
-          </div>
-        </div>
-      </div>
-    );
 
     const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
       if (!isOpen) return null;
@@ -1627,148 +1535,9 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
     // ========== ONBOARDING ==========
 // Intro + onboarding flow
-const OnboardingProgress = ({ step, total }) => (
-  <div className="onboarding-progress">
-    {[...Array(total)].map((_, idx) => (
-      <div key={idx} className={`dot ${idx <= step ? 'active' : ''}`} />
-    ))}
-    <span className="text-xs font-semibold text-gray-500">{step + 1} / {total}</span>
-  </div>
-);
+// ONBOARDING COMPONENTS → moved to components/onboarding.js
 
-const OnboardingCardShell = ({ children, step, total, onSkip }) => (
-  <div className="onboarding-card animate-slide-up">
-    <div className="flex items-start justify-between">
-      <OnboardingProgress step={step} total={total} />
-      {onSkip && <button className="ghost-button text-sm" onClick={onSkip}>Skip</button>}
-    </div>
-    {children}
-  </div>
-);
-
-const OnboardingIntro = ({ title, subhead, body, step, total, onNext, onSkip, emoji }) => (
-  <OnboardingCardShell step={step} total={total} onSkip={onSkip}>
-    <div className="flex flex-col items-center text-center gap-3 flex-1">
-      <div className="onboarding-hero">{emoji}</div>
-      <h1 className="onboarding-title">{title}</h1>
-      {subhead && <p className="onboarding-subhead">{subhead}</p>}
-      <p className="onboarding-body">{body}</p>
-    </div>
-    <div className="onboarding-actions">
-      <button className="ghost-button" onClick={onSkip}>Skip</button>
-      <button className="accent-button" onClick={onNext}>Next</button>
-    </div>
-  </OnboardingCardShell>
-);
-
-const OnboardingForm = ({ profile, setProfile, onComplete, onBack, step, total }) => {
-  const canStart = profile.username && profile.avatar && profile.workoutLocation;
-  const locationOptions = [
-    { id: 'gym', label: 'Gym', detail: 'Commercial gym or studio', gymType: 'commercial' },
-    { id: 'home', label: 'Home', detail: 'Garage, apartment, or backyard', gymType: 'home' },
-    { id: 'other', label: 'Other', detail: 'Travel or mixed', gymType: 'commercial' },
-  ];
-
-  return (
-    <OnboardingCardShell step={step} total={total}>
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-bold text-gray-500 uppercase">Quick setup</div>
-        {onBack && <button className="ghost-button text-sm" onClick={onBack}>Back</button>}
-      </div>
-      <div className="space-y-3 flex-1 flex flex-col">
-        <div className="form-tile">
-          <label className="field-label">Name</label>
-            <input
-              type="text"
-              value={profile.username}
-              onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-              className="input-surface"
-              placeholder="Your name"
-            />
-          </div>
-
-        <div className="form-tile">
-          <label className="field-label">Emoji avatar</label>
-            <div className="grid grid-cols-5 gap-2">
-              {AVATARS.map((a) => (
-                <button
-                  key={a}
-                  onClick={() => setProfile({ ...profile, avatar: a })}
-                  className={`p-3 rounded-xl text-2xl border ${profile.avatar === a ? 'border-purple-400 bg-purple-50' : 'bg-gray-50 border-gray-200'}`}
-                >
-                  {a}
-                </button>
-              ))}
-            </div>
-          </div>
-
-        <div className="form-tile">
-          <label className="field-label">Where are you working out?</label>
-          <div className="flex items-stretch justify-center gap-2">
-            {locationOptions.map((loc) => (
-              <button
-                key={loc.id}
-                onClick={() => setProfile({ ...profile, workoutLocation: loc.id, gymType: loc.gymType })}
-                className={`flex-1 min-w-0 rounded-xl border-2 px-3 py-3 text-center transition-all flex flex-col items-center gap-1 ${
-                  profile.workoutLocation === loc.id ? 'border-purple-400 bg-purple-50' : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="text-xl">{loc.id === 'gym' ? '🏋️' : loc.id === 'home' ? '🏠' : '🧳'}</div>
-                <div className={`text-sm font-bold ${profile.workoutLocation === loc.id ? 'text-purple-700' : 'text-gray-900'}`}>{loc.label}</div>
-                <div className="text-[11px] text-gray-500 leading-snug">{loc.detail}</div>
-                {profile.workoutLocation === loc.id && <Icon name="Check" className="w-4 h-4 text-purple-600" />}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="onboarding-actions">
-        <button
-          onClick={() => { if (canStart) onComplete(); }}
-          disabled={!canStart}
-          className="accent-button"
-        >
-          Start Tracking
-        </button>
-      </div>
-    </OnboardingCardShell>
-  );
-};
-
-const OnboardingFlow = ({ profile, setProfile, onFinish }) => {
-  const [step, setStep] = useState(0);
-  const steps = COPY_ONBOARDING_STEPS;
-
-  const total = steps.length;
-
-  return (
-    <div className="onboarding-shell">
-      {steps[step].type === 'intro' ? (
-        <OnboardingIntro
-          title={steps[step].title}
-          subhead={steps[step].subhead}
-          body={steps[step].body}
-          emoji={steps[step].emoji}
-          step={step}
-          total={total}
-          onSkip={() => setStep(total - 1)}
-          onNext={() => setStep(Math.min(step + 1, total - 1))}
-        />
-      ) : (
-        <OnboardingForm
-          profile={profile}
-          setProfile={setProfile}
-          onComplete={onFinish}
-          onBack={() => setStep((prev) => Math.max(prev - 1, 0))}
-          step={step}
-          total={total}
-        />
-      )}
-    </div>
-  );
-};
-
-// ========== CALCULATIONS ==========
+    // ========== CALCULATIONS ==========
     const getBestForEquipment = (sessions = []) => {
       let best = 0;
       sessions.forEach(s => {
@@ -1847,13 +1616,11 @@ const OnboardingFlow = ({ profile, setProfile, onFinish }) => {
 
       if (lastDayKey === todayKey && lastType) return lastType;
       if (!lastType) return "Push";
-      
+
       const idx = order.indexOf(lastType);
       return order[(idx + 1) % order.length] || "Push";
     };
 
-    // ========== HOME SCREEN ==========
-    
 const GeneratorOptions = ({ options, onUpdate, compact = false }) => {
   const goalOptions = [
     { id: 'strength', label: 'Strength' },
@@ -1894,387 +1661,7 @@ const GeneratorOptions = ({ options, onUpdate, compact = false }) => {
   );
 };
 
-const MatrixWaterfall = ({ show, onClose }) => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    if (!show) return;
-    const timer = setTimeout(onClose, 4000);
-    return () => clearTimeout(timer);
-  }, [show, onClose]);
-
-  useEffect(() => {
-    if (!show) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const chars = 'ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ01234567890';
-    const fontSize = 16;
-    const columns = Math.floor(canvas.width / fontSize);
-    const drops = Array(columns).fill(1);
-
-    const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#0F0';
-      ctx.font = fontSize + 'px monospace';
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    };
-
-    const interval = setInterval(draw, 33);
-    return () => clearInterval(interval);
-  }, [show]);
-
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black" onClick={onClose}>
-      <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div 
-          className="text-2xl font-mono text-green-400"
-          style={{ textShadow: '0 0 20px rgba(0,255,0,0.8)', opacity: 0.7, animation: 'fadeIn 2s' }}
-        >
-          Wake up, Neo...
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PowerUpEffect = ({ show, onClose }) => {
-  useEffect(() => {
-    if (!show) return;
-    const timer = setTimeout(onClose, 3500);
-    return () => clearTimeout(timer);
-  }, [show, onClose]);
-
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black opacity-90"></div>
-      
-      <div className="relative z-10 text-center">
-        <div 
-          className="text-7xl font-black mb-4"
-          style={{
-            background: 'linear-gradient(45deg, #FFD700, #FFA500)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 40px rgba(255,215,0,0.8)',
-            animation: 'powerPulse 0.5s infinite alternate'
-          }}
-        >
-          IT'S OVER 9000!
-        </div>
-        <div className="text-2xl text-yellow-400 font-bold">
-          ⚡ POWER LEVEL: MAXIMUM ⚡
-        </div>
-      </div>
-
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%)',
-          animation: 'auraExpand 1.5s ease-out infinite'
-        }}
-      ></div>
-
-      <style>{`
-        @keyframes powerPulse {
-          from { transform: scale(1); }
-          to { transform: scale(1.1); }
-        }
-        @keyframes auraExpand {
-          from { transform: scale(0.8); opacity: 0.8; }
-          to { transform: scale(1.2); opacity: 0; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 0.7; }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-const GloryEasterEgg = ({ show, onClose }) => {
-  const [phase, setPhase] = useState(0);
-  const [confetti, setConfetti] = useState([]);
-
-  useEffect(() => {
-    if (!show) {
-      setPhase(0);
-      setConfetti([]);
-      return;
-    }
-    
-    const timer1 = setTimeout(() => setPhase(1), 300);
-    const timer2 = setTimeout(() => {
-      setPhase(2);
-      const newConfetti = Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        delay: Math.random() * 0.5,
-        duration: 2 + Math.random() * 2,
-        rotate: Math.random() * 360,
-        color: ['#FFD700', '#FFA500', '#FF6B6B', '#4ECDC4', '#95E1D3'][Math.floor(Math.random() * 5)]
-      }));
-      setConfetti(newConfetti);
-    }, 1800);
-    
-    const timer3 = setTimeout(onClose, 5000);
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-  }, [show, onClose]);
-
-  if (!show) return null;
-
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
-      onClick={onClose}
-    >
-      <div className="text-center px-8">
-        {phase >= 1 && (
-          <div 
-            className="text-4xl font-black text-white mb-4"
-            style={{
-              animation: 'slideDown 0.5s ease-out',
-              textShadow: '0 0 20px rgba(255,215,0,0.5)'
-            }}
-          >
-            Press it...
-          </div>
-        )}
-        
-        {phase >= 2 && (
-          <div 
-            className="text-5xl font-black mb-2"
-            style={{
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              animation: 'slideUp 0.6s ease-out, gloryPulse 2s ease-in-out infinite',
-              textShadow: '0 0 30px rgba(255,215,0,0.8)'
-            }}
-          >
-            Press it for GLORY!
-          </div>
-        )}
-        
-        {phase >= 2 && (
-          <div 
-            className="text-lg text-gray-400 font-semibold"
-            style={{ animation: 'fadeIn 1s ease-in' }}
-          >
-            — Barney Stinson
-          </div>
-        )}
-      </div>
-      
-      {confetti.map(c => (
-        <div
-          key={c.id}
-          className="absolute w-3 h-3 rounded-sm"
-          style={{
-            left: c.x + '%',
-            top: '-20px',
-            backgroundColor: c.color,
-            animation: `fall ${c.duration}s linear ${c.delay}s forwards`,
-            transform: `rotate(${c.rotate}deg)`,
-            boxShadow: `0 0 10px ${c.color}`
-          }}
-        />
-      ))}
-      
-      <style>{`
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(30px) scale(0.8); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes gloryPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        @keyframes fall {
-          to { transform: translateY(120vh) rotate(720deg); opacity: 0; }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-const SpartanKick = ({ show, onClose }) => {
-  useEffect(() => {
-    if (!show) return;
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
-  }, [show, onClose]);
-
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-900 via-stone-800 to-red-900 opacity-95"></div>
-      
-      <div className="relative z-10 text-center" style={{ animation: 'kickImpact 0.5s ease-out' }}>
-        <div className="text-8xl mb-4">🗡️</div>
-        <div 
-          className="text-7xl font-black mb-4 text-red-600"
-          style={{
-            textShadow: '4px 4px 0 #000, -4px -4px 0 #000, 4px -4px 0 #000, -4px 4px 0 #000',
-            animation: 'spartanShake 0.5s ease-in-out'
-          }}
-        >
-          THIS IS SPARTA!
-        </div>
-        <div className="text-2xl text-amber-400 font-bold" style={{ textShadow: '2px 2px 4px #000' }}>
-          ⚔️ TONIGHT WE LIFT IN GLORY ⚔️
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes kickImpact {
-          0% { transform: translateX(-100vw); }
-          60% { transform: translateX(20px); }
-          100% { transform: translateX(0); }
-        }
-        @keyframes spartanShake {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(-2deg); }
-          75% { transform: rotate(2deg); }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-const ButDidYouDie = ({ show, onClose, onConfirm }) => {
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black opacity-80" onClick={onClose}></div>
-      
-      <div className="relative z-10 bg-gray-900 rounded-3xl p-8 max-w-sm mx-4 border-4 border-purple-500">
-        <div className="text-center mb-6">
-          <div className="text-6xl mb-4">💀</div>
-          <div className="text-4xl font-black text-white mb-2">BUT DID YOU DIE?</div>
-          <div className="text-sm text-gray-400">Rest is important, but so is consistency...</div>
-        </div>
-        
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-6 py-3 bg-gray-700 text-white rounded-xl font-bold active:scale-95"
-          >
-            Nevermind
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-xl font-bold active:scale-95"
-          >
-            Log Rest Day
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const NiceToast = ({ show }) => {
-  if (!show) return null;
-
-  return (
-    <div 
-      className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 bg-purple-600 text-white px-6 py-3 rounded-full font-bold shadow-lg"
-      style={{ animation: 'niceSlide 2s ease-in-out' }}
-    >
-      Nice 😎
-      <style>{`
-        @keyframes niceSlide {
-          0% { transform: translate(-50%, 100px); opacity: 0; }
-          20% { transform: translate(-50%, 0); opacity: 1; }
-          80% { transform: translate(-50%, 0); opacity: 1; }
-          100% { transform: translate(-50%, 100px); opacity: 0; }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-const PerfectWeek = ({ show, onClose }) => {
-  useEffect(() => {
-    if (!show) return;
-    const timer = setTimeout(onClose, 5000);
-    return () => clearTimeout(timer);
-  }, [show, onClose]);
-
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-black opacity-95"></div>
-      
-      <div className="relative z-10 text-center">
-        <div className="text-7xl mb-6">🎩</div>
-        <div 
-          className="text-6xl font-black mb-4"
-          style={{
-            background: 'linear-gradient(45deg, #FFD700, #FF1493, #FFD700)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            animation: 'perfectPulse 1s ease-in-out infinite'
-          }}
-        >
-          YOU JUST PULLED
-        </div>
-        <div 
-          className="text-7xl font-black mb-4"
-          style={{
-            background: 'linear-gradient(135deg, #4169E1, #FFD700)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 40px rgba(255,215,0,0.8)'
-          }}
-        >
-          A BARNEY!
-        </div>
-        <div className="text-3xl text-white font-bold mb-2">✋ PERFECT WEEK ✋</div>
-        <div className="text-xl text-purple-300">7 days, 7 workouts. Legendary.</div>
-      </div>
-
-      <style>{`
-        @keyframes perfectPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-        }
-      `}</style>
-    </div>
-  );
-};
+// EASTER EGG COMPONENTS → moved to components/easter-eggs.js
 
     // ========== HOME LOCKER WIDGET ==========
     const HomeLockerWidget = () => {
@@ -2526,7 +1913,6 @@ const PerfectWeek = ({ show, onClose }) => {
       );
     };
 
-
 const Home = ({
   profile,
   lastWorkoutLabel,
@@ -2686,23 +2072,6 @@ const Home = ({
           </div>
         </div>
       </div>
-      <div className="ps-manifesto-ticker">
-        <div className="ps-ticker-track">
-          {COPY_TICKER.map((item, i) => (
-            <span key={i} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
-              <span className="ps-ticker-dot" />
-              {item}
-            </span>
-          ))}
-          {COPY_TICKER.map((item, i) => (
-            <span key={`r${i}`} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
-              <span className="ps-ticker-dot" />
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
       <div className="flex-1 home-content ps-home-scroll">
         <div className="ps-home-stack">
           <button onClick={onStartWorkout} className="home-primary-button ps-cta-btn card-enter">
@@ -2739,19 +2108,21 @@ const Home = ({
           {/* ===== LOCKER WIDGET ===== */}
           <HomeLockerWidget />
 
+          {/* ===== MANIFESTO LIST ===== */}
+          <div className="ps-manifesto-list">
+            <div className="ps-manifesto-list__label">Built by Nobody.</div>
+            {COPY_TICKER.map((item, i) => (
+              <div key={i} className="ps-manifesto-list__item">
+                <span className="ps-manifesto-list__dot" />
+                <span className={i % 2 === 0 ? 'ps-manifesto-list__item--hi' : ''}>{item}</span>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </div>
   );
-};
-
-const resolveCategoryClass = (label = '') => {
-  const normalizedCategory = normalizeMuscleGroup(label);
-  if (!normalizedCategory) return '';
-  if (['chest', 'back', 'legs', 'core', 'arms', 'shoulders'].includes(normalizedCategory)) {
-    return `category-${normalizedCategory}`;
-  }
-  return '';
 };
 
 const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay }) => {
@@ -3188,29 +2559,12 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           </div>
         </div>
       </div>
-      <div className="ps-manifesto-ticker">
-        <div className="ps-ticker-track">
-          {COPY_TICKER.map((item, i) => (
-            <span key={i} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
-              <span className="ps-ticker-dot" />
-              {item}
-            </span>
-          ))}
-          {COPY_TICKER.map((item, i) => (
-            <span key={`r${i}`} className={`ps-ticker-item${i % 2 === 0 ? ' ps-ticker-item--hi' : ''}`}>
-              <span className="ps-ticker-dot" />
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
       <div className={`flex-1 overflow-y-auto pb-28 px-4 space-y-4 workout-scroll ${isSessionMode ? 'workout-scroll--with-footer' : ''}`}>
         {showIdleControls && (
           <Card className="space-y-3 workout-card mt-5 start-today-card card-enter ps-card-interactive">
             <div>
               <div className="text-xs font-bold workout-muted uppercase">Start Today</div>
-              <div className="text-base font-black workout-heading">Build today’s session</div>
+              <div className="text-base font-black workout-heading">Build today's session</div>
             </div>
             <div className="space-y-2">
               <button
@@ -3324,7 +2678,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               <div>
                 <div className="text-xs font-bold workout-muted uppercase">{isSessionMode ? 'Workout active' : 'Draft workout'}</div>
                 <div className="flex items-center gap-2">
-                  <div className="text-lg font-black workout-heading">Today’s Workout</div>
+                  <div className="text-lg font-black workout-heading">Today's Workout</div>
                   {activeSession?.createdFrom === 'generated' && (
                     <span className="session-badge">Generated</span>
                   )}
@@ -4273,7 +3627,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       const [analyticsTab, setAnalyticsTab] = useState(initialAnalyticsTab);
       const [exerciseHistoryQuery, setExerciseHistoryQuery] = useState('');
       const [exerciseHistoryExpanded, setExerciseHistoryExpanded] = useState(null);
-
       useEffect(() => {
         if (initialAnalyticsTab && initialAnalyticsTab !== analyticsTab) {
           setAnalyticsTab(initialAnalyticsTab);
@@ -4281,11 +3634,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         }
       }, [initialAnalyticsTab]);
 
-      const allEquipment = useMemo(
-        () => Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio'),
-        []
-      );
-
+      const allEquipment = Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio');
       const combinedSessions = useMemo(() => {
         const sessions = [];
         const seen = new Set();
@@ -4314,62 +3663,25 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
         return sessions;
       }, [history, cardioHistory]);
 
-      const equipmentWithHistory = useMemo(
-        () => allEquipment.filter(id => safeArray(history[id]).length > 0).length,
-        [allEquipment, history]
-      );
-
-      const workoutDaySet = useMemo(() => {
-        const days = new Set();
-        combinedSessions.forEach(s => {
-          if (s.date) { try { days.add(toDayKey(new Date(s.date))); } catch {} }
-        });
-        return days;
-      }, [combinedSessions]);
-
-      const heatmapWeeks = useMemo(() => {
-        const today = new Date();
-        const todayKey = toDayKey(today);
-        const weeks = [];
-        for (let w = 7; w >= 0; w--) {
-          const week = [];
-          for (let d = 6; d >= 0; d--) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - (w * 7 + d));
-            const key = toDayKey(date);
-            week.push({ key, hasWorkout: workoutDaySet.has(key), isToday: key === todayKey, isFuture: key > todayKey });
-          }
-          weeks.push(week);
-        }
-        return weeks;
-      }, [workoutDaySet]);
-
-      const groupedHistory = useMemo(() => {
-        const sorted = [...combinedSessions].sort((a, b) => new Date(b.date) - new Date(a.date));
-        const groups = {};
-        sorted.forEach(session => {
-          try {
-            const key = toDayKey(new Date(session.date));
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(session);
-          } catch {}
-        });
-        return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-      }, [combinedSessions]);
+      const equipmentWithHistory = allEquipment.filter(id => safeArray(history[id]).length > 0).length;
 
       const MiniChart = ({ equipId }) => {
         const sessions = safeArray(history[equipId]);
         if (sessions.length < 2) return <p className="text-sm text-gray-400 text-center py-8">Log at least 2 sessions to chart progress</p>;
+
         const dataPoints = sessions.map(s => {
           let maxWeight = 0;
           safeArray(s.sets).forEach(set => { if (set.weight > maxWeight) maxWeight = set.weight; });
           return { date: new Date(s.date), weight: maxWeight };
         }).filter(d => d.weight > 0).slice(-10);
+
         if (dataPoints.length < 2) return <p className="text-sm text-gray-400 text-center py-8">Need more data points</p>;
+
         const weights = dataPoints.map(d => d.weight);
         const minW = Math.min(...weights) - 10;
         const maxW = Math.max(...weights) + 10;
         const range = (maxW - minW) || 1;
+
         const width = 280, height = 120, padding = 20;
         const points = dataPoints.map((d, i) => {
           const x = padding + (i / (dataPoints.length - 1)) * (width - padding * 2);
@@ -4377,6 +3689,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
           return { x, y };
         });
         const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
         return (
           <div>
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
@@ -4406,330 +3719,330 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       ];
 
       return (
-        <div className="flex flex-col h-full analytics-shell">
-          <div className="analytics-tab-bar">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => { setSelectedEquipment(null); setAnalyticsTab(t.id); }}
-                className={`analytics-tab-btn ${analyticsTab === t.id ? 'active' : ''}`}
-              >
-                {t.label}
-              </button>
-            ))}
+        <div className="flex flex-col h-full bg-gray-50 analytics-shell">
+          <div className="progress-header sticky top-0 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+            <div className="px-4 pt-4 pb-1">
+              <h1 className="text-2xl font-black text-gray-900">Progress</h1>
+            </div>
+            <div className="progress-tab-bar px-4 pb-2">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setSelectedEquipment(null); setAnalyticsTab(tab.id); }}
+                  className={`progress-tab-pill ${analyticsTab === tab.id ? 'progress-tab-active' : ''}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-3">
-
-            {/* ===== HISTORY TAB ===== */}
-            {analyticsTab === 'history' && (
-              <div className="space-y-4">
-                {groupedHistory.length === 0 ? (
-                  <Card>
-                    <div className="analytics-empty-state">
-                      <div className="analytics-empty-icon">📋</div>
-                      <div className="analytics-empty-title">No workouts yet</div>
-                      <div className="analytics-empty-body">Log a few sessions and your history will appear here.</div>
-                    </div>
-                  </Card>
-                ) : (
-                  groupedHistory.map(([dayKey, sessions]) => {
-                    const date = new Date(dayKey + 'T12:00:00');
-                    const dateLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            {analyticsTab === 'history' ? (
+              (() => {
+                try {
+                  const byDay = {};
+                  combinedSessions.forEach(s => {
+                    const day = (s.date || '').slice(0, 10);
+                    if (!day) return;
+                    if (!byDay[day]) byDay[day] = [];
+                    byDay[day].push(s);
+                  });
+                  const days = Object.keys(byDay).sort((a, b) => b.localeCompare(a));
+                  if (days.length === 0) {
                     return (
-                      <div key={dayKey} className="analytics-day-group">
-                        <div className="analytics-day-header">
-                          <span className="analytics-day-label">{dateLabel}</span>
-                          <span className="analytics-day-count">{sessions.length} {sessions.length === 1 ? 'exercise' : 'exercises'}</span>
-                        </div>
-                        <div className="space-y-2">
-                          {sessions.map((session, idx) => {
-                            const isCardio = session.type === 'cardio';
-                            const eq = EQUIPMENT_DB[session.equipId];
-                            const sets = isCardio ? 0 : safeArray(session.sets).length;
-                            const cardioLabel = isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : null;
-                            const durationLabel = isCardio ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`) : null;
-                            const categoryClass = isCardio ? '' : resolveCategoryClass(eq?.target || '');
-                            const totalVolume = isCardio ? null : safeArray(session.sets).reduce((sum, set) => sum + ((set.weight || 0) * (set.reps || 0)), 0);
-                            return (
-                              <div key={idx} className={`analytics-session-card ${categoryClass}`}>
-                                <div className="analytics-session-left">
-                                  <span className="analytics-session-emoji">
-                                    {isCardio ? (eq?.emoji || '🏃') : eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}
-                                  </span>
-                                  <div>
-                                    <div className="analytics-session-name">{cardioLabel || eq?.name || 'Unknown'}</div>
-                                    <div className="analytics-session-meta">
-                                      {isCardio
-                                        ? durationLabel
-                                        : `${sets} set${sets !== 1 ? 's' : ''}${totalVolume > 0 ? ' · ' + totalVolume.toLocaleString() + ' lbs' : ''}`
-                                      }
+                      <div className="progress-empty-state">
+                        <div className="progress-empty-icon">📋</div>
+                        <div className="progress-empty-title">No workouts yet</div>
+                        <div className="progress-empty-text">Log a few sessions and your history will appear here.</div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-4">
+                      {days.map(day => {
+                        const dayDate = new Date(day + 'T12:00:00');
+                        const dayLabel = dayDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        return (
+                          <div key={day}>
+                            <div className="progress-day-header">{dayLabel}</div>
+                            <div className="space-y-2">
+                              {byDay[day].map((session, idx) => {
+                                const isCardio = session.type === 'cardio';
+                                const eq = EQUIPMENT_DB[session.equipId];
+                                const name = isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : (eq?.name || 'Unknown');
+                                const categoryClass = isCardio ? '' : resolveCategoryClass(eq?.target || '');
+                                const muscleGroup = isCardio ? 'Cardio' : (eq?.target ? resolveMuscleGroup(eq.target) : null);
+                                const detail = isCardio
+                                  ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`)
+                                  : `${safeArray(session.sets).length} sets`;
+                                return (
+                                  <div key={idx} className={`progress-history-row ${categoryClass}`}>
+                                    <div className="progress-history-name">{name}</div>
+                                    <div className="progress-history-meta">
+                                      {muscleGroup && <span className="progress-muscle-badge">{muscleGroup}</span>}
+                                      <span className="progress-history-detail">{detail}</span>
                                     </div>
                                   </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                } catch(e) {
+                  return <div className="text-sm text-gray-500 text-center py-4">Unable to load history. Try reloading.</div>;
+                }
+              })()
+            ) : analyticsTab === 'exercise' ? (
+              <Card className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wide">Exercise History</div>
+                  <Icon name="Search" className="w-4 h-4 text-gray-400" />
+                </div>
+                <input
+                  value={exerciseHistoryQuery}
+                  onChange={(e) => setExerciseHistoryQuery(e.target.value)}
+                  placeholder="Search exercises"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold"
+                />
+                {(() => {
+                  const withHistory = allEquipment.filter(id => safeArray(history[id]).length > 0);
+                  const filtered = withHistory.filter(id => (EQUIPMENT_DB[id]?.name || '').toLowerCase().includes(exerciseHistoryQuery.toLowerCase()));
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="progress-empty-state py-6">
+                        <div className="progress-empty-title">No exercises match yet.</div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-1">
+                      {filtered.map(id => {
+                        const eq = EQUIPMENT_DB[id];
+                        const allSessions = safeArray(history[id]);
+                        const recentSessions = allSessions.slice(-6).reverse();
+                        const isExpanded = exerciseHistoryExpanded === id;
+                        const categoryClass = resolveCategoryClass(eq?.target || '');
+
+                        let prWeight = 0, prReps = 0;
+                        allSessions.forEach(s => {
+                          safeArray(s.sets).forEach(set => {
+                            if ((set.weight || 0) > prWeight) {
+                              prWeight = set.weight;
+                              prReps = set.reps;
+                            }
+                          });
+                        });
+
+                        const lastSession = allSessions[allSessions.length - 1];
+                        const lastDate = lastSession?.date
+                          ? new Date(lastSession.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                          : null;
+
+                        return (
+                          <div key={id} className={`progress-exhist-row ${categoryClass} ${isExpanded ? 'expanded' : ''}`}>
+                            <button
+                              onClick={() => setExerciseHistoryExpanded(isExpanded ? null : id)}
+                              className="progress-exhist-toggle"
+                            >
+                              <div className={`progress-exhist-dot ${categoryClass}`}></div>
+                              <div className="progress-exhist-info">
+                                <div className="text-sm font-bold text-gray-900">{eq.name}</div>
+                                <div className="text-[11px] text-gray-500">
+                                  {allSessions.length} session{allSessions.length !== 1 ? 's' : ''}
+                                  {lastDate ? ` · Last ${lastDate}` : ''}
                                 </div>
-                                {!isCardio && sets > 0 && (
-                                  <div className="analytics-session-sets">
-                                    {safeArray(session.sets).slice(0, 3).map((set, i) => (
-                                      <div key={i} className="analytics-set-chip">
-                                        <span className="analytics-set-weight">{set.weight}</span>
-                                        <span className="analytics-set-reps">×{set.reps}</span>
-                                      </div>
-                                    ))}
-                                    {safeArray(session.sets).length > 3 && (
-                                      <div className="analytics-set-chip analytics-set-more">+{safeArray(session.sets).length - 3}</div>
-                                    )}
+                              </div>
+                              {prWeight > 0 && (
+                                <div className="progress-pr-badge">{prWeight}×{prReps}</div>
+                              )}
+                              <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            </button>
+                            {isExpanded && (
+                              <div className="progress-exhist-detail">
+                                {recentSessions.length === 0 ? (
+                                  <div className="text-sm text-gray-400 text-center py-3">No sessions logged yet.</div>
+                                ) : (
+                                  <div className="progress-exhist-timeline">
+                                    {recentSessions.map((session, idx) => {
+                                      const sets = safeArray(session.sets);
+                                      const summary = sets.map(s => `${s.reps}×${s.weight}`).join(', ');
+                                      return (
+                                        <div key={idx} className="progress-exhist-session">
+                                          <div className="text-[11px] font-bold text-gray-900">
+                                            {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                          </div>
+                                          <div className="text-[10px] text-gray-500">{sets.length} sets</div>
+                                          <div className="text-[11px] text-gray-700 mt-0.5">{summary || '—'}</div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 )}
+                                <div className="mt-3">
+                                  <MiniChart equipId={id} />
+                                </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            )}
-
-            {/* ===== EXERCISE HISTORY TAB ===== */}
-            {analyticsTab === 'exercise' && (
-              <div className="space-y-3">
-                <Card className="space-y-3">
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mb-1">Exercise History</div>
-                    <div className="text-sm text-gray-500 mb-3">Tap any exercise to see your progress.</div>
-                    <div className="analytics-search-wrap">
-                      <Icon name="Search" className="analytics-search-icon" />
-                      <input
-                        value={exerciseHistoryQuery}
-                        onChange={(e) => setExerciseHistoryQuery(e.target.value)}
-                        placeholder="Search exercises..."
-                        className="analytics-search-input"
-                      />
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-                  {(() => {
-                    const withHistory = allEquipment.filter(id => safeArray(history[id]).length > 0);
-                    const filtered = withHistory.filter(id => (EQUIPMENT_DB[id]?.name || '').toLowerCase().includes(exerciseHistoryQuery.toLowerCase()));
-                    if (filtered.length === 0) {
-                      return (
-                        <div className="analytics-empty-state">
-                          <div className="analytics-empty-icon">🔍</div>
-                          <div className="analytics-empty-title">No exercises found</div>
-                          <div className="analytics-empty-body">{withHistory.length === 0 ? 'Start logging workouts to see your exercise history here.' : 'Try a different search term.'}</div>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="space-y-2">
-                        {filtered.map(id => {
-                          const eq = EQUIPMENT_DB[id];
-                          const sessions = safeArray(history[id]);
-                          const allSessions = [...sessions].reverse();
-                          const lastSession = allSessions[0];
-                          const maxWeight = sessions.reduce((max, s) => {
-                            const sessionMax = safeArray(s.sets).reduce((m, set) => Math.max(m, set.weight || 0), 0);
-                            return Math.max(max, sessionMax);
-                          }, 0);
-                          const isExpanded = exerciseHistoryExpanded === id;
-                          const categoryClass = resolveCategoryClass(eq?.target || '');
-                          const lastDate = lastSession?.date ? new Date(lastSession.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
-                          return (
-                            <div key={id} className={`analytics-exercise-card ${categoryClass} ${isExpanded ? 'expanded' : ''}`}>
-                              <button
-                                onClick={() => setExerciseHistoryExpanded(isExpanded ? null : id)}
-                                className="analytics-exercise-toggle"
-                              >
-                                <div className="analytics-exercise-toggle-left">
-                                  <span className="analytics-exercise-emoji">
-                                    {eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}
-                                  </span>
-                                  <div>
-                                    <div className="analytics-exercise-name">{eq?.name}</div>
-                                    <div className="analytics-exercise-sub">
-                                      {sessions.length} session{sessions.length !== 1 ? 's' : ''}{lastDate ? ` · Last: ${lastDate}` : ''}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="analytics-exercise-toggle-right">
-                                  {maxWeight > 0 && <span className="analytics-pr-badge">{maxWeight} lbs</span>}
-                                  <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} className="w-4 h-4 text-gray-400" />
-                                </div>
-                              </button>
-                              {isExpanded && (
-                                <div className="analytics-exercise-detail">
-                                  {allSessions.slice(0, 6).map((session, idx) => {
-                                    const summary = safeArray(session.sets).map(set => `${set.reps}×${set.weight}`).join(', ');
-                                    const sessionDate = session.date ? new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-                                    return (
-                                      <div key={idx} className="analytics-history-session">
-                                        <div className="analytics-history-date">{sessionDate}</div>
-                                        <div className="analytics-history-sets">{safeArray(session.sets).length} sets</div>
-                                        <div className="analytics-history-summary">{summary || 'No sets logged'}</div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-                </Card>
-              </div>
-            )}
-
-            {/* ===== OVERVIEW TAB ===== */}
-            {analyticsTab === 'overview' && !selectedEquipment && (
+                  );
+                })()}
+              </Card>
+            ) : !selectedEquipment ? (
               <>
+                {/* Streak + This Week */}
                 {(() => {
                   const streakObj = computeStreak(history, cardioHistory);
+                  const today = new Date();
+                  const last7 = Array.from({ length: 7 }, (_, i) => {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() - (6 - i));
+                    return d.toISOString().slice(0, 10);
+                  });
+                  const sessionDates = new Set(combinedSessions.map(s => (s.date || '').slice(0, 10)));
                   return (
                     <Card>
-                      <div className="analytics-streak-card">
+                      <div className="flex items-center justify-between mb-3">
                         <div>
-                          <div className="analytics-streak-label">Current Streak</div>
-                          <div className="analytics-streak-count">
-                            <Icon name="Flame" className="analytics-streak-icon" />
-                            <span>{streakObj.current}</span>
-                            <span className="analytics-streak-unit">days</span>
+                          <div className="text-xs text-gray-400 font-bold uppercase tracking-wide">Current Streak</div>
+                          <div className="flex items-baseline gap-1.5 mt-0.5">
+                            <span className="text-5xl font-black text-gray-900 leading-none">{streakObj.current}</span>
+                            <span className="text-base text-gray-500 font-semibold">days</span>
                           </div>
+                          <div className="text-xs text-gray-400 mt-1">Best: <span className="font-bold text-purple-600">{streakObj.best}</span></div>
                         </div>
-                        <div className="analytics-streak-best">
-                          <div className="analytics-streak-best-label">Best</div>
-                          <div className="analytics-streak-best-val">{streakObj.best}</div>
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="text-[10px] text-gray-400 font-bold uppercase mb-1">This Week</div>
+                          <div className="progress-week-grid">
+                            {last7.map((dayStr, i) => {
+                              const hasSession = sessionDates.has(dayStr);
+                              const d = new Date(dayStr + 'T12:00:00');
+                              const dayName = d.toLocaleDateString('en-US', { weekday: 'narrow' });
+                              return (
+                                <div key={i} className="progress-week-col">
+                                  <div className={`progress-week-dot ${hasSession ? 'filled' : 'hollow'}`}></div>
+                                  <div className="progress-week-label">{dayName}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     </Card>
                   );
                 })()}
 
-                {combinedSessions.length > 0 && (
-                  <Card>
-                    <div className="analytics-heatmap-header">
-                      <span className="text-xs font-bold text-gray-500 uppercase">Activity — Last 8 Weeks</span>
-                      <span className="text-xs text-gray-400">{workoutDaySet.size} day{workoutDaySet.size !== 1 ? 's' : ''} active</span>
+                {/* Stats Grid */}
+                {(() => {
+                  let totalWeightMoved = 0;
+                  let totalSessions = 0;
+                  let totalSetsLogged = 0;
+                  Object.values(history || {}).forEach(arr => {
+                    safeArray(arr).forEach(session => {
+                      if (session.type === 'cardio') return;
+                      totalSessions++;
+                      safeArray(session.sets).forEach(set => {
+                        if (set.weight && set.reps) {
+                          totalWeightMoved += (set.weight * set.reps);
+                          totalSetsLogged++;
+                        }
+                      });
+                    });
+                  });
+                  const formatWeight = (lbs) => {
+                    if (lbs >= 1000000) return `${(lbs/1000000).toFixed(1)}M`;
+                    if (lbs >= 1000) return `${(lbs/1000).toFixed(1)}K`;
+                    return lbs.toLocaleString();
+                  };
+                  return (
+                    <div className="grid grid-cols-3 gap-2">
+                      <Card className="p-3">
+                        <div className="text-xs text-gray-400 font-bold uppercase mb-1">Weight</div>
+                        <div className="text-2xl font-black text-purple-600">{formatWeight(totalWeightMoved)}</div>
+                        <div className="text-[9px] text-gray-500">lbs moved</div>
+                      </Card>
+                      <Card className="p-3">
+                        <div className="text-xs text-gray-400 font-bold uppercase mb-1">Sessions</div>
+                        <div className="text-2xl font-black text-gray-900">{totalSessions}</div>
+                        <div className="text-[9px] text-gray-500">total logged</div>
+                      </Card>
+                      <Card className="p-3">
+                        <div className="text-xs text-gray-400 font-bold uppercase mb-1">Sets</div>
+                        <div className="text-2xl font-black text-gray-900">{totalSetsLogged.toLocaleString()}</div>
+                        <div className="text-[9px] text-gray-500">total sets</div>
+                      </Card>
                     </div>
-                    <div className="analytics-heatmap">
-                      {heatmapWeeks.map((week, wi) => (
-                        <div key={wi} className="analytics-heatmap-col">
-                          {week.map(day => (
-                            <div
-                              key={day.key}
-                              className={`analytics-heatmap-cell${day.hasWorkout ? ' workout' : ''}${day.isToday ? ' today' : ''}${day.isFuture ? ' future' : ''}`}
-                              title={day.key}
-                            />
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="analytics-heatmap-legend">
-                      <span className="analytics-heatmap-legend-item">
-                        <span className="analytics-heatmap-cell-sample" />Workout
-                      </span>
-                      <span className="analytics-heatmap-legend-item">
-                        <span className="analytics-heatmap-cell-empty" />Rest
-                      </span>
-                    </div>
-                  </Card>
-                )}
+                  );
+                })()}
 
-                <div className="analytics-stats-grid">
-                  <Card className="analytics-stat-card">
-                    <div className="analytics-stat-label">Score</div>
-                    <div className="analytics-stat-value accent">{strengthScoreObj.score}</div>
-                    <div className="analytics-stat-sub">/ 100</div>
-                  </Card>
-                  <Card className="analytics-stat-card">
-                    <div className="analytics-stat-label">Tracked</div>
-                    <div className="analytics-stat-value">{equipmentWithHistory}</div>
-                    <div className="analytics-stat-sub">/ {allEquipment.length}</div>
-                  </Card>
-                  <Card className="analytics-stat-card">
-                    <div className="analytics-stat-label">Avg</div>
-                    <div className="analytics-stat-value">{strengthScoreObj.avgPct}%</div>
-                    <div className="analytics-stat-sub">strength</div>
-                  </Card>
-                </div>
-
-                <Card>
-                  <div className="analytics-section-header">
-                    <h3 className="analytics-section-title">Recent Workouts</h3>
-                    <Icon name="Clock" className="w-4 h-4 text-gray-400" />
-                  </div>
-                  {(() => {
-                    const recentSessions = [...combinedSessions]
-                      .sort((a, b) => new Date(b.date) - new Date(a.date))
-                      .slice(0, 8);
-                    if (recentSessions.length === 0) {
-                      return (
-                        <div className="analytics-empty-state">
-                          <div className="analytics-empty-icon">🏋️</div>
-                          <div className="analytics-empty-title">No workouts logged yet</div>
-                          <div className="analytics-empty-body">Head to the workout tab to start tracking.</div>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="space-y-2">
+                {/* Recent Sessions */}
+                {(() => {
+                  const recentSessions = [...combinedSessions]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 10);
+                  if (recentSessions.length === 0) return null;
+                  return (
+                    <Card>
+                      <div className="space-y-1">
                         {recentSessions.map((session, idx) => {
                           const isCardio = session.type === 'cardio';
                           const eq = EQUIPMENT_DB[session.equipId];
-                          const setCount = isCardio ? null : safeArray(session.sets).length;
+                          const name = isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : (eq?.name || 'Unknown');
+                          const dateLabel = new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                          const detail = isCardio
+                            ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`)
+                            : (() => {
+                                const sets = safeArray(session.sets);
+                                if (sets.length === 0) return '0 sets';
+                                const topSet = sets.reduce((best, s) => ((s.weight || 0) > (best.weight || 0) ? s : best), sets[0]);
+                                return `${sets.length} sets · ${topSet.weight}×${topSet.reps}`;
+                              })();
                           return (
-                            <div key={idx} className="analytics-recent-item">
-                              <div className="analytics-recent-left">
-                                <span>{isCardio ? (eq?.emoji || '🏃') : eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</span>
-                                <div>
-                                  <div className="analytics-recent-name">{isCardio ? (session.cardioLabel || eq?.name || 'Cardio') : (eq?.name || 'Unknown')}</div>
-                                  <div className="analytics-recent-date">
-                                    {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                  </div>
-                                </div>
+                            <div key={idx} className="progress-recent-row">
+                              <div className="progress-recent-left">
+                                <div className="text-sm font-bold text-gray-900">{name}</div>
+                                <div className="text-[11px] text-gray-500">{dateLabel}</div>
                               </div>
-                              <div className="analytics-recent-stat">
-                                {isCardio
-                                  ? (session.duration ? `${session.duration} min` : `${safeArray(session.entries).length} entries`)
-                                  : `${setCount} sets`
-                                }
-                              </div>
+                              <div className="progress-recent-detail">{detail}</div>
                             </div>
                           );
                         })}
                       </div>
-                    );
-                  })()}
-                </Card>
+                    </Card>
+                  );
+                })()}
 
+                {/* Exercise Progress */}
                 {equipmentWithHistory > 0 && (
                   <Card>
-                    <h3 className="analytics-section-title" style={{ marginBottom: 12 }}>Exercise Progress</h3>
+                    <h3 className="font-bold text-gray-900 mb-3">Exercise Progress</h3>
                     <div className="space-y-2">
-                      {allEquipment.filter(id => safeArray(history[id]).length > 0).slice(0, 6).map(id => {
+                      {allEquipment.filter(id => safeArray(history[id]).length > 0).slice(0, 5).map(id => {
                         const eq = EQUIPMENT_DB[id];
                         const sessions = safeArray(history[id]);
                         const sessionCount = sessions.length;
-                        const bar = Math.min(100, Math.max(10, sessionCount * 12));
-                        const maxWeight = sessions.reduce((max, s) => {
-                          const sm = safeArray(s.sets).reduce((m, set) => Math.max(m, set.weight || 0), 0);
-                          return Math.max(max, sm);
-                        }, 0);
+                        const bar = Math.min(100, Math.max(8, sessionCount * 12));
+                        const categoryClass = resolveCategoryClass(eq?.target || '');
                         return (
-                          <div key={id} onClick={() => setSelectedEquipment(id)} className="analytics-exercise-progress-item">
-                            <div className="analytics-exercise-progress-left">
-                              <span>{eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</span>
-                              <div>
-                                <div className="analytics-exercise-progress-name">{eq?.name}</div>
-                                <div className="analytics-exercise-progress-sub">
-                                  {sessionCount} session{sessionCount !== 1 ? 's' : ''}{maxWeight > 0 ? ` · PR: ${maxWeight} lbs` : ''}
-                                </div>
+                          <div
+                            key={id}
+                            onClick={() => { setSelectedEquipment(id); setAnalyticsTab('overview'); }}
+                            className="flex items-center gap-3 p-2 rounded-lg border border-gray-100 cursor-pointer hover:border-purple-200 transition-all"
+                          >
+                            <div className={`progress-category-dot ${categoryClass}`}></div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-bold text-gray-900 truncate">{eq.name}</div>
+                              <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full progress-bar-fill ${categoryClass || 'progress-bar-default'}`} style={{ width: `${bar}%` }}></div>
                               </div>
                             </div>
-                            <div className="analytics-progress-bar-wrap">
-                              <div className="analytics-progress-bar" style={{ width: `${bar}%` }} />
-                            </div>
+                            <div className="text-[10px] text-gray-400 font-semibold flex-shrink-0">{sessionCount}×</div>
                           </div>
                         );
                       })}
@@ -4737,12 +4050,9 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                   </Card>
                 )}
               </>
-            )}
-
-            {/* ===== EQUIPMENT DETAIL ===== */}
-            {analyticsTab === 'overview' && selectedEquipment && (
+            ) : (
               <Card>
-                <button onClick={() => setSelectedEquipment(null)} className="analytics-back-link">
+                <button onClick={() => { setSelectedEquipment(null); setAnalyticsTab('overview'); }} className="flex items-center gap-2 mb-4 text-purple-600 font-semibold text-sm">
                   <Icon name="ChevronLeft" className="w-4 h-4" />
                   Back to Overview
                 </button>
@@ -4752,57 +4062,100 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                   if (sessions.length === 0) {
                     return (
                       <div className="text-center py-8">
-                        <div className="text-4xl mb-2">{eq?.type === 'machine' ? '⚙️' : eq?.type === 'dumbbell' ? '🏋️' : '🏋️‍♂️'}</div>
-                        <h3 className="font-bold text-gray-900 mb-1">{eq?.name}</h3>
+                        <h3 className="font-bold text-gray-900 mb-1">{eq.name}</h3>
                         <p className="text-sm text-gray-500">No sessions logged yet</p>
                       </div>
                     );
                   }
                   return (
                     <div>
-                      <h3 className="font-bold text-gray-900 mb-2">{eq?.name}</h3>
+                      <h3 className="font-bold text-gray-900 mb-2">{eq.name}</h3>
                       <MiniChart equipId={selectedEquipment} />
                     </div>
                   );
                 })()}
               </Card>
             )}
-
           </div>
         </div>
       );
     };
 
     // ========== PROFILE TAB ==========
-    const ProfileView = ({ settings, setSettings, themeMode, darkVariant, setThemeMode, setDarkVariant, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
+    const ProfileView = ({ settings, setSettings, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
       const [workoutOpen, setWorkoutOpen] = useState(false);
       const [appearanceOpen, setAppearanceOpen] = useState(false);
       const [analyticsOpen, setAnalyticsOpen] = useState(false);
       const [learnOpen, setLearnOpen] = useState(false);
       const [aboutOpen, setAboutOpen] = useState(false);
       const [dataToolsOpen, setDataToolsOpen] = useState(false);
-      const [advancedOpen, setAdvancedOpen] = useState(false);
+      const [devTapCount, setDevTapCount] = useState(0);
+      const devTapRef = useRef(null);
 
-      const accentOptions = [
-        { id: 'red', label: 'Red', color: '#ef4444' },
-        { id: 'yellow', label: 'Yellow', color: '#f59e0b' },
-        { id: 'blue', label: 'Blue', color: '#3b82f6' },
-      ];
-      const isDarkMode = themeMode === 'dark';
+      const handleDevTap = () => {
+        const next = devTapCount + 1;
+        setDevTapCount(next);
+        if (devTapRef.current) clearTimeout(devTapRef.current);
+        devTapRef.current = setTimeout(() => setDevTapCount(0), 1500);
+      };
 
       const learnItems = [
         {
-          title: 'How Insights Work',
-          body: 'Insights are based only on your own history. No demographics, no comparisons—just you vs. you.'
+          title: 'How to add weight',
+          body: 'Add 5 lbs to upper body lifts and 10 lbs to lower body lifts when a weight feels easy for 3 sets. Small jumps add up fast.'
         },
         {
-          title: 'Staying Consistent',
-          body: 'Log a little each session. Consistency beats intensity.'
+          title: 'Reps vs. weight — what matters more?',
+          body: 'Both. A good rule: if you can do more than 12 reps easily, increase the weight. If you can\'t finish 6, lower it. Stay in the 6–12 range for most strength work.'
         },
         {
-          title: 'Editing a Log',
-          body: 'Tap a set to edit it, or delete if it was an off day.'
-        }
+          title: 'Rest between sets',
+          body: 'For strength (heavy weight, low reps): rest 2–3 minutes. For hypertrophy (moderate weight, 8–12 reps): rest 60–90 seconds. Shorter rest = more cardio effect.'
+        },
+        {
+          title: 'Push / Pull / Legs',
+          body: 'Planet Strength rotates Push, Pull, and Legs automatically. Push = chest, shoulders, triceps. Pull = back, biceps. Legs = quads, hamstrings, glutes. This split gives each muscle group 48 hours of recovery.'
+        },
+        {
+          title: 'What is progressive overload?',
+          body: 'It\'s the only thing that makes you stronger. Add a little more weight or one more rep each week. Your body adapts to stress — if the stress never increases, neither do you.'
+        },
+        {
+          title: 'How many sets should I do?',
+          body: '3 working sets per exercise is the sweet spot for most people. One warm-up set at a lower weight, then 3 sets at your working weight. More isn\'t always better — recovery matters.'
+        },
+        {
+          title: 'Compound vs. isolation exercises',
+          body: 'Compound moves (squat, bench, deadlift, row) work multiple muscle groups and give you the most return for your time. Isolations (curls, extensions) are finishing work. Lead with compounds.'
+        },
+        {
+          title: 'Why Planet Fitness works for strength',
+          body: 'Despite the reputation, Planet Fitness has everything you need: dumbbells up to 75–80 lbs, machines for every muscle group, and cables. You can build serious strength here if you log your work and stay consistent.'
+        },
+        {
+          title: 'Logging your sets',
+          body: 'Tap an exercise to open the logging panel. Enter weight and reps, then tap the checkmark. Your best set is tracked automatically and used to calculate your Strength Score.'
+        },
+        {
+          title: 'What is my Strength Score?',
+          body: 'Your Strength Score is a 0–100 number that reflects how much progress you\'ve made across all exercises you\'ve logged. It\'s you vs. you — not a comparison to anyone else.'
+        },
+        {
+          title: 'Using Templates',
+          body: 'Templates are pre-built Push, Pull, and Legs workouts. Tap Templates on the home screen to start one. The app will automatically queue up the right exercises for today\'s rotation.'
+        },
+        {
+          title: 'The Locker',
+          body: 'Store your locker combination and gym card screenshot in the Locker widget on the home screen. Your combo is hidden behind a hold-to-peek gesture. Your gym card opens full-screen for scanning at the front desk.'
+        },
+        {
+          title: 'Rest days',
+          body: 'Tap the moon icon in the top right to log a rest day. Rest is not a failure — it\'s when your muscles actually grow. The app tracks rest days in your streak so an intentional rest doesn\'t break your consistency.'
+        },
+        {
+          title: 'Your data never leaves your phone',
+          body: 'Everything is stored locally on your device. No account, no cloud sync, no server. Use the Export feature in Data Tools to back up your history as a JSON file you can restore anytime.'
+        },
       ];
 
       return (
@@ -4835,42 +4188,12 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               {appearanceOpen && (
                 <div className="space-y-3 animate-expand">
                   <ToggleRow
-                    icon="Moon"
-                    title="Dark Mode"
-                    subtitle="Low-glare interface"
-                    enabled={isDarkMode}
-                    onToggle={(next) => setThemeMode(next ? 'dark' : 'light')}
-                  />
-                  <ToggleRow
                     icon="Sparkles"
                     title="Colorful exercise cards"
                     subtitle="Show muscle group colors on exercise cards"
                     enabled={colorfulExerciseCards}
                     onToggle={onToggleColorfulExerciseCards}
                   />
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Dark mode accent</div>
-                    <div className="flex gap-2">
-                      {accentOptions.map(opt => (
-                        <button
-                          key={opt.id}
-                          onClick={() => isDarkMode && setDarkVariant(opt.id)}
-                          disabled={!isDarkMode}
-                          aria-disabled={!isDarkMode}
-                          className={`flex-1 accent-pill ${isDarkMode && darkVariant === opt.id ? 'active' : ''} rounded-xl p-2 flex items-center gap-2 ${isDarkMode ? '' : 'opacity-50 pointer-events-none'}`}
-                        >
-                          <span className="w-6 h-6 rounded-lg" style={{ background: opt.color }}></span>
-                          <span className="text-sm font-semibold text-gray-800">{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mt-3">Theme preview</div>
-                    <div className="theme-preview">
-                      <div className="preview-btn">Primary</div>
-                      <div className="preview-chip">Chip</div>
-                      <div className="preview-card">Card border</div>
-                    </div>
-                  </div>
                 </div>
               )}
             </Card>
@@ -4898,13 +4221,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                     subtitle="Offer a quick nudge for running logs"
                     enabled={settings.smartSuggestionsEnabled !== false}
                     onToggle={(next) => setSettings({ ...settings, smartSuggestionsEnabled: next })}
-                  />
-                  <ToggleRow
-                    icon="Lock"
-                    title="Locked-In Mode"
-                    subtitle="Show a focus gate every time you open the app."
-                    enabled={settings.lockedInMode}
-                    onToggle={(next) => setSettings({ ...settings, lockedInMode: next })}
                   />
                   <ToggleRow
                     icon="List"
@@ -4939,36 +4255,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                   >
                     Muscle map
                   </button>
-                  <button
-                    onClick={onViewPatterns}
-                    className="settings-action-button"
-                  >
-                    Patterns
-                  </button>
-                </div>
-              )}
-            </Card>
-
-            <Card className="space-y-3">
-              <button
-                onClick={() => setAdvancedOpen(prev => !prev)}
-                className="w-full flex items-center justify-between text-left"
-              >
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase">Developer options</div>
-                  <div className="text-sm text-gray-500">Advanced preview tools</div>
-                </div>
-                <Icon name="ChevronDown" className={`w-4 h-4 text-gray-400 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {advancedOpen && (
-                <div className="space-y-3 animate-expand">
-                  <ToggleRow
-                    icon="BarChart"
-                    title="Use Demo Data (30 days)"
-                    subtitle="Preview analytics and patterns with seeded data"
-                    enabled={settings.useDemoData}
-                    onToggle={(next) => setSettings({ ...settings, useDemoData: next })}
-                  />
                 </div>
               )}
             </Card>
@@ -5006,17 +4292,27 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               </button>
               {aboutOpen && (
                 <div className="space-y-3 animate-expand">
-                  <div className="text-sm text-gray-600">A calm, no-noise workout tracker focused on simple logging and steady progress.</div>
-                  <div className="text-xs text-gray-500">Version {APP_VERSION}</div>
+                  <div className="text-sm text-gray-600">No logins. No noise. No participation trophies. Just logs of every pound you've moved. Built by Nobody Studios, San Antonio TX.</div>
+                  <div
+                    className="text-xs text-gray-400 font-mono cursor-default select-none"
+                    onClick={handleDevTap}
+                    title=""
+                  >
+                    Version {APP_VERSION}{devTapCount > 0 && devTapCount < 5 ? ` · ${devTapCount}/5` : ''}
+                    {' '}— Your data stays on your device. Always.
+                  </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <a href={`mailto:${FEEDBACK_EMAIL}`} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
-                      Send feedback
+                    <a href={`mailto:${FEEDBACK_EMAIL}?subject=Planet Strength Feedback (v${APP_VERSION})`} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
+                      🐛 Report a bug or send feedback
+                    </a>
+                    <a href={`mailto:${FEEDBACK_EMAIL}?subject=Planet Strength — Need Help`} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
+                      💬 Get help — we actually reply
                     </a>
                     <a href={FOLLOW_URL} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
-                      Follow updates
+                      📡 Follow Nobody Studios for updates
                     </a>
                     <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className="w-full p-3 rounded-xl border border-gray-200 text-left font-semibold text-sm bg-white">
-                      Support the app
+                      ⚡ Support the app (optional, no pressure)
                     </a>
                   </div>
                 </div>
@@ -5126,7 +4422,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
           <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
             <div className="muscle-map-header">
               <div className="text-xl font-black text-gray-900">Muscle Map</div>
-              <div className="text-sm text-gray-500">This chart shows which muscle groups you’ve focused on over the selected time range.</div>
+              <div className="text-sm text-gray-500">This chart shows which muscle groups you've focused on over the selected time range.</div>
             </div>
 
             <div className="muscle-map-range-toggle">
@@ -5144,7 +4440,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
             {totalCount === 0 ? (
               <div className="muscle-map-empty">
                 <div className="muscle-map-empty-title">Nothing to show yet.</div>
-                <div className="muscle-map-empty-body">As you log workouts, this chart will highlight where you’ve been focusing. No streaks, no pressure.</div>
+                <div className="muscle-map-empty-body">As you log workouts, this chart will highlight where you've been focusing. No streaks, no pressure.</div>
               </div>
             ) : (
               <>
@@ -5200,7 +4496,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
             <div className="patterns-coming-soon">
               <div className="patterns-coming-title">Patterns (Coming Soon)</div>
               <div className="patterns-coming-body">
-                This feature is in progress. Soon you’ll see gentle, no-guilt notes about your training style—like time-of-day tendencies and muscle-group balance.
+                This feature is in progress. Soon you'll see gentle, no-guilt notes about your training style—like time-of-day tendencies and muscle-group balance.
               </div>
             </div>
             <div className="pattern-intro bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
@@ -5212,7 +4508,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center text-gray-600">
                 <div className="text-3xl mb-2">🌱</div>
                 <div className="text-sm font-semibold text-gray-900 mb-2">No patterns yet</div>
-                <div className="text-sm text-gray-500">As you log more sessions, we’ll highlight your training patterns here.</div>
+                <div className="text-sm text-gray-500">As you log more sessions, we'll highlight your training patterns here.</div>
               </div>
             ) : (
               <div className="space-y-3">
@@ -5531,7 +4827,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs font-bold text-gray-500 uppercase">{isRunning ? 'Running / Walking' : 'Swimming'}</div>
-              <div className="text-sm text-gray-500">Log today’s entry</div>
+              <div className="text-sm text-gray-500">Log today's entry</div>
             </div>
             <button
               onClick={() => setShowForm(prev => !prev)}
@@ -5827,7 +5123,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
         <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] font-black uppercase text-gray-500">Today’s entries</div>
+            <div className="text-[10px] font-black uppercase text-gray-500">Today's entries</div>
             <div className="text-[11px] workout-accent-text font-semibold">{entries.length} entries</div>
           </div>
           {entries.length === 0 ? (
@@ -5872,8 +5168,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       });
 
       const [settings, setSettings] = useState({ ...SETTINGS_DEFAULTS });
-      const [themeMode, setThemeModeState] = useState('light');
-      const [darkVariant, setDarkVariantState] = useState('blue');
       const [colorfulExerciseCards, setColorfulExerciseCards] = useState(() => {
         try {
           const raw = localStorage.getItem('ps_colorfulExerciseCards');
@@ -5933,7 +5227,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [dismissedDraftDate, setDismissedDraftDate] = useState(null);
       const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * motivationalQuotes.length));
       const [generatorOptions, setGeneratorOptions] = useState({ goal: '', duration: 45, equipment: '' });
-      const [lockedInDismissed, setLockedInDismissed] = useState(false);
 
       useEffect(() => {
         if (!DEBUG_LOG) return;
@@ -6039,7 +5332,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const savedProfileRaw = storage.get('ps_v2_profile', null);
         const settingsDefaults = { ...SETTINGS_DEFAULTS };
         const savedSettingsRaw = storage.get('ps_v2_settings', settingsDefaults);
-        const savedSettings = { ...settingsDefaults, ...savedSettingsRaw };
+        const savedSettings = { ...settingsDefaults, ...savedSettingsRaw, useDemoData: false }; // Always force real data
         const savedHistory = storage.get('ps_v2_history', {});
         const savedCardio = storage.get('ps_v2_cardio', {});
         const savedState = storage.get('ps_v2_state', { lastWorkoutType: null, lastWorkoutDayKey: null, restDays: [] });
@@ -6218,12 +5511,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         };
       }, [sessionStartNotice]);
 
-      useEffect(() => {
-        if (!settings.lockedInMode) {
-          setLockedInDismissed(false);
-        }
-      }, [settings.lockedInMode]);
-
       const pushMessage = (text) => {
         if (!text || text === 'Workout saved.') return;
         setInlineMessage(text);
@@ -6283,37 +5570,8 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         storage.set(LAST_OPEN_KEY, now.toISOString());
       }, [loaded]);
 
-      const applyTheme = () => {
-        const savedMode = storage.get(THEME_MODE_KEY, 'light');
-        const storedVariant = storage.get(DARK_VARIANT_KEY, 'blue');
-        const nextVariant = storedVariant || 'blue';
-        const themeClasses = ['theme-red', 'theme-yellow', 'theme-blue'];
-        document.body.classList.remove(...themeClasses);
-        if (savedMode === 'dark') {
-          document.body.classList.add('dark-mode');
-          document.body.classList.add(`theme-${nextVariant}`);
-        } else {
-          document.body.classList.remove('dark-mode');
-        }
-        setThemeModeState(savedMode);
-        setDarkVariantState(nextVariant);
-      };
-
-      const setThemeMode = (mode) => {
-        storage.set(THEME_MODE_KEY, mode);
-        if (!storage.get(DARK_VARIANT_KEY, null)) {
-          storage.set(DARK_VARIANT_KEY, 'blue');
-        }
-        applyTheme();
-      };
-
-      const setDarkVariant = (variant) => {
-        storage.set(DARK_VARIANT_KEY, variant);
-        applyTheme();
-      };
-
       useEffect(() => {
-        applyTheme();
+        const effectiveData = true; // theme application removed
       }, []);
 
       const effectiveData = useMemo(() => getEffectiveData({
@@ -6349,9 +5607,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const lastWorkoutLabel = useMemo(() => {
         if (!lastWorkoutDate) return null;
         const today = new Date();
+        const todayKey = toDayKey(today);
+        const lastKey = toDayKey(lastWorkoutDate);
+        if (lastKey === todayKey) return 'Today';
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        if (lastKey === toDayKey(yesterday)) return 'Yesterday';
         const diffDays = Math.floor((today - lastWorkoutDate) / 86400000);
-        if (diffDays === 0) return 'Today';
-        if (diffDays === 1) return 'Yesterday';
         if (diffDays < 7) return `${diffDays} days ago`;
         return lastWorkoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       }, [lastWorkoutDate]);
@@ -6383,8 +5645,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         () => getCoachMessage({ streak, sessionsThisWeek }),
         [streak, sessionsThisWeek]
       );
-      const shouldShowLockedInGate = settings.lockedInMode && !lockedInDismissed;
-
       const recordDayEntry = (dayKey, type = 'workout', extras = {}) => {
         setDayEntries(prev => {
           const existing = prev[dayKey];
@@ -6741,7 +6001,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const chosen = type === 'surprise' ? ['legs','push','pull','full'][Math.floor(Math.random()*4)] : type;
         const draft = buildDraftPlan(chosen, generatorOptions || {});
         updateSessionItemsByIds(draft.exercises || [], { status: 'draft', createdFrom: 'generated' });
-        showToast('Added to today’s workout');
+        showToast("Added to today's workout");
         setTab('workout');
       };
 
@@ -6760,7 +6020,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const currentId = draftPlanToday?.exercises?.[index];
         const existingEntry = activeSessionToday?.items?.find(item => (item.exerciseId || item.id) === currentId);
         if (existingEntry?.sets > 0) {
-          const confirmed = window.confirm('This will remove logged sets for this exercise from today’s session.');
+          const confirmed = window.confirm("This will remove logged sets for this exercise from today's session.");
           if (!confirmed) return;
           removeExerciseLogsForToday(currentId, existingEntry.kind);
         }
@@ -6792,7 +6052,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const currentId = draftPlanToday?.exercises?.[index];
         const existingEntry = activeSessionToday?.items?.find(item => (item.exerciseId || item.id) === currentId);
         if (existingEntry?.sets > 0) {
-          const confirmed = window.confirm('This will remove logged sets for this exercise from today’s session.');
+          const confirmed = window.confirm("This will remove logged sets for this exercise from today's session.");
           if (!confirmed) return;
           removeExerciseLogsForToday(currentId, existingEntry.kind);
         }
@@ -6930,7 +6190,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const cancelTodaySession = (isActive = false, hasLoggedSets = false) => {
         if (hasLoggedSets) {
-          const confirmed = window.confirm('Discard today’s session? Your logged sets will be cleared.');
+          const confirmed = window.confirm("Discard today's session? Your logged sets will be cleared.");
           if (!confirmed) return;
         } else if (isActive) {
           const confirmed = window.confirm('Cancel this workout?');
@@ -7075,7 +6335,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         if (!entry) return;
         const entryId = entry.exerciseId || entry.id;
         if ((activeSessionToday.logsByExercise?.[entryId] || []).length > 0) {
-          const confirmed = window.confirm('This will remove logged sets for this exercise from today’s session.');
+          const confirmed = window.confirm("This will remove logged sets for this exercise from today's session.");
           if (!confirmed) return;
           removeExerciseLogsForToday(entry.id, entry.kind);
         }
@@ -7128,7 +6388,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         setAppState(prev => ({
           ...prev,
           lastWorkoutType: todayWorkoutType,
-          lastWorkoutDayKey: toDayKey(new Date())
+          lastWorkoutDayKey: sessionDay
         }));
 
         // Unlock beginner mode after first workoutrecordExerciseUse(id, session.sets || []);
@@ -7147,7 +6407,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           if (settings.insightsEnabled !== false && lastSession && newMaxWeight !== null) {
             const improved = newMaxWeight > (lastMaxWeight || 0) || (newMaxWeight === lastMaxWeight && newTotalReps > (lastTotalReps || 0));
             if (improved) {
-              const responses = ['More than last time.', 'That’s progress.'];
+              const responses = ['More than last time.', "That's progress."];
               pushMessage(responses[Math.floor(Math.random() * responses.length)]);
             } else {
               pushMessage(COPY_PUSH.workoutSaved);
@@ -7319,18 +6579,20 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           reader.onload = (event) => {
             try {
               const importedData = JSON.parse(event.target.result);
-              const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
+              const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 
-              // Validate the imported data
-              if (!isPlainObject(importedData)
-                || !isPlainObject(importedData.profile)
-                || !isPlainObject(importedData.settings)
-                || !isPlainObject(importedData.history)
-                || !isPlainObject(importedData.cardioHistory)
-              ) {
-                alert('❌ Invalid backup file format.');
+              // Validate the imported data - require at minimum a history or profile object
+              // Be lenient with older exports that may lack cardioHistory or settings
+              if (!isPlainObject(importedData) || (!isPlainObject(importedData.history) && !isPlainObject(importedData.profile))) {
+                alert('❌ Invalid backup file format. Expected a Planet Strength export JSON.');
                 return;
               }
+
+              // Ensure required keys exist with safe defaults for older export formats
+              if (!isPlainObject(importedData.history)) importedData.history = {};
+              if (!isPlainObject(importedData.cardioHistory)) importedData.cardioHistory = {};
+              if (!isPlainObject(importedData.settings)) importedData.settings = {};
+              if (!isPlainObject(importedData.profile)) importedData.profile = {};
 
               if (confirm('⚠️ Import will replace all current data. Continue?')) {
                 // Restore all data
@@ -7425,12 +6687,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 return (
         <>
           <InstallPrompt />
-          {shouldShowLockedInGate && (
-            <LockedInGate
-              onLockedIn={() => setLockedInDismissed(true)}
-              onBrowse={() => setLockedInDismissed(true)}
-            />
-          )}
           <div className="app-root bg-gray-50 flex flex-col overflow-hidden">
             <div className="app-main">
               <InlineMessage message={tab === 'home' && inlineMessage === 'Workout saved.' ? null : inlineMessage} />
@@ -7462,7 +6718,7 @@ return (
                 <div className={`page ${showAnalytics ? 'active' : ''}`} aria-hidden={!showAnalytics}>
                   <div className="h-full flex flex-col bg-gray-50">
                     <div className="bg-white border-b border-gray-200 p-4 flex items-center gap-3">
-                      <button onClick={() => { setShowAnalytics(false); setHomeRequestedAnalyticsTab(null); }} className="p-2 rounded-full bg-gray-100">
+                      <button onClick={() => setShowAnalytics(false)} className="p-2 rounded-full bg-gray-100">
                         <Icon name="ChevronLeft" className="w-5 h-5 text-gray-700" />
                       </button>
                       <div>
@@ -7558,10 +6814,6 @@ return (
                   <ProfileView
                     settings={settings}
                     setSettings={setSettings}
-                    themeMode={themeMode}
-                    darkVariant={darkVariant}
-                    setThemeMode={setThemeMode}
-                    setDarkVariant={setDarkVariant}
                     colorfulExerciseCards={colorfulExerciseCards}
                     onToggleColorfulExerciseCards={setColorfulExerciseCards}
                     onBack={() => setTab('home')}

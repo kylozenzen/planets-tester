@@ -2543,480 +2543,281 @@ input[type="number"] { -moz-appearance: textfield; }
 .tile-action { min-height: 36px; min-width: 44px; }
 @keyframes spartanHelmet { 0% { transform: translateY(-100px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 
-/* ========== ANALYTICS OVERHAUL ========== */
+/* ===== Progress Component ===== */
 
-.analytics-tab-bar {
+.progress-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-tab-bar {
   display: flex;
   gap: 6px;
-  padding: 10px 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--hairline);
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
-.analytics-tab-btn {
-  flex: 1;
-  padding: 8px 10px;
-  border-radius: var(--radius-control);
-  font-family: var(--font-display);
-  font-size: 12px;
+.progress-tab-pill {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.02em;
   color: var(--muted);
   background: transparent;
-  transition: background 0.15s var(--ease-standard), color 0.15s var(--ease-standard), box-shadow 0.15s var(--ease-standard);
-  text-align: center;
-  white-space: nowrap;
-}
-
-.analytics-tab-btn.active {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 4px 14px var(--accent-soft);
-}
-
-/* ---- Streak Card ---- */
-.analytics-streak-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-.analytics-streak-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-.analytics-streak-count {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-.analytics-streak-count > span:first-of-type {
-  font-family: var(--font-display);
-  font-size: 2.8rem;
-  font-weight: 900;
-  color: var(--text-strong);
-  line-height: 1;
-}
-.analytics-streak-icon {
-  width: 26px;
-  height: 26px;
-  color: #f97316;
-  flex-shrink: 0;
-}
-.analytics-streak-unit {
-  font-size: 14px;
-  color: var(--muted) !important;
-  font-weight: 500;
-}
-.analytics-streak-best { text-align: right; }
-.analytics-streak-best-label {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.analytics-streak-best-val {
-  font-family: var(--font-display);
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: var(--accent);
-  line-height: 1;
-  margin-top: 2px;
-}
-
-/* ---- Heatmap ---- */
-.analytics-heatmap-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.analytics-heatmap {
-  display: flex;
-  gap: 3px;
-  width: 100%;
-}
-.analytics-heatmap-col {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-.analytics-heatmap-cell {
-  aspect-ratio: 1;
-  border-radius: 3px;
-  background: var(--surface-2);
-  border: 1px solid var(--hairline);
-  min-width: 0;
-  transition: background 0.15s;
-}
-.analytics-heatmap-cell.workout {
-  background: var(--accent);
-  border-color: var(--accent);
-  opacity: 0.85;
-}
-.analytics-heatmap-cell.today {
-  box-shadow: 0 0 0 2px var(--accent);
-}
-.analytics-heatmap-cell.future {
-  background: transparent;
-  border-color: transparent;
-}
-.analytics-heatmap-legend {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-  justify-content: flex-end;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-}
-.analytics-heatmap-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.analytics-heatmap-cell-sample {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--accent);
-  opacity: 0.85;
-}
-.analytics-heatmap-cell-empty {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--surface-2);
-  border: 1px solid var(--hairline);
-}
-
-/* ---- Stats Grid ---- */
-.analytics-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.analytics-stat-card { padding: 12px !important; }
-.analytics-stat-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-.analytics-stat-value {
-  font-family: var(--font-display);
-  font-size: 1.7rem;
-  font-weight: 900;
-  color: var(--text-strong);
-  line-height: 1;
-}
-.analytics-stat-value.accent { color: var(--accent); }
-.analytics-stat-sub {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-/* ---- Section headers ---- */
-.analytics-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.analytics-section-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-strong);
-}
-
-/* ---- Recent workouts ---- */
-.analytics-recent-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
-  background: var(--surface-2);
-  border-radius: var(--radius-small);
-  border: 1px solid var(--hairline);
-}
-.analytics-recent-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-}
-.analytics-recent-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-strong);
-}
-.analytics-recent-date { font-size: 10px; color: var(--muted); }
-.analytics-recent-stat {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-/* ---- Exercise progress items ---- */
-.analytics-exercise-progress-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  background: var(--surface-2);
-  border-radius: var(--radius-small);
-  border: 1px solid var(--hairline);
+  border: none;
   cursor: pointer;
-  transition: border-color 0.15s;
-}
-.analytics-exercise-progress-item:active { transform: scale(0.99); }
-.analytics-exercise-progress-item:hover { border-color: var(--accent-soft); }
-.analytics-exercise-progress-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-}
-.analytics-exercise-progress-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-strong);
-}
-.analytics-exercise-progress-sub { font-size: 10px; color: var(--muted); }
-.analytics-progress-bar-wrap {
-  width: 52px;
-  height: 5px;
-  background: var(--border);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.analytics-progress-bar {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 999px;
-  transition: width 0.3s var(--ease-standard);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 
-/* ---- History Tab: Day Groups ---- */
-.analytics-day-group { /* no extra wrapper styles */ }
-.analytics-day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2px 0 8px;
-  border-bottom: 1px solid var(--hairline);
-  margin-bottom: 8px;
+.progress-tab-pill:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
 }
-.analytics-day-label {
+
+.progress-tab-active {
+  background: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px var(--accent-soft);
+}
+
+/* History tab */
+.progress-day-header {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  padding: 0 4px;
+  margin-bottom: 6px;
+}
+
+.progress-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  background: var(--surface);
+  min-height: 48px;
+}
+
+.progress-history-name {
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-strong);
-}
-.analytics-day-count { font-size: 11px; color: var(--muted); font-weight: 600; }
-
-.analytics-session-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  background: var(--surface);
-  border-radius: var(--radius-small);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-  gap: 8px;
-}
-.analytics-session-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  color: var(--text);
   flex: 1;
   min-width: 0;
-}
-.analytics-session-emoji { font-size: 20px; flex-shrink: 0; }
-.analytics-session-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-strong);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.analytics-session-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
-.analytics-session-sets {
+
+.progress-history-meta {
   display: flex;
-  gap: 3px;
   align-items: center;
+  gap: 6px;
   flex-shrink: 0;
 }
-.analytics-set-chip {
+
+.progress-muscle-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.progress-history-detail {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Empty state */
+.progress-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3px 5px;
-  background: var(--surface-2);
-  border-radius: 6px;
-  border: 1px solid var(--hairline);
-  min-width: 30px;
-}
-.analytics-set-weight {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-strong);
-  line-height: 1.2;
-}
-.analytics-set-reps { font-size: 9px; color: var(--muted); line-height: 1.2; }
-.analytics-set-more {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted);
-  padding: 5px;
-  align-self: center;
-  flex-direction: row;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
 }
 
-/* ---- Exercise History Tab ---- */
-.analytics-search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
+.progress-empty-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  opacity: 0.5;
 }
-.analytics-search-icon {
-  position: absolute;
-  left: 10px;
-  width: 14px;
-  height: 14px;
-  color: var(--muted);
-  pointer-events: none;
-}
-.analytics-search-input {
-  width: 100%;
-  padding: 9px 12px 9px 32px;
-  border-radius: var(--radius-control);
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  font-size: 13px;
-  font-weight: 600;
+
+.progress-empty-title {
+  font-size: 15px;
+  font-weight: 800;
   color: var(--text);
-  outline: none;
-}
-.analytics-search-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  margin-bottom: 6px;
 }
 
-.analytics-exercise-card {
-  border-radius: var(--radius-small);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  overflow: hidden;
-  transition: border-color 0.15s;
+.progress-empty-text {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 260px;
 }
-.analytics-exercise-card.expanded { border-color: var(--accent-soft); }
-.analytics-exercise-toggle {
-  width: 100%;
+
+/* Streak / This Week */
+.progress-week-grid {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.progress-week-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.progress-week-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.progress-week-dot.filled {
+  background: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.progress-week-dot.hollow {
+  background: transparent;
+  border: 2px solid var(--border);
+}
+
+.progress-week-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* Recent sessions row */
+.progress-recent-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 12px;
-  text-align: left;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
 }
-.analytics-exercise-toggle-left {
+
+.progress-recent-row:last-child {
+  border-bottom: none;
+}
+
+.progress-recent-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.progress-recent-detail {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Category dot for exercise progress bars */
+.progress-category-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--category-tint, var(--muted));
+  border: 2px solid color-mix(in srgb, var(--category-tint, var(--muted)) 60%, transparent);
+}
+
+.progress-bar-fill {
+  background: var(--category-tint, var(--accent));
+}
+
+.progress-bar-default {
+  background: var(--accent);
+}
+
+/* Exercise History (single column list) */
+.progress-exhist-row {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.progress-exhist-row.expanded {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+.progress-exhist-toggle {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 12px 12px;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
 }
-.analytics-exercise-emoji { font-size: 18px; }
-.analytics-exercise-name { font-size: 13px; font-weight: 700; color: var(--text-strong); }
-.analytics-exercise-sub { font-size: 10px; color: var(--muted); }
-.analytics-exercise-toggle-right { display: flex; align-items: center; gap: 8px; }
-.analytics-pr-badge {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  border: 1px solid var(--accent-soft);
-  padding: 2px 7px;
+
+.progress-exhist-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--category-tint, var(--muted));
+}
+
+.progress-exhist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.progress-pr-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
   border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.analytics-exercise-detail {
-  padding: 10px 12px 12px;
-  border-top: 1px solid var(--hairline);
-  background: var(--surface-2);
+.progress-exhist-detail {
+  padding: 0 12px 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 0;
+  padding-top: 10px;
 }
-.analytics-history-session {
+
+.progress-exhist-timeline {
   display: flex;
-  align-items: flex-start;
   gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--hairline);
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
 }
-.analytics-history-session:last-child { border-bottom: none; }
-.analytics-history-date {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
-  min-width: 52px;
+
+.progress-exhist-timeline::-webkit-scrollbar { display: none; }
+
+.progress-exhist-session {
   flex-shrink: 0;
-}
-.analytics-history-sets {
-  font-size: 11px;
-  color: var(--muted);
-  min-width: 36px;
-  flex-shrink: 0;
-}
-.analytics-history-summary { font-size: 11px; color: var(--text); flex: 1; }
-
-/* ---- Empty states ---- */
-.analytics-empty-state { text-align: center; padding: 24px 16px; }
-.analytics-empty-icon { font-size: 32px; margin-bottom: 8px; }
-.analytics-empty-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-strong);
-  margin-bottom: 4px;
-}
-.analytics-empty-body {
-  font-size: 13px;
-  color: var(--muted);
-  max-width: 240px;
-  margin: 0 auto;
-}
-
-/* ---- Back link ---- */
-.analytics-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--accent);
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 16px;
-}
-
-/* Dark mode overrides for new analytics */
-body.dark-mode .analytics-session-card {
-  background: var(--surface-2);
-}
-body.dark-mode .analytics-exercise-card {
+  min-width: 90px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
   background: var(--surface);
-}
-body.dark-mode .analytics-exercise-detail {
-  background: var(--surface-2);
 }

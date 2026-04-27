@@ -4,13 +4,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Planet Strength</title>
+  <title>Planet Strength | Beta</title>
   <meta name="application-name" content="Planet Strength" />
   <meta name="apple-mobile-web-app-title" content="Planet Strength" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Planet Strength is a calm, simple tracker for Today's Workout." />
+  <meta name="description" content="Planet Strength tracks every pound you've moved since you decided to stop being weak. No logins. No noise. No participation trophies. Built by Nobody." />
   <meta name="theme-color" content="#facc15" />
   <meta name="color-scheme" content="dark" />
   <link rel="manifest" href="manifest.json?v=3" />
@@ -18,15 +18,24 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png?v=3" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@1,600;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.apis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@1,600;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <script>tailwind = { disableWarning: true }</script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DKH47Q5X30');
+  </script>
+
   <!-- Nobody Studios Theme — must come AFTER Tailwind to override -->
   <link rel="stylesheet" href="nobody-theme.css" />
-  <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="app-shell">
 
@@ -60,6 +69,11 @@
 
   <!-- Components (JSX, needs Babel) -->
   <script type="text/babel" src="components/Icon.jsx"></script>
+  <script type="text/babel" src="components/onboarding.js"></script>
+  <script type="text/babel" src="components/easter-eggs.js"></script>
+
+  <!-- Data utilities (plain JS, no JSX needed) -->
+  <script src="data/search.js"></script>
 
   <!-- App logic -->
   <script type="text/babel" data-presets="env,react" src="script.js"></script>

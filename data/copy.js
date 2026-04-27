@@ -7,18 +7,16 @@
 const COPY_BRAND = {
   name: 'Planet Strength',
   tagline: 'Built by Nobody.',
-  subtagline: 'For everybody.',
+  subtagline: 'For the ones who show up.',
 };
 
 // ── MANIFESTO TICKER ────────────────────────────────────────
 // Scrolls across the top of every screen.
 // Alternating items get yellow highlight treatment.
 const COPY_TICKER = [
-  'Trust Nobody.',
   'Progress is a private conversation between you and the weights.',
   'No logins. No noise. No participation trophies.',
   'Show up. Log the work. Repeat.',
-  'Built by Nobody.',
   'Maintenance is a biological requirement. Do the work.',
   'Nobody asked. We built it anyway.',
   'Your data stays yours. Always.',
@@ -41,7 +39,7 @@ const COPY_ONBOARDING_STEPS = [
     emoji: '💪',
     title: 'You vs. You.',
     subhead: null,
-    body: 'Add a rep. Add a little weight.\nOr just show up again.\nThat\'s the whole game.',
+    body: 'Add a rep. Add five pounds.\nOr just show up again.\nThe bar doesn\'t care about your excuses.',
   },
   { type: 'form' },
 ];
