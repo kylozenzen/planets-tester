@@ -2130,6 +2130,9 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
   const [swapState, setSwapState] = useState(null);
+  const [swapSearch, setSwapSearch] = useState('');
+  const [swapMuscleFilter, setSwapMuscleFilter] = useState('all');
+  const [swapEquipmentFilter, setSwapEquipmentFilter] = useState('all');
   const [activeFilter, setActiveFilter] = useState('All');
   const [showCompactSearch, setShowCompactSearch] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
@@ -2522,10 +2525,30 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     const sourceList = sessionEntries.map(entry => entry.exerciseId || entry.id);
     const currentId = sourceList[swapState.index];
     if (!currentId) return [];
-    const current = EQUIPMENT_DB[currentId];
-    const pool = availableEquipment.filter(id => id !== currentId && (!current || (EQUIPMENT_DB[id]?.target === current.target || EQUIPMENT_DB[id]?.tags?.some(t => current.tags?.includes(t)))));
-    return pool.slice(0, 20);
-  }, [swapState, availableEquipment, sessionEntries]);
+    const pool = availableEquipment.filter(id => id !== currentId && EQUIPMENT_DB[id]?.type !== 'cardio');
+    const searched = swapSearch.trim()
+      ? fuzzyMatchExercises(swapSearch, pool)
+      : pool;
+    return searched.filter((id) => {
+      const eq = EQUIPMENT_DB[id];
+      if (!eq) return false;
+      const muscleMatch = swapMuscleFilter === 'all' || resolveGroup(eq) === swapMuscleFilter;
+      const equipmentMatch = swapEquipmentFilter === 'all' || eq.type === swapEquipmentFilter;
+      return muscleMatch && equipmentMatch;
+    }).slice(0, 40);
+  }, [swapState, availableEquipment, sessionEntries, swapSearch, swapMuscleFilter, swapEquipmentFilter, resolveGroup]);
+
+  const swapMuscleOptions = useMemo(() => {
+    const groups = new Set(['all']);
+    availableEquipment.forEach((id) => {
+      const eq = EQUIPMENT_DB[id];
+      if (!eq || eq.type === 'cardio') return;
+      groups.add(resolveGroup(eq));
+    });
+    return Array.from(groups);
+  }, [availableEquipment, resolveGroup]);
+
+  const swapEquipmentOptions = useMemo(() => ['all', 'machine', 'dumbbell', 'barbell'], []);
 
   const handleSearchAdd = (id) => {
     if (!id) return;
@@ -2761,10 +2784,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       <div className="text-sm font-bold workout-heading session-entry-title active-exercise-name">{entry.name || entry.label}</div>
                       <div className="text-[11px] workout-muted">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
                     </div>
-                    <div className={`active-exercise-meta ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
-                      {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
-                    </div>
-                    <div className="session-entry-actions active-exercise-actions">
+                    <div className="active-exercise-actions-wrap">
+                      <div className={`active-exercise-meta ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
+                        {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
+                      </div>
+                      <div className="session-entry-actions active-exercise-actions">
                       {mode === 'active' && (
                         entry.kind === 'cardio' ? (
                           <button
@@ -2801,7 +2825,13 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       )}
                       {entry.kind !== 'cardio' && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSwapState({ mode: 'session', index: idx }); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSwapSearch('');
+                            setSwapMuscleFilter('all');
+                            setSwapEquipmentFilter('all');
+                            setSwapState({ mode: 'session', index: idx });
+                          }}
                           className="session-row-action session-row-action--secondary ps-tap"
                         >
                           Swap
@@ -2814,6 +2844,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       >
                         <Icon name="Trash" className="w-4 h-4" />
                       </button>
+                      </div>
                     </div>
                   </div>
                 )})}
@@ -2909,6 +2940,47 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 <Icon name="X" className="w-4 h-4" />
               </button>
             </div>
+            <div className="space-y-2 mb-3">
+              <input
+                value={swapSearch}
+                onChange={(e) => setSwapSearch(e.target.value)}
+                placeholder="Search exercises"
+                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-sm font-semibold"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={swapMuscleFilter}
+                  onChange={(e) => setSwapMuscleFilter(e.target.value)}
+                  className="w-full p-2 rounded-lg border border-gray-200 bg-white text-xs font-semibold"
+                >
+                  {swapMuscleOptions.map((option) => (
+                    <option key={option} value={option}>{option === 'all' ? 'All muscles' : option}</option>
+                  ))}
+                </select>
+                <select
+                  value={swapEquipmentFilter}
+                  onChange={(e) => setSwapEquipmentFilter(e.target.value)}
+                  className="w-full p-2 rounded-lg border border-gray-200 bg-white text-xs font-semibold"
+                >
+                  {swapEquipmentOptions.map((option) => (
+                    <option key={option} value={option}>{option === 'all' ? 'All equipment' : option}</option>
+                  ))}
+                </select>
+              </div>
+              {swapOptions.length > 0 && (
+                <button
+                  onClick={() => {
+                    const randomId = swapOptions[Math.floor(Math.random() * swapOptions.length)];
+                    if (!randomId) return;
+                    if (swapState?.mode === 'session') onSwapSessionExercise?.(swapState.index, randomId);
+                    setSwapState(null);
+                  }}
+                  className="tile-action ps-tap"
+                >
+                  Surprise me
+                </button>
+              )}
+            </div>
             <div className="space-y-2 max-h-[60vh] overflow-y-auto">
               {swapOptions.map(id => (
                 <button
@@ -2922,7 +2994,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   className="w-full p-3 rounded-xl border border-gray-200 text-left bg-gray-50 active:scale-[0.98]"
                 >
                   <div className="font-bold text-gray-900 text-sm">{EQUIPMENT_DB[id]?.name}</div>
-                  <div className="text-xs text-gray-500">{EQUIPMENT_DB[id]?.target}</div>
+                  <div className="text-xs text-gray-500">{resolveGroup(EQUIPMENT_DB[id])} • {EQUIPMENT_DB[id]?.type}</div>
                 </button>
               ))}
               {swapOptions.length === 0 && (
@@ -3592,7 +3664,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                     }`}
                                   >
                                     <span className="text-lg">＋</span>
-                                    {isAddingSet ? 'Adding...' : 'Add Set'}
+                                    {isAddingSet ? 'Logging...' : 'Log Set'}
                                   </button>
                                 </div>
                               </div>
