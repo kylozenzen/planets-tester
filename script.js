@@ -2756,11 +2756,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                     onKeyDown={mode === 'active' ? (e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); } : undefined}
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
-                    <div>
-                      <div className="text-sm font-bold workout-heading">{entry.name || entry.label}</div>
+                    <div className="session-entry-main">
+                      <div className="text-sm font-bold workout-heading session-entry-title">{entry.name || entry.label}</div>
                       <div className="text-[11px] workout-muted">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="session-entry-actions">
                       {(mode === 'active' || entrySetCount > 0) && (
                         <div className={mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-xs font-bold cues-accent'}>
                           {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
@@ -2782,7 +2782,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 handleQuickLog(entryId);
                               }}
-                              className="session-action-button ps-tap"
+                              className="session-action-button session-action-button--fixed ps-tap"
                               disabled={!quickSet}
                             >
                               {quickSet ? `+ Set ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
@@ -2793,7 +2793,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 onSelectExercise(entryId, 'session');
                               }}
-                              className="tile-action"
+                              className="tile-action session-adjust-button ps-tap"
                             >
                               Adjust
                             </button>
@@ -3527,7 +3527,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                   <div className="logger-stepper">
                                     <div className="logger-stepper-label">Weight</div>
                                     <div className="logger-stepper-controls">
-                                      <button type="button" className="tile-action ps-tap" onClick={() => adjustSetInput('weight', -5)}>-5</button>
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('weight', -5)}>-5</button>
                                       <input
                                         type="number"
                                         inputMode="decimal"
@@ -3543,13 +3543,13 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                         ref={weightInputRef}
                                         className="logger-stepper-input workout-accent-focus outline-none"
                                       />
-                                      <button type="button" className="tile-action ps-tap" onClick={() => adjustSetInput('weight', 5)}>+5</button>
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('weight', 5)}>+5</button>
                                     </div>
                                   </div>
                                   <div className="logger-stepper">
                                     <div className="logger-stepper-label">Reps</div>
                                     <div className="logger-stepper-controls">
-                                      <button type="button" className="tile-action ps-tap" onClick={() => adjustSetInput('reps', -1)}>-1</button>
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('reps', -1)}>-1</button>
                                       <input
                                         type="number"
                                         inputMode="numeric"
@@ -3565,7 +3565,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                         ref={repsInputRef}
                                         className="logger-stepper-input workout-accent-focus outline-none"
                                       />
-                                      <button type="button" className="tile-action ps-tap" onClick={() => adjustSetInput('reps', 1)}>+1</button>
+                                      <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('reps', 1)}>+1</button>
                                     </div>
                                   </div>
                                 </div>
@@ -3574,8 +3574,8 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                     type="button"
                                     onClick={handleRepeatLastSet}
                                     disabled={!repeatLastSetCandidate || isAddingSet}
-                                    className={`w-full py-2 rounded-xl font-bold transition-all border ${
-                                      (!repeatLastSetCandidate || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-surface workout-accent-border'
+                                    className={`w-full py-2 rounded-xl font-bold transition-all logger-repeat-button ps-tap ${
+                                      (!repeatLastSetCandidate || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-surface'
                                     }`}
                                   >
                                     {repeatLastSetCandidate ? `Repeat Last Set (${repeatLastSetCandidate.weight} × ${repeatLastSetCandidate.reps})` : 'Repeat Last Set'}
