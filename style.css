@@ -2482,6 +2482,50 @@ body.dark-mode .finish-footer .finish-summary {
   transform: scale(0.97);
 }
 
+.logger-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.logger-stepper-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.logger-stepper-controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.logger-stepper-input {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--accent-soft);
+  background: var(--surface);
+  color: var(--text);
+  text-align: center;
+  font-weight: 800;
+}
+
+.logger-sheet-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 15%, transparent) 0%, var(--surface) 38%);
+}
+
 .session-remove-button {
   display: inline-flex;
   align-items: center;
@@ -2492,6 +2536,27 @@ body.dark-mode .finish-footer .finish-summary {
   border: 1px solid color-mix(in srgb, #ef4444 35%, var(--border));
   color: #ef4444;
   background: color-mix(in srgb, #ef4444 8%, transparent);
+}
+
+@media (max-width: 768px) {
+  .logger-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: none !important;
+    width: 100%;
+    max-height: min(90dvh, 760px) !important;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .logger-sheet-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 body.dark-mode .text-gray-500 {
