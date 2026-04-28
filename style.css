@@ -2634,22 +2634,35 @@ body.dark-mode .finish-footer .finish-summary {
 .logger-stepper-button {
   appearance: none;
   -webkit-appearance: none;
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1.5px solid var(--border);
   width: 48px;
   height: 48px;
-  font-size: 1.4rem;
   border-radius: var(--radius-control);
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition:
+    transform 120ms var(--ease-standard),
+    border-color 160ms var(--ease-standard),
+    background-color 160ms var(--ease-standard),
+    color 160ms var(--ease-standard);
 }
-
+.logger-stepper-button:hover {
+  border-color: var(--accent-soft);
+  color: var(--accent);
+}
 .logger-stepper-button:active {
-  transform: scale(0.9);
+  transform: scale(0.92);
   background: var(--accent);
-  color: #111;
+  color: #fff;
   border-color: var(--accent);
 }
 

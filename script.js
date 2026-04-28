@@ -2767,6 +2767,9 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               <div className="space-y-2">
                 {sessionEntries.map((entry, idx) => {
                   const entryId = entry.exerciseId || entry.id;
+                  const eq = EQUIPMENT_DB[entryId];
+                  const entryName = eq?.name || entry.name || entry.label || entryId;
+                  const entryMuscle = entry.kind === 'cardio' ? 'Cardio' : (eq?.target || entry.muscleGroup || 'Strength');
                   const entrySetCount = (sessionLogsByExercise[entryId] || []).length;
                   const quickSet = entry.kind !== 'cardio' ? getSuggestedSet(entryId) : null;
                   const categoryClass = colorfulExerciseCards ? resolveCategoryClass(entry.muscleGroup || EQUIPMENT_DB[entryId]?.target || '') : '';
@@ -2781,8 +2784,8 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
                     <div className="active-workout-main">
-                      <div className="active-workout-name">{entry.name || entry.label}</div>
-                      <div className="active-workout-category">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
+                      <div className="active-workout-name">{entryName}</div>
+                      <div className="active-workout-category">{entryMuscle}</div>
                     </div>
                     <div className="active-workout-controls">
                       <span className="active-workout-setcount">
@@ -2802,12 +2805,15 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                handleQuickLog(entryId);
+                                if (quickSet) {
+                                  handleQuickLog(entryId);
+                                } else {
+                                  onSelectExercise(entryId, 'session');
+                                }
                               }}
-                              className="active-workout-btn active-workout-btn--primary ps-tap"
-                              disabled={!quickSet}
+                              className="session-row-action session-row-action--primary ps-tap"
                             >
-                              {quickSet ? `+ ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
+                              {quickSet ? `+ ${quickSet.weight}×${quickSet.reps}` : '+ Set'}
                             </button>
                             <button
                               onClick={(e) => {
