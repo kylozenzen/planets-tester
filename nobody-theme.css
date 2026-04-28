@@ -1748,3 +1748,53 @@ body.dark-mode { /* Already dark, no change needed */ }
   text-transform: uppercase;
   color: rgba(255,255,255,0.45);
 }
+
+/* Workout contrast fixes */
+.active-exercise-name,
+.active-workout-name,
+.session-row-title {
+  color: var(--text-strong, #f5f5f5) !important;
+  opacity: 1 !important;
+}
+
+.session-row-action--primary {
+  background: var(--accent, #ffd400) !important;
+  border-color: var(--accent, #ffd400) !important;
+  color: #111 !important;
+  font-family: var(--font-display);
+  font-weight: 900;
+}
+
+.session-row-action--primary,
+.session-row-action--primary * {
+  color: #111 !important;
+  opacity: 1 !important;
+}
+
+.logger-stepper-button {
+  background: #f5f5f5 !important;
+  border-color: rgba(255,255,255,0.25) !important;
+  color: #111 !important;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+}
+
+.logger-stepper-button,
+.logger-stepper-button * {
+  color: #111 !important;
+  opacity: 1 !important;
+}
+
+.logger-stepper-button:hover,
+.logger-stepper-button:active,
+.logger-stepper-button:focus,
+.logger-stepper-button:focus-visible,
+.logger-stepper-button:disabled {
+  color: #111 !important;
+  opacity: 1 !important;
+}
