@@ -2780,19 +2780,19 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                     onKeyDown={mode === 'active' ? (e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); } : undefined}
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
-                    <div className="session-entry-main active-workout-main">
-                      <div className="text-sm font-bold workout-heading session-entry-title active-exercise-name">{entry.name || entry.label}</div>
-                      <div className="text-[11px] workout-muted">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
+                    <div className="active-workout-main">
+                      <div className="active-workout-name">{entry.name || entry.label}</div>
+                      <div className="active-workout-category">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
                     </div>
                     <div className="active-workout-controls">
-                      <div className={`active-workout-setcount ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
+                      <span className="active-workout-setcount">
                         {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
-                      </div>
+                      </span>
                       {mode === 'active' && (
                         entry.kind === 'cardio' ? (
                           <button
-                            onClick={(e) => { e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
-                            className="session-row-action active-workout-btn--primary ps-tap"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
+                            className="active-workout-btn active-workout-btn--primary ps-tap"
                           >
                             + Entry
                           </button>
@@ -2804,7 +2804,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 handleQuickLog(entryId);
                               }}
-                              className="session-row-action active-workout-btn--primary ps-tap"
+                              className="active-workout-btn active-workout-btn--primary ps-tap"
                               disabled={!quickSet}
                             >
                               {quickSet ? `+ ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
@@ -2815,7 +2815,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 onSelectExercise(entryId, 'session');
                               }}
-                              className="session-row-action session-row-action--secondary ps-tap"
+                              className="active-workout-btn active-workout-btn--secondary ps-tap"
                             >
                               Adjust
                             </button>
@@ -2825,20 +2825,21 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       {entry.kind !== 'cardio' && (
                         <button
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             setSwapSearch('');
                             setSwapMuscleFilter('all');
                             setSwapEquipmentFilter('all');
                             setSwapState({ mode: 'session', index: idx });
                           }}
-                          className="session-row-action session-row-action--secondary ps-tap"
+                          className="active-workout-btn active-workout-btn--secondary ps-tap"
                         >
                           Swap
                         </button>
                       )}
                       <button
-                        onClick={(e) => { e.stopPropagation(); onRemoveSessionExercise?.(entryId); }}
-                        className="session-row-action session-row-action--danger-icon ps-tap"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemoveSessionExercise?.(entryId); }}
+                        className="active-workout-btn active-workout-btn--icon ps-tap"
                         aria-label={`Remove ${entry.name || entry.label}`}
                       >
                         <Icon name="Trash" className="w-4 h-4" />
