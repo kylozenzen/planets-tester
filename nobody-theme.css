@@ -1798,3 +1798,27 @@ body.dark-mode { /* Already dark, no change needed */ }
   color: #111 !important;
   opacity: 1 !important;
 }
+
+/* Workout active row readability fixes */
+.active-exercise-name,
+.active-workout-name,
+.session-row-title,
+.session-exercise-name,
+.workout-row-title,
+.workout-card-title,
+.exercise-name {
+  color: var(--text-strong, #f5f5f5) !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+.active-exercise-name *,
+.active-workout-name *,
+.session-row-title *,
+.session-exercise-name *,
+.workout-row-title *,
+.workout-card-title *,
+.exercise-name * {
+  color: inherit !important;
+  opacity: 1 !important;
+}
