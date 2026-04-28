@@ -2774,26 +2774,25 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   <div
                     key={entryId}
                     onClick={mode === 'active' ? () => onSelectExercise(entryId, 'session') : undefined}
-                    className={`session-entry-row ${mode === 'active' ? 'active-exercise-row' : ''} ${categoryClass}`}
+                    className={`session-entry-row ${mode === 'active' ? 'active-workout-row' : ''} ${categoryClass}`}
                     role={mode === 'active' ? 'button' : undefined}
                     tabIndex={mode === 'active' ? 0 : undefined}
                     onKeyDown={mode === 'active' ? (e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); } : undefined}
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
-                    <div className="session-entry-main active-exercise-main">
+                    <div className="session-entry-main active-workout-main">
                       <div className="text-sm font-bold workout-heading session-entry-title active-exercise-name">{entry.name || entry.label}</div>
                       <div className="text-[11px] workout-muted">{entry.kind === 'cardio' ? 'Cardio' : (entry.muscleGroup || 'Strength')}</div>
                     </div>
-                    <div className="active-exercise-actions-wrap">
-                      <div className={`active-exercise-meta ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
+                    <div className="active-workout-controls">
+                      <div className={`active-workout-setcount ${mode === 'draft' ? 'text-[11px] font-semibold workout-muted' : 'text-[11px] font-bold cues-accent uppercase'}`}>
                         {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
                       </div>
-                      <div className="session-entry-actions active-exercise-actions">
                       {mode === 'active' && (
                         entry.kind === 'cardio' ? (
                           <button
                             onClick={(e) => { e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
-                            className="session-row-action session-row-action--primary ps-tap"
+                            className="session-row-action active-workout-btn--primary ps-tap"
                           >
                             + Entry
                           </button>
@@ -2805,10 +2804,10 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                 e.stopPropagation();
                                 handleQuickLog(entryId);
                               }}
-                              className="session-row-action session-row-action--primary ps-tap"
+                              className="session-row-action active-workout-btn--primary ps-tap"
                               disabled={!quickSet}
                             >
-                              {quickSet ? `+ Set ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
+                              {quickSet ? `+ ${quickSet.weight} × ${quickSet.reps}` : '+ Set'}
                             </button>
                             <button
                               onClick={(e) => {
@@ -2844,7 +2843,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       >
                         <Icon name="Trash" className="w-4 h-4" />
                       </button>
-                      </div>
                     </div>
                   </div>
                 )})}

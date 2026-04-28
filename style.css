@@ -2457,14 +2457,13 @@ body.dark-mode .finish-footer .finish-summary {
   flex-shrink: 0;
 }
 
-.active-exercise-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+.active-workout-row {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.active-exercise-main {
+.active-workout-main {
   min-width: 0;
 }
 
@@ -2474,26 +2473,17 @@ body.dark-mode .finish-footer .finish-summary {
   white-space: nowrap;
 }
 
-.active-exercise-meta {
+.active-workout-setcount {
+  margin-right: auto;
   white-space: nowrap;
   flex-shrink: 0;
-  text-align: right;
 }
 
-.active-exercise-actions-wrap {
-  display: grid;
-  gap: 6px;
-  justify-items: end;
-  flex-shrink: 0;
-}
-
-.active-exercise-actions {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(64px, auto);
+.active-workout-controls {
+  display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
 }
 
 .tile-actions {
@@ -2557,16 +2547,18 @@ body.dark-mode .finish-footer .finish-summary {
   background: var(--surface-2);
 }
 
-.session-row-action--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #111;
-}
-
 .session-row-action--secondary {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   border-color: var(--border);
   color: var(--text);
+}
+
+.active-workout-btn--primary {
+  flex: 1;
+  max-width: 180px;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #111;
 }
 
 .session-row-action--danger-icon {
@@ -2584,15 +2576,15 @@ body.dark-mode .finish-footer .finish-summary {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  min-height: 40px;
-  min-width: 48px;
-  padding: 8px 10px;
+  width: 48px;
+  height: 48px;
+  font-size: 1.3rem;
   border-radius: var(--radius-control);
 }
 
 .logger-stepper-button:active {
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
-  border-color: var(--accent-soft);
+  background: var(--accent);
+  color: #111;
 }
 
 .logger-stepper {
@@ -2654,40 +2646,6 @@ body.dark-mode .finish-footer .finish-summary {
   border: 1px solid color-mix(in srgb, #ef4444 35%, var(--border));
   color: #ef4444;
   background: color-mix(in srgb, #ef4444 8%, transparent);
-}
-
-@media (max-width: 640px) {
-  .active-exercise-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "main actionsWrap";
-    row-gap: 10px;
-  }
-
-  .active-exercise-main {
-    grid-area: main;
-  }
-
-  .active-exercise-actions-wrap {
-    grid-area: actionsWrap;
-    width: 100%;
-    justify-items: stretch;
-    align-content: start;
-  }
-
-  .active-exercise-actions {
-    width: 100%;
-    justify-content: flex-start;
-    grid-auto-columns: minmax(0, 1fr);
-  }
-
-  .session-row-action {
-    min-width: 0;
-  }
-
-  .session-row-action--danger-icon {
-    flex: 0 0 44px;
-  }
 }
 
 @media (max-width: 768px) {
