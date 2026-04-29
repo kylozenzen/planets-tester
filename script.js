@@ -2061,7 +2061,7 @@ return (
             {!showAnalytics && !showPatterns && !showMuscleMap && <TabBar currentTab={tab} setTab={setTab} onWorkoutTripleTap={() => setShowSpartan(true)} />}
 
             {activeEquipment && (
-              <EquipmentDetail
+              <EquipmentDetailFixed
                 id={activeEquipment}
                 profile={profile}
                 history={Array.isArray(effectiveHistory[activeEquipment]) ? effectiveHistory[activeEquipment] : []}
