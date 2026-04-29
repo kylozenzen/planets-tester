@@ -6987,11 +6987,12 @@ return (
             {!showAnalytics && !showPatterns && !showMuscleMap && <TabBar currentTab={tab} setTab={setTab} onWorkoutTripleTap={() => setShowSpartan(true)} />}
 
             {activeEquipment && (
-              <EquipmentDetailFixed
+              <EquipmentDetail
                 id={activeEquipment}
                 profile={profile}
                 history={Array.isArray(effectiveHistory[activeEquipment]) ? effectiveHistory[activeEquipment] : []}
                 settings={settings}
+                onSave={handleSaveSession}
                 onUpdateSessionLogs={updateSessionLogs}
                 sessionLogs={activeSessionToday?.logsByExercise?.[activeEquipment] || []}
                 onRequestUndo={showUndoToast}
