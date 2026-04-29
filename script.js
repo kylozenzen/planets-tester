@@ -2815,16 +2815,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                             >
                               {quickSet ? `+ ${quickSet.weight}×${quickSet.reps}` : '+ Set'}
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onSelectExercise(entryId, 'session');
-                              }}
-                              className="active-workout-btn active-workout-btn--secondary ps-tap"
-                            >
-                              Adjust
-                            </button>
                           </>
                         )
                       )}

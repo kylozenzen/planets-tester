@@ -1832,3 +1832,56 @@ body.dark-mode { /* Already dark, no change needed */ }
   mix-blend-mode: normal !important;
   text-shadow: none !important;
 }
+
+@media (max-width: 640px) {
+  .logger-sheet {
+    bottom: calc(env(safe-area-inset-bottom) + 10px) !important;
+    max-height: min(86dvh, 720px) !important;
+    margin: 0 10px !important;
+    width: calc(100% - 20px) !important;
+    border-radius: 18px !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 10px) !important;
+  }
+
+  .logger-sheet-body {
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .logger-stepper {
+    gap: 0.55rem !important;
+  }
+
+  .logger-stepper-controls {
+    gap: 0.75rem !important;
+    align-items: center;
+  }
+
+  .logger-stepper-input {
+    min-width: 78px;
+    min-height: 42px;
+    padding: 8px 10px !important;
+  }
+
+  .logger-sheet .workout-accent-surface > .flex.items-center.justify-between.text-sm.font-semibold.text-gray-900 {
+    margin-bottom: 0.45rem;
+  }
+
+  .logger-sheet .workout-accent-surface > .grid.grid-cols-2.gap-2 {
+    gap: 0.85rem !important;
+    margin-top: 0.4rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .logger-sheet-actions {
+    gap: 0.75rem !important;
+    padding-top: 0.7rem !important;
+    margin-top: 0.35rem;
+  }
+}
+
+/* Hide potentially mismatched/broken SVG marks in exercise library cards while keeping colored badge accents */
+.exercise-library-card .exercise-badge-wrapper .muscle-badge svg {
+  display: none !important;
+}
