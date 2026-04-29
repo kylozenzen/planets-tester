@@ -1823,6 +1823,12 @@ body.dark-mode { /* Already dark, no change needed */ }
   opacity: 1 !important;
 }
 
+.active-workout-name {
+  color: var(--white) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--white) !important;
+}
+
 /* Workout active row readability fixes */
 .workout-card .active-workout-row .active-workout-name {
   color: var(--white) !important;
