@@ -1,3 +1,26 @@
+const normalizeMuscleGroup = (raw) => {
+  if (!raw) return 'other';
+  const value = typeof raw === 'string'
+    ? raw.toLowerCase()
+    : `${raw?.target || raw?.muscles || ''}`.toLowerCase();
+  if (!value) return 'other';
+  if (value.includes('chest') || value.includes('pec')) return 'chest';
+  if (value.includes('back') || value.includes('lat') || value.includes('trap')) return 'back';
+  if (value.includes('leg') || value.includes('quad') || value.includes('hamstring') || value.includes('glute') || value.includes('calf')) return 'legs';
+  if (value.includes('shoulder') || value.includes('delt')) return 'shoulders';
+  if (value.includes('bicep') || value.includes('tricep') || value.includes('arm') || value.includes('forearm')) return 'arms';
+  if (value.includes('core') || value.includes('ab') || value.includes('oblique')) return 'core';
+  return 'other';
+};
+
+const resolveCategoryClass = (label = '') => {
+  const n = normalizeMuscleGroup(label);
+  if (['chest','back','legs','core','arms','shoulders'].includes(n)) {
+    return `category-${n}`;
+  }
+  return '';
+};
+
 const MUSCLE_ICONS = {
   chest: "M3 12h4l2 6 4-12 3 9h5",
   back: "M12 3 4.5 6.5V12c0 4.5 3.3 8.6 7.5 9 4.2-.4 7.5-4.5 7.5-9V6.5L12 3Z",
