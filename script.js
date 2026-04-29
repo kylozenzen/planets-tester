@@ -2784,7 +2784,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
                     <div className="active-workout-main">
-                      <div className="active-workout-name">{entryName}</div>
+                      <div className="active-workout-name" style={{ color: 'var(--white)', opacity: 1 }}>{entryName}</div>
                       <div className={mode === 'active' ? 'active-workout-category' : 'session-entry-subtitle'}>{entryMuscle}</div>
                     </div>
                     <div className="active-workout-controls">
