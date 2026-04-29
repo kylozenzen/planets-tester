@@ -1945,6 +1945,13 @@ textarea::placeholder {
   border: 1px solid var(--accent-soft);
 }
 
+.logger-sheet .workout-accent-surface {
+  background: transparent !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+  padding: 0.65rem !important;
+}
+
 .workout-accent-solid {
   background: var(--accent);
   color: #fff;
