@@ -2450,6 +2450,13 @@ body.dark-mode .finish-footer .finish-summary {
   white-space: nowrap;
 }
 
+.active-exercise-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-strong) !important;
+}
+
 .session-entry-actions {
   display: flex;
   align-items: center;
@@ -2616,6 +2623,15 @@ body.dark-mode .finish-footer .finish-summary {
   background: var(--surface-2);
 }
 
+.session-row-action--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #111 !important;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
 .session-row-action--secondary {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   border-color: var(--border);
@@ -2639,13 +2655,13 @@ body.dark-mode .finish-footer .finish-summary {
   border-radius: var(--radius-control);
   border: 1.5px solid var(--border);
   background: var(--surface-2);
-  color: var(--text);
+  color: var(--text) !important;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 1.1rem;
   line-height: 1;
   flex-shrink: 0;
   cursor: pointer;
