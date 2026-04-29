@@ -1,0 +1,22 @@
+const Home = ({
+  profile,
+  lastWorkoutLabel,
+  lastSessionSummary,
+  lastSessionShortLabel,
+  lastSessionDetail,
+  suggestedFocus,
+  dayEntries,
+  lastWorkoutDate,
+  onStartWorkout,
+  homeQuote,
+  coachMessage,
+  isRestDay,
+  sessionIntent,
+  onLogRestDay,
+  onUndoRestDay,
+  onTriggerGlory,
+  onLongPressRestDay,
+  onOpenTemplatesFromHome,
+  onOpenHistoryFromHome,
+  onOpenSettingsFromHome
+}) => {
