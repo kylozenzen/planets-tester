@@ -29,6 +29,13 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
   }, [showForm, id]);
 
   useEffect(() => {
+    if (!showForm || !canSuggestRunning) return;
+    setDurationMin(String(suggestedDuration));
+    setDistance(String(suggestedDistance));
+    setDistanceUnit(lastRunningEntry?.distanceUnit || distanceUnit);
+  }, [showForm, canSuggestRunning, suggestedDuration, suggestedDistance, lastRunningEntry]);
+
+  useEffect(() => {
     if (swimMode === 'laps') {
       setDistance('');
     }
@@ -150,7 +157,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
   const smartSuggestionsEnabled = settings?.smartSuggestionsEnabled !== false;
   const lastRunningDuration = Number(lastRunningEntry?.durationMin ?? lastRunningEntry?.minutes);
   const lastRunningDistance = Number(lastRunningEntry?.distance);
-  const lastRunningUnit = getDistanceUnitLabel(lastRunningEntry);
   const canSuggestRunning = smartSuggestionsEnabled
     && isRunning
     && Number.isFinite(lastRunningDuration)
@@ -307,25 +313,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           </div>
           {showForm && (
             <div className="space-y-3 pt-2">
-              {canSuggestRunning && (
-                <div className="rounded-xl border border-purple-100 bg-purple-50 p-3 space-y-2">
-                  <div className="text-xs font-bold text-purple-700 uppercase">Smart suggestion</div>
-                  <div className="text-xs text-purple-700">Last time: {lastRunningSummary}</div>
-                  <div className="text-xs text-purple-700">
-                    Suggested: {suggestedDuration} min · {suggestedDistance} {lastRunningUnit}
-                  </div>
-                  <button
-                    onClick={() => {
-                      setDurationMin(String(suggestedDuration));
-                      setDistance(String(suggestedDistance));
-                      setDistanceUnit(lastRunningEntry?.distanceUnit || distanceUnit);
-                    }}
-                    className="px-3 py-2 rounded-lg text-xs font-bold workout-accent-solid shadow-sm active:scale-[0.98]"
-                  >
-                    Use suggestion
-                  </button>
-                </div>
-              )}
               {isRunning && (
                 <>
                   <div>
@@ -352,6 +339,9 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
                       placeholder="e.g. 30"
                       className="w-full text-lg font-bold text-center p-3 border-2 border-gray-200 rounded-xl workout-accent-focus outline-none bg-white text-gray-900"
                     />
+                    {canSuggestRunning && lastRunningSummary && (
+                      <div className="text-[11px] text-gray-500 mt-1">Last: {lastRunningSummary}</div>
+                    )}
                   </div>
                   <div className="grid grid-cols-[1fr_auto] gap-2">
                     <div>

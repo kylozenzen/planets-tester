@@ -36,13 +36,22 @@ const EquipmentDetailFixed = ({
   const eq = EQUIPMENT_DB[id];
   const sessions = history || [];
   const insightsEnabled = settings?.insightsEnabled !== false;
+  const stepIncrement = (eq?.type === 'barbell' || eq?.type === 'machine') ? 5 : 2.5;
+  const lastSession = sessions[sessions.length - 1];
+  const lastSets = safeArray(lastSession?.sets);
+  const lastSet = lastSets[lastSets.length - 1];
+  const sourceSetOnOpen = (sessionLogs || [])[Math.max((sessionLogs || []).length - 1, 0)] || lastSet;
 
   const [activeTab, setActiveTab] = React.useState('workout');
   const [showPlateCalc, setShowPlateCalc] = React.useState(false);
 
   // Local set inputs — NOT the source of truth for logged sets.
   // Logged sets live in sessionLogs (from parent via onUpdateSessionLogs).
-  const [setInputs, setSetInputs] = React.useState({ weight: '', reps: '' });
+  const [setInputs, setSetInputs] = React.useState(() => (
+    sourceSetOnOpen?.weight && sourceSetOnOpen?.reps
+      ? { weight: String(sourceSetOnOpen.weight), reps: String(sourceSetOnOpen.reps) }
+      : { weight: '', reps: '' }
+  ));
   const [editingIndex, setEditingIndex] = React.useState(null);
   const [editValues, setEditValues] = React.useState({ weight: '', reps: '' });
   const [isAddingSet, setIsAddingSet] = React.useState(false);
@@ -50,11 +59,6 @@ const EquipmentDetailFixed = ({
   const lastSetSubmitRef = React.useRef({ key: '', at: 0 });
   const weightInputRef = React.useRef(null);
   const repsInputRef = React.useRef(null);
-
-  // Derive anchor from history
-  const lastSession = sessions[sessions.length - 1];
-  const lastSets = safeArray(lastSession?.sets);
-  const lastSet = lastSets[lastSets.length - 1];
 
   // Pre-fill inputs from last session or current session logs on first open
   React.useEffect(() => {
@@ -247,9 +251,20 @@ const EquipmentDetailFixed = ({
                 {/* Logger controls — flat, no nested card */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase text-gray-500">
-                      Log Today · {loggedSets.length} sets
-                    </span>
+                    <span className="text-xs font-black uppercase text-gray-500">Log Today</span>
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      {Array.from({ length: Math.max(6, loggedSets.length) }).map((_, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: i < loggedSets.length ? 'var(--yellow)' : 'var(--border)'
+                          }}
+                        />
+                      ))}
+                    </div>
                     {eq.type === 'barbell' && (
                       <button
                         onClick={() => setShowPlateCalc(true)}
@@ -267,8 +282,8 @@ const EquipmentDetailFixed = ({
                       <button
                         type="button"
                         className="tile-action logger-stepper-button ps-tap"
-                        onClick={() => adjustInput('weight', -5)}
-                      >-5</button>
+                        onClick={() => adjustInput('weight', -stepIncrement)}
+                      >-{stepIncrement}</button>
                       <input
                         type="number"
                         inputMode="decimal"
@@ -282,8 +297,8 @@ const EquipmentDetailFixed = ({
                       <button
                         type="button"
                         className="tile-action logger-stepper-button ps-tap"
-                        onClick={() => adjustInput('weight', 5)}
-                      >+5</button>
+                        onClick={() => adjustInput('weight', stepIncrement)}
+                      >+{stepIncrement}</button>
                     </div>
                   </div>
 
