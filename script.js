@@ -2784,7 +2784,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
                     <div className="active-workout-main">
-                      <div className={mode === 'active' ? 'active-workout-name' : 'session-entry-title'}>{entryName}</div>
+                      <div className="active-workout-name">{entryName}</div>
                       <div className={mode === 'active' ? 'active-workout-category' : 'session-entry-subtitle'}>{entryMuscle}</div>
                     </div>
                     <div className="active-workout-controls">
@@ -2792,37 +2792,28 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                         {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
                       </span>
                       {mode === 'active' && (
-                        entry.kind === 'cardio' ? (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (quickSet) {
+                                handleQuickLog(entryId);
+                              } else {
+                                onSelectExercise(entryId, 'session');
+                              }
+                            }}
+                            className="active-workout-btn active-workout-btn--primary active-workout-btn--logset ps-tap"
+                          >
+                            + Set
+                          </button>
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
-                            className="active-workout-btn active-workout-btn--primary ps-tap"
+                            className="active-workout-btn active-workout-btn--secondary active-workout-btn--edit ps-tap"
                           >
-                            + Entry
+                            Edit
                           </button>
-                        ) : (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (quickSet) {
-                                  handleQuickLog(entryId);
-                                } else {
-                                  onSelectExercise(entryId, 'session');
-                                }
-                              }}
-                              className="active-workout-btn active-workout-btn--primary active-workout-btn--logset ps-tap"
-                            >
-                              + Set
-                            </button>
-                            <button
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
-                              className="active-workout-btn active-workout-btn--secondary active-workout-btn--edit ps-tap"
-                            >
-                              Edit
-                            </button>
-                          </>
-                        )
+                        </>
                       )}
                       {entry.kind !== 'cardio' && (
                         <button
