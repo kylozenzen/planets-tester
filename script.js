@@ -5445,6 +5445,39 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * motivationalQuotes.length));
       const [generatorOptions, setGeneratorOptions] = useState({ goal: '', duration: 45, equipment: '' });
 
+      const sessionManager = useSessionManager({
+        todayKey,
+        isRestDay,
+        activeSession,
+        setActiveSession,
+        history,
+        setHistory,
+        cardioHistory,
+        setCardioHistory,
+        dayEntries,
+        setDayEntries,
+        appState,
+        setAppState,
+        todayWorkoutType,
+        recordDayEntry,
+        recordExerciseUse,
+        showToast,
+        pushMessage,
+        postWorkoutQuotes,
+        getRandomQuote,
+        setShowPostWorkout,
+        setShowPostWorkoutCelebration,
+        setPostWorkoutQuote,
+        postWorkoutTimerRef,
+        postWorkoutCelebrationRef,
+        setActiveEquipment,
+        setActiveCardio,
+        setDraftPlan,
+        setDismissedDraftDate,
+        setSessionStartNotice,
+        setTab,
+      });
+
       useEffect(() => {
         if (!DEBUG_LOG) return;
         const rageTapWindow = 2000;
@@ -7027,7 +7060,7 @@ return (
                     exerciseUsageCounts={exerciseUsageCounts}
                     onStartWorkoutFromBuilder={startWorkoutFromBuilder}
                     activeSession={activeSessionToday}
-                    onFinishSession={finishActiveSession}
+                    onFinishSession={() => sessionManager.finishSession(activeSessionToday)}
                     onAddExerciseFromSearch={addExerciseFromSearch}
                     onPushMessage={pushMessage}
                     onRemoveSessionExercise={removeSessionExercise}
@@ -7041,7 +7074,7 @@ return (
                     onConsumedOpenTemplatesFromHome={() => setOpenTemplatesFromHome(false)}
                     onOpenSettings={() => setTab('profile')}
                     onToggleRestDay={isRestDay ? undoRestDay : logRestDay}
-                    onQuickLogSet={quickLogSessionSet}
+                    onQuickLogSet={sessionManager.quickLogSet}
                   />
                 </div>
 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
@@ -7078,13 +7111,13 @@ return (
             {!showAnalytics && !showPatterns && !showMuscleMap && <TabBar currentTab={tab} setTab={setTab} onWorkoutTripleTap={() => setShowSpartan(true)} />}
 
             {activeEquipment && (
-                <EquipmentDetail
-                  id={activeEquipment}
-                  profile={profile}
-                  history={Array.isArray(effectiveHistory[activeEquipment]) ? effectiveHistory[activeEquipment] : []}
-                  onSave={handleSaveSession}
-                  onUpdateSessionLogs={updateSessionLogs}
-                  sessionLogs={activeSessionToday?.logsByExercise?.[activeEquipment] || []}
+              <EquipmentDetailFixed
+                id={activeEquipment}
+                profile={profile}
+                history={Array.isArray(effectiveHistory[activeEquipment]) ? effectiveHistory[activeEquipment] : []}
+                settings={settings}
+                onUpdateSessionLogs={sessionManager.updateSessionLogs}
+                sessionLogs={activeSessionToday?.logsByExercise?.[activeEquipment] || []}
                 onRequestUndo={showUndoToast}
                 onShowToast={showToast}
                 autoFocusInput={pendingAutoFocusExercise === activeEquipment}
@@ -7099,7 +7132,7 @@ return (
             {activeCardio && (
               <CardioLogger
                 id={activeCardio}
-                onUpdateSessionLogs={updateSessionLogs}
+                onUpdateSessionLogs={sessionManager.updateSessionLogs}
                 sessionLogs={activeSessionToday?.logsByExercise?.[activeCardio] || []}
                 history={Array.isArray(effectiveHistory[activeCardio]) ? effectiveHistory[activeCardio] : []}
                 settings={settings}
