@@ -290,35 +290,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
 
 
 
-    const computeStrengthScore = (_profile, history) => {
-      const ids = Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio');
-      const logged = ids.filter(id => Array.isArray(history[id]) && history[id].length > 0);
-
-      if (logged.length === 0) {
-        return { score: 0, avgPct: 0, coveragePct: 0, loggedCount: 0, total: ids.length };
-      }
-
-      const ratios = logged.map(id => {
-        const sessions = Array.isArray(history[id]) ? history[id] : [];
-        if (sessions.length === 0) return 0;
-        const first = sessions[0];
-        const best = getBestForEquipment(sessions);
-        const firstBest = getBestForEquipment([first]);
-        if (!firstBest || !best) return 0.3;
-        const improvement = Math.max(0, best - firstBest);
-        const pct = Math.min(1, (improvement / (firstBest || 1)) * 0.5 + 0.5);
-        return pct;
-      });
-
-      const avg = ratios.reduce((a,b)=>a+b,0) / ratios.length;
-      const coverage = logged.length / ids.length;
-      const score01 = (avg * 0.7) + (coverage * 0.3);
-      const score = Math.round(score01 * 100);
-
-      return { score, avgPct: Math.round(avg*100), coveragePct: Math.round(coverage*100), loggedCount: logged.length, total: ids.length };
-    };
-
-    const computeAchievements = ({ history, cardioHistory = {}, strengthScoreObj, streakObj }) => {
+        ) => {
       const days = uniqueDayKeysFromHistory(history, cardioHistory);
       const strengthSessions = Object.values(history || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
       const cardioSessions = Object.values(cardioHistory || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
@@ -501,74 +473,7 @@ const GeneratorOptions = ({ options, onUpdate, compact = false }) => {
         return () => document.removeEventListener('click', handleRageTap, true);
       }, []);
 
-      const normalizeActiveSession = (session) => {
-        if (!session) return null;
-        const date = session.dateKey || session.date || toDayKey(new Date());
-        const logsByExercise = session.logsByExercise || session.setsByExercise || {};
-        const rawItems = session.items || Object.values(session.exercises || {}).map(entry => ({
-          exerciseId: entry.id,
-          name: entry.label,
-          sets: entry.sets || 0,
-          kind: entry.kind || 'strength'
-        }));
-        const items = rawItems.map(item => {
-          const exerciseId = item.exerciseId || item.id;
-          const name = item.name || item.label || EQUIPMENT_DB[exerciseId]?.name || 'Exercise';
-          const muscleGroup = item.muscleGroup || EQUIPMENT_DB[exerciseId]?.target || '';
-          const derivedKind = EQUIPMENT_DB[exerciseId]?.type === 'cardio' ? 'cardio' : (item.kind || 'strength');
-          const fallbackSets = item.sets || 0;
-          if (!logsByExercise[exerciseId]) {
-            logsByExercise[exerciseId] = derivedKind === 'cardio'
-              ? []
-              : Array.from({ length: fallbackSets }, () => ({ reps: null, weight: null }));
-          }
-          const resolvedSets = logsByExercise[exerciseId] || [];
-          return {
-            exerciseId,
-            name,
-            muscleGroup,
-            kind: derivedKind,
-            sets: resolvedSets.length,
-            id: exerciseId,
-            label: name
-          };
-        });
-        const normalizedStatus = session.status === 'in_progress' ? 'active' : session.status;
-        return {
-          date,
-          status: normalizedStatus || 'active',
-          items,
-          logsByExercise,
-          createdFrom: session.createdFrom || 'manual'
-        };
-      };
-
-      const normalizeDraftPlan = (draft) => {
-        if (!draft) return null;
-        if (draft.exercises) {
-          return {
-            date: draft.date || toDayKey(new Date()),
-            label: draft.label || 'Workout Draft',
-            exercises: draft.exercises || [],
-            options: draft.options || {},
-            status: 'active',
-            createdFrom: draft.createdFrom || 'generated'
-          };
-        }
-        if (draft.items) {
-          return {
-            date: draft.date || toDayKey(new Date()),
-            label: draft.label || 'Workout Draft',
-            exercises: (draft.items || []).map(item => item.id),
-            options: draft.options || {},
-            status: 'active',
-            createdFrom: draft.createdFrom || 'generated'
-          };
-        }
-        return null;
-      };
-
-      useEffect(() => {
+                  useEffect(() => {
         const savedOnboarding = storage.get(ONBOARDING_KEY, false);
         const savedProfileRaw = storage.get('ps_v2_profile', null);
         const settingsDefaults = { ...SETTINGS_DEFAULTS };
