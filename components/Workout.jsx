@@ -295,7 +295,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     if (!eq) return null;
     const isComingSoon = !!eq.comingSoon;
     const allowAdd = hasTodayWorkout && !isRestDay && !isComingSoon;
-    const categoryClass = colorfulExerciseCards ? resolveCategoryClass(eq.target || eq.muscles || '') : '';
+    const categoryClass = colorfulExerciseCards ? resolveCategoryClass(eq.target || '') : '';
     const badgeGroup = normalizeMuscleGroup(eq);
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
@@ -350,7 +350,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     if (!eq) return null;
     const isComingSoon = !!eq.comingSoon;
     const allowAdd = hasTodayWorkout && !isRestDay && !isComingSoon;
-    const categoryClass = colorfulExerciseCards ? resolveCategoryClass(eq.target || eq.muscles || '') : '';
+    const categoryClass = colorfulExerciseCards ? resolveCategoryClass(eq.target || '') : '';
     const badgeGroup = normalizeMuscleGroup(eq);
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
@@ -616,6 +616,8 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   const entrySetCount = (sessionLogsByExercise[entryId] || []).length;
                   const quickSet = entry.kind !== 'cardio' ? getSuggestedSet(entryId) : null;
                   const categoryClass = colorfulExerciseCards ? resolveCategoryClass(entry.muscleGroup || EQUIPMENT_DB[entryId]?.target || '') : '';
+                  const entryBadgeGroup = normalizeMuscleGroup(eq || { target: entryMuscle, type: entry.kind });
+                  const entryMuscleIcon = MUSCLE_BADGE_CONFIG[entryBadgeGroup]?.icon;
                   return (
                   <div
                     key={entryId}
@@ -628,7 +630,14 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   >
                     <div className="active-workout-main">
                       <div className="active-workout-name" style={{ color: 'var(--white)', opacity: 1 }}>{entryName}</div>
-                      <div className="active-workout-category">{entryMuscle}</div>
+                      <div className="active-workout-category">
+                        <div className="exercise-row-muscle">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            {entryMuscleIcon}
+                          </svg>
+                          {entryMuscle}
+                        </div>
+                      </div>
                     </div>
                     <div className="active-workout-controls">
                       <span className="active-workout-setcount">
