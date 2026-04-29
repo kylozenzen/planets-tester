@@ -74,7 +74,7 @@ const COPY_WORKOUT = {
   noExercisesMatch: 'No exercises match.',
 };
 
-// ── EXERCISE LOGGER (EquipmentDetail modal) ──────────────────
+// ── EXERCISE LOGGER (EquipmentDetailFixed modal) ──────────────────
 const COPY_LOGGER = {
   tabLog: 'Log',
   tabCues: 'Cues & Info',
