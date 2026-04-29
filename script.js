@@ -2784,8 +2784,8 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                     style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
                   >
                     <div className="active-workout-main">
-                      <div className="active-workout-name">{entryName}</div>
-                      <div className="active-workout-category">{entryMuscle}</div>
+                      <div className={mode === 'active' ? 'active-workout-name' : 'session-entry-title'}>{entryName}</div>
+                      <div className={mode === 'active' ? 'active-workout-category' : 'session-entry-subtitle'}>{entryMuscle}</div>
                     </div>
                     <div className="active-workout-controls">
                       <span className="active-workout-setcount">
@@ -2811,9 +2811,15 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                                   onSelectExercise(entryId, 'session');
                                 }
                               }}
-                              className="session-row-action session-row-action--primary ps-tap"
+                              className="active-workout-btn active-workout-btn--primary active-workout-btn--logset ps-tap"
                             >
-                              {quickSet ? `+ ${quickSet.weight}×${quickSet.reps}` : '+ Set'}
+                              + Set
+                            </button>
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
+                              className="active-workout-btn active-workout-btn--secondary active-workout-btn--edit ps-tap"
+                            >
+                              Edit
                             </button>
                           </>
                         )
@@ -2828,7 +2834,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                             setSwapEquipmentFilter('all');
                             setSwapState({ mode: 'session', index: idx });
                           }}
-                          className="active-workout-btn active-workout-btn--secondary ps-tap"
+                          className="active-workout-btn active-workout-btn--secondary active-workout-btn--swap ps-tap"
                         >
                           Swap
                         </button>
@@ -3514,7 +3520,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               <div className="p-5 space-y-5 h-full">
                 {activeTab === 'workout' ? (
                   <>
-                    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+                    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden logger-logtoday-panel">
                       <button
                         onClick={() => setShowLogger(!showLogger)}
                         className="w-full p-4 flex items-center justify-between"
@@ -3571,7 +3577,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
 
                           {!isBaselineMode && (
                             <>
-                              <div className="p-3 rounded-2xl workout-accent-surface space-y-3">
+                              <div className="p-3 rounded-2xl workout-accent-surface space-y-3 logger-controls-shell">
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <div className="text-[10px] font-black uppercase workout-accent-text">Anchored weight</div>
