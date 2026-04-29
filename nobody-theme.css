@@ -1653,48 +1653,59 @@ body.dark-mode { /* Already dark, no change needed */ }
 
 /* HERO HEADER height set in main block above */
 
-/* ===== EXERCISE COLOR CODING — left border on session rows ===== */
-/* Override the default flat border with a vivid left accent per muscle group */
-/* Works when colorful exercise cards toggle is ON */
+/* ===== EXERCISE COLOR CODING — left border on session rows, library cards, and tiles ===== */
+/* Add a vivid left accent + subtle tint per muscle group when colorful exercise cards are ON */
 
-.session-entry-row.category-chest {
+.session-entry-row.category-chest,
+.exercise-library-card.category-chest,
+.tile.category-chest {
   border-left: 3px solid var(--tint-chest) !important;
-  background: var(--off-black) !important;
+  background: color-mix(in srgb, var(--off-black) 88%, var(--tint-chest) 12%) !important;
   border-color: var(--border) !important;
   border-left-color: var(--tint-chest) !important;
 }
 
-.session-entry-row.category-back {
+.session-entry-row.category-back,
+.exercise-library-card.category-back,
+.tile.category-back {
   border-left: 3px solid var(--tint-back) !important;
-  background: var(--off-black) !important;
+  background: color-mix(in srgb, var(--off-black) 88%, var(--tint-back) 12%) !important;
   border-color: var(--border) !important;
   border-left-color: var(--tint-back) !important;
 }
 
-.session-entry-row.category-legs {
+.session-entry-row.category-legs,
+.exercise-library-card.category-legs,
+.tile.category-legs {
   border-left: 3px solid var(--tint-legs) !important;
-  background: var(--off-black) !important;
+  background: color-mix(in srgb, var(--off-black) 88%, var(--tint-legs) 12%) !important;
   border-color: var(--border) !important;
   border-left-color: var(--tint-legs) !important;
 }
 
-.session-entry-row.category-core {
+.session-entry-row.category-core,
+.exercise-library-card.category-core,
+.tile.category-core {
   border-left: 3px solid var(--tint-core) !important;
-  background: var(--off-black) !important;
+  background: color-mix(in srgb, var(--off-black) 88%, var(--tint-core) 12%) !important;
   border-color: var(--border) !important;
   border-left-color: var(--tint-core) !important;
 }
 
-.session-entry-row.category-arms {
+.session-entry-row.category-arms,
+.exercise-library-card.category-arms,
+.tile.category-arms {
   border-left: 3px solid var(--tint-arms) !important;
-  background: var(--off-black) !important;
+  background: color-mix(in srgb, var(--off-black) 88%, var(--tint-arms) 12%) !important;
   border-color: var(--border) !important;
   border-left-color: var(--tint-arms) !important;
 }
 
-.session-entry-row.category-shoulders {
+.session-entry-row.category-shoulders,
+.exercise-library-card.category-shoulders,
+.tile.category-shoulders {
   border-left: 3px solid var(--tint-shoulders) !important;
-  background: var(--off-black) !important;
+  background: color-mix(in srgb, var(--off-black) 88%, var(--tint-shoulders) 12%) !important;
   border-color: var(--border) !important;
   border-left-color: var(--tint-shoulders) !important;
 }
