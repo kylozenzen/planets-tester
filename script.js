@@ -287,29 +287,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
           return 'Other';
       }
     };
-
-
-
-        ) => {
-      const days = uniqueDayKeysFromHistory(history, cardioHistory);
-      const strengthSessions = Object.values(history || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
-      const cardioSessions = Object.values(cardioHistory || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
-      const sessionsTotal = strengthSessions + cardioSessions;
-      const equipmentLogged = Object.keys(EQUIPMENT_DB).filter(id => Array.isArray(history[id]) && history[id].length > 0).length;
-
-      const unlocks = [
-        { id: 'first', title: 'First Log', desc: 'Logged your first session', unlocked: sessionsTotal >= 1, emoji: '✅' },
-        { id: '3days', title: '3-Day Streak', desc: '3 consecutive training days', unlocked: streakObj.best >= 3, emoji: '🔥' },
-        { id: '7days', title: '7-Day Streak', desc: '7 consecutive training days', unlocked: streakObj.best >= 7, emoji: '🏆' },
-        { id: 'score50', title: 'Strength Tier 50', desc: 'Strength Score hit 50', unlocked: strengthScoreObj.score >= 50, emoji: '💪' },
-        { id: 'score75', title: 'Strength Tier 75', desc: 'Strength Score hit 75', unlocked: strengthScoreObj.score >= 75, emoji: '⚡' },
-        { id: 'equipment5', title: 'Explorer', desc: 'Logged 5+ exercises', unlocked: equipmentLogged >= 5, emoji: '🧭' },
-        { id: 'days10', title: 'Show Up Club', desc: 'Trained on 10 different days', unlocked: days.length >= 10, emoji: '📅' },
-      ];
-
-      return unlocks;
-    };
-
     const getTodaysWorkoutType = (history, appState) => {
       const order = ["Push","Pull","Legs"];
       const lastType = appState?.lastWorkoutType || null;
