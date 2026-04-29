@@ -1,3 +1,13 @@
+const MUSCLE_ICONS = {
+  chest: "M3 12h4l2 6 4-12 3 9h5",
+  back: "M12 3 4.5 6.5V12c0 4.5 3.3 8.6 7.5 9 4.2-.4 7.5-4.5 7.5-9V6.5L12 3Z",
+  legs: "M6 4v8l4 4 4-4V4M10 16l-2 4M14 16l2 4",
+  core: "M5 7h14M5 12h14M5 17h14",
+  arms: "M4 12h3l1-3h8l1 3h3M6 12v4M18 12v4",
+  shoulders: "M12 3v4M12 17v4M3 12h4M17 12h4M7 7l2 2M15 7l-2 2M7 17l2-2M15 17l-2-2",
+  neutral: "M4 12h16M12 4v16"
+};
+
 const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay, onQuickLogSet }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
@@ -300,8 +310,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
     const muscleLabel = eq.type === 'cardio' ? 'Cardio' : eq.target;
-    const muscleIcon = MUSCLE_BADGE_CONFIG[badgeGroup]?.icon;
-    console.log('badgeGroup:', badgeGroup, 'muscleIcon:', muscleIcon);
+    const muscleIconPath = MUSCLE_ICONS[badgeGroup] || MUSCLE_ICONS.neutral;
     return (
       <div
         key={id}
@@ -310,11 +319,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         <div className="flex items-center gap-3 text-left flex-1 min-w-0">
           <div className="min-w-0">
             <div className="exercise-row-muscle">
-              {muscleIcon && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  {muscleIcon}
-                </svg>
-              )}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                strokeLinejoin="round">
+                <path d={muscleIconPath} />
+              </svg>
               {muscleLabel}
             </div>
             <div className="font-bold workout-heading text-sm leading-tight">{eq.name}</div>
@@ -358,16 +367,16 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
     const muscleLabel = eq.type === 'cardio' ? 'Cardio' : eq.target;
-    const muscleIcon = MUSCLE_BADGE_CONFIG[badgeGroup]?.icon;
+    const muscleIconPath = MUSCLE_ICONS[badgeGroup] || MUSCLE_ICONS.neutral;
     return (
       <div key={id} className={`tile text-left exercise-library-card ${categoryClass}`}>
         <div className="flex items-start justify-between mb-1">
           <div className="exercise-row-muscle">
-            {muscleIcon && (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {muscleIcon}
-              </svg>
-            )}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+              strokeLinejoin="round">
+              <path d={muscleIconPath} />
+            </svg>
             {muscleLabel}
           </div>
           <div className="flex items-center gap-2">
@@ -622,7 +631,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   const quickSet = entry.kind !== 'cardio' ? getSuggestedSet(entryId) : null;
                   const categoryClass = colorfulExerciseCards ? resolveCategoryClass(entry.muscleGroup || EQUIPMENT_DB[entryId]?.target || '') : '';
                   const entryBadgeGroup = normalizeMuscleGroup(eq || { target: entryMuscle, type: entry.kind });
-                  const entryMuscleIcon = MUSCLE_BADGE_CONFIG[entryBadgeGroup]?.icon;
+                  const entryMuscleIconPath = MUSCLE_ICONS[entryBadgeGroup] || MUSCLE_ICONS.neutral;
                   return (
                   <div
                     key={entryId}
@@ -637,11 +646,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       <div className="active-workout-name" style={{ color: 'var(--white)', opacity: 1 }}>{entryName}</div>
                       <div className="active-workout-category">
                         <div className="exercise-row-muscle">
-                          {entryMuscleIcon && (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              {entryMuscleIcon}
-                            </svg>
-                          )}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                            strokeLinejoin="round">
+                            <path d={entryMuscleIconPath} />
+                          </svg>
                           {entryMuscle}
                         </div>
                       </div>
