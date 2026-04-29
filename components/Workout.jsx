@@ -295,7 +295,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     if (!eq) return null;
     const isComingSoon = !!eq.comingSoon;
     const allowAdd = hasTodayWorkout && !isRestDay && !isComingSoon;
-    const categoryClass = colorfulExerciseCards ? resolveCategoryClass(eq.target || '') : '';
+    const categoryClass = resolveCategoryClass(eq.target || '');
     const badgeGroup = normalizeMuscleGroup(eq);
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
@@ -350,7 +350,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     if (!eq) return null;
     const isComingSoon = !!eq.comingSoon;
     const allowAdd = hasTodayWorkout && !isRestDay && !isComingSoon;
-    const categoryClass = colorfulExerciseCards ? resolveCategoryClass(eq.target || '') : '';
+    const categoryClass = resolveCategoryClass(eq.target || '');
     const badgeGroup = normalizeMuscleGroup(eq);
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
