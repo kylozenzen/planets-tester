@@ -294,7 +294,6 @@
 
       return { current, best, lastDayKey: anchor, hasToday: anchor === todayKey };
     };
-    let demoDataCache = null;
     const buildPatternsFromHistory = (history = {}, cardioHistory = {}) => {
       const sessions = [];
       const seen = new Set();
