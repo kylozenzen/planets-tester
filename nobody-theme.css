@@ -1212,6 +1212,23 @@ textarea[class*="workout-accent-focus"] {
   color: var(--yellow) !important;
 }
 
+
+.exercise-row-muscle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.exercise-row-muscle svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
 /* ===== MUSCLE BADGE ===== */
 .muscle-badge {
   width: 22px !important;

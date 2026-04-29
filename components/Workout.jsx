@@ -300,16 +300,20 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
     const muscleLabel = eq.type === 'cardio' ? 'Cardio' : eq.target;
+    const muscleIcon = MUSCLE_BADGE_CONFIG[badgeGroup]?.icon;
     return (
       <div
         key={id}
         className={`exercise-library-card w-full p-3 rounded-xl border border-gray-200 bg-white flex items-center justify-between ${categoryClass}`}
       >
         <div className="flex items-center gap-3 text-left flex-1 min-w-0">
-          <div className="exercise-badge-wrapper">
-            {renderMuscleBadge(badgeGroup)}
-          </div>
           <div className="min-w-0">
+            <div className="exercise-row-muscle">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {muscleIcon}
+              </svg>
+              {muscleLabel}
+            </div>
             <div className="font-bold workout-heading text-sm leading-tight">{eq.name}</div>
             <div className="exercise-meta">{metaLabel}</div>
             {isComingSoon && (
@@ -319,7 +323,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         </div>
         <div className="flex flex-col items-end gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] workout-muted">{muscleLabel}</span>
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleStarred?.(id); }}
@@ -352,14 +355,17 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     const isStarred = starredSet.has(id);
     const metaLabel = buildExerciseMeta(id);
     const muscleLabel = eq.type === 'cardio' ? 'Cardio' : eq.target;
+    const muscleIcon = MUSCLE_BADGE_CONFIG[badgeGroup]?.icon;
     return (
       <div key={id} className={`tile text-left exercise-library-card ${categoryClass}`}>
-        <div className="flex items-center justify-between mb-1">
-          <div className="exercise-badge-wrapper">
-            {renderMuscleBadge(badgeGroup)}
+        <div className="flex items-start justify-between mb-1">
+          <div className="exercise-row-muscle">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {muscleIcon}
+            </svg>
+            {muscleLabel}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] workout-muted">{muscleLabel}</span>
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleStarred?.(id); }}
