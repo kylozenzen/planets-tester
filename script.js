@@ -2815,6 +2815,12 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                             >
                               {quickSet ? `+ ${quickSet.weight}×${quickSet.reps}` : '+ Set'}
                             </button>
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
+                              className="active-workout-btn active-workout-btn--secondary active-workout-btn--edit ps-tap"
+                            >
+                              Edit Sets
+                            </button>
                           </>
                         )
                       )}
@@ -2828,7 +2834,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                             setSwapEquipmentFilter('all');
                             setSwapState({ mode: 'session', index: idx });
                           }}
-                          className="active-workout-btn active-workout-btn--secondary ps-tap"
+                          className="active-workout-btn active-workout-btn--secondary active-workout-btn--swap ps-tap"
                         >
                           Swap
                         </button>
@@ -3514,7 +3520,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
               <div className="p-5 space-y-5 h-full">
                 {activeTab === 'workout' ? (
                   <>
-                    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+                    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden logger-logtoday-panel">
                       <button
                         onClick={() => setShowLogger(!showLogger)}
                         className="w-full p-4 flex items-center justify-between"
@@ -3571,7 +3577,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
 
                           {!isBaselineMode && (
                             <>
-                              <div className="p-3 rounded-2xl workout-accent-surface space-y-3">
+                              <div className="p-3 rounded-2xl workout-accent-surface space-y-3 logger-controls-shell">
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <div className="text-[10px] font-black uppercase workout-accent-text">Anchored weight</div>
