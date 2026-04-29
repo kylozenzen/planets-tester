@@ -301,6 +301,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     const metaLabel = buildExerciseMeta(id);
     const muscleLabel = eq.type === 'cardio' ? 'Cardio' : eq.target;
     const muscleIcon = MUSCLE_BADGE_CONFIG[badgeGroup]?.icon;
+    console.log('badgeGroup:', badgeGroup, 'muscleIcon:', muscleIcon);
     return (
       <div
         key={id}
@@ -309,9 +310,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         <div className="flex items-center gap-3 text-left flex-1 min-w-0">
           <div className="min-w-0">
             <div className="exercise-row-muscle">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {muscleIcon}
-              </svg>
+              {muscleIcon && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {muscleIcon}
+                </svg>
+              )}
               {muscleLabel}
             </div>
             <div className="font-bold workout-heading text-sm leading-tight">{eq.name}</div>
@@ -360,9 +363,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
       <div key={id} className={`tile text-left exercise-library-card ${categoryClass}`}>
         <div className="flex items-start justify-between mb-1">
           <div className="exercise-row-muscle">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {muscleIcon}
-            </svg>
+            {muscleIcon && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {muscleIcon}
+              </svg>
+            )}
             {muscleLabel}
           </div>
           <div className="flex items-center gap-2">
@@ -632,9 +637,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                       <div className="active-workout-name" style={{ color: 'var(--white)', opacity: 1 }}>{entryName}</div>
                       <div className="active-workout-category">
                         <div className="exercise-row-muscle">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            {entryMuscleIcon}
-                          </svg>
+                          {entryMuscleIcon && (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              {entryMuscleIcon}
+                            </svg>
+                          )}
                           {entryMuscle}
                         </div>
                       </div>
