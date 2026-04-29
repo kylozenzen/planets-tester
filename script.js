@@ -3589,10 +3589,10 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                   )}
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="logger-stepper">
+                                <div className="grid grid-cols-2 gap-2 logger-mobile-controls">
+                                  <div className="logger-stepper logger-control-group logger-control-group--weight">
                                     <div className="logger-stepper-label">Weight</div>
-                                    <div className="logger-stepper-controls">
+                                    <div className="logger-stepper-controls logger-stepper-row">
                                       <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('weight', -5)}>-5</button>
                                       <input
                                         type="number"
@@ -3612,9 +3612,9 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                       <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('weight', 5)}>+5</button>
                                     </div>
                                   </div>
-                                  <div className="logger-stepper">
+                                  <div className="logger-stepper logger-control-group logger-control-group--reps">
                                     <div className="logger-stepper-label">Reps</div>
-                                    <div className="logger-stepper-controls">
+                                    <div className="logger-stepper-controls logger-stepper-row">
                                       <button type="button" className="tile-action logger-stepper-button ps-tap" onClick={() => adjustSetInput('reps', -1)}>-1</button>
                                       <input
                                         type="number"
@@ -3654,7 +3654,7 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
                                       handleQuickAddSet();
                                     }}
                                     disabled={!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet}
-                                    className={`w-full py-3 rounded-xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                                    className={`w-full py-3 rounded-xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 logger-log-button ${
                                       (!setInputs.weight || !setInputs.reps || isBaselineMode || isAddingSet) ? 'workout-accent-disabled cursor-not-allowed' : 'workout-accent-solid shadow-lg'
                                     }`}
                                   >

@@ -2558,8 +2558,10 @@ body.dark-mode .finish-footer .finish-summary {
 
 @media (max-width: 480px) {
   .active-workout-row { flex-wrap: wrap; }
-  .active-workout-controls { width: 100%; }
+  .active-workout-controls { width: 100%; gap: 10px; padding-top: 4px; }
   .active-workout-btn--primary { flex: 1; }
+  .active-workout-btn--secondary { flex: 1; }
+  .active-workout-btn--icon { margin-left: auto; }
 }
 
 .tile-actions {
