@@ -37,7 +37,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
   const [swapState, setSwapState] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
-  const [showCompactSearch, setShowCompactSearch] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
   const searchInputRef = useRef(null);
   const searchResultsRef = useRef(null);
@@ -205,12 +204,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   useEffect(() => {
     setLibraryVisible(settings.showAllExercises);
   }, [settings.showAllExercises]);
-
-  useEffect(() => {
-    if (mode === 'idle') {
-      setShowCompactSearch(false);
-    }
-  }, [mode]);
 
 
   useEffect(() => {
@@ -456,21 +449,8 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     setActiveFilter('All');
   };
 
-  const handleSearchFocus = () => {
-    if (!showCompactSearch) {
-      setShowCompactSearch(true);
-      requestAnimationFrame(() => {
-        searchInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        searchInputRef.current?.focus();
-      });
-      return;
-    }
-    setShowCompactSearch(false);
-  };
-
   const showIdleControls = mode === 'idle';
   const showCompactControls = mode !== 'idle';
-  const showCompactSearchInput = showCompactControls && (showCompactSearch || !!searchQuery);
   const workoutHeaderSubtitle = isSessionMode ? 'Workout active' : "Workout, Let's build.";
 
   return (
@@ -566,36 +546,12 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 <button
                   type="button"
                   className="pill-button"
-                  onClick={handleSearchFocus}
-                  disabled={isRestDay}
-                >
-                  Search
-                </button>
-                <button
-                  type="button"
-                  className="pill-button"
                   onClick={() => setIsTemplatePickerOpen(true)}
                   disabled={isRestDay}
                 >
                   Template
                 </button>
               </div>
-            </div>
-          </Card>
-        )}
-
-        {showCompactSearchInput && (
-          <Card className="workout-card">
-            <div className="relative">
-              <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search exercises..."
-                ref={searchInputRef}
-                disabled={isRestDay}
-                className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] disabled:text-gray-400"
-              />
             </div>
           </Card>
         )}
@@ -777,6 +733,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 </button>
               ))}
             </div>
+            {filteredStarred.length === 0 && libraryVisible && (
+              <div className="text-xs font-bold text-gray-500 uppercase tracking-wide px-1 pb-1">
+                Tap ★ on any exercise to save it here
+              </div>
+            )}
             <div className="exercise-grid">
               {filteredPool.map(id => renderExerciseTile(id))}
             </div>
