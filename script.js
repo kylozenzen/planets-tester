@@ -2130,9 +2130,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
   const [swapState, setSwapState] = useState(null);
-  const [swapSearch, setSwapSearch] = useState('');
-  const [swapMuscleFilter, setSwapMuscleFilter] = useState('all');
-  const [swapEquipmentFilter, setSwapEquipmentFilter] = useState('all');
   const [activeFilter, setActiveFilter] = useState('All');
   const [showCompactSearch, setShowCompactSearch] = useState(false);
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
@@ -2169,9 +2166,8 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const todayKey = toDayKey(new Date());
   const hasSession = !!activeSession;
   const hasTodayWorkout = hasSession && activeSession?.date === todayKey;
-  const mode = !hasTodayWorkout ? 'idle' : (activeSession?.status === 'active' ? 'active' : 'draft');
+  const mode = !hasTodayWorkout ? 'idle' : 'active';
   const isSessionMode = mode === 'active';
-  const isDraft = mode === 'draft';
   const sessionEntries = useMemo(() => {
     if (!activeSession || activeSession.date !== todayKey) return [];
     return activeSession.items || [];
@@ -2462,7 +2458,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           </div>
           {allowAdd && (
             <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); (onAction ? onAction(id) : onAddExerciseFromSearch?.(id)); }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); (onAction ? onAction(id) : (swapState ? (onSwapSessionExercise?.(swapState.index, id), setSwapState(null), setLibraryVisible(false)) : onAddExerciseFromSearch?.(id))); }}
               className="cues-accent font-semibold text-sm"
             >
               {actionLabel}
@@ -2509,7 +2505,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         {allowAdd && (
           <div className="tile-actions">
             <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddExerciseFromSearch?.(id); }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (swapState) { onSwapSessionExercise?.(swapState.index, id); setSwapState(null); setLibraryVisible(false); } else { onAddExerciseFromSearch?.(id); } }}
               className="tile-action primary"
             >
               Add
@@ -2520,37 +2516,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     );
   };
 
-  const swapOptions = useMemo(() => {
-    if (!swapState) return [];
-    const sourceList = sessionEntries.map(entry => entry.exerciseId || entry.id);
-    const currentId = sourceList[swapState.index];
-    if (!currentId) return [];
-    const pool = availableEquipment.filter(id => id !== currentId && EQUIPMENT_DB[id]?.type !== 'cardio');
-    const searched = swapSearch.trim()
-      ? fuzzyMatchExercises(swapSearch, pool)
-      : pool;
-    return searched.filter((id) => {
-      const eq = EQUIPMENT_DB[id];
-      if (!eq) return false;
-      const muscleMatch = swapMuscleFilter === 'all' || resolveGroup(eq) === swapMuscleFilter;
-      const equipmentMatch = swapEquipmentFilter === 'all' || eq.type === swapEquipmentFilter;
-      return muscleMatch && equipmentMatch;
-    }).slice(0, 40);
-  }, [swapState, availableEquipment, sessionEntries, swapSearch, swapMuscleFilter, swapEquipmentFilter, resolveGroup]);
-
-  const swapMuscleOptions = useMemo(() => {
-    const groups = new Set(['all']);
-    availableEquipment.forEach((id) => {
-      const eq = EQUIPMENT_DB[id];
-      if (!eq || eq.type === 'cardio') return;
-      groups.add(resolveGroup(eq));
-    });
-    return Array.from(groups);
-  }, [availableEquipment, resolveGroup]);
-
-  const swapEquipmentOptions = useMemo(() => ['all', 'machine', 'dumbbell', 'barbell'], []);
-
-  const handleSearchAdd = (id) => {
+        const handleSearchAdd = (id) => {
     if (!id) return;
     if (!hasTodayWorkout) return;
     const alreadyAdded = sessionEntries.some(entry => (entry.exerciseId || entry.id) === id);
@@ -2562,7 +2528,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
       });
       return;
     }
-    onAddExerciseFromSearch?.(id);
+    if (swapState) { onSwapSessionExercise?.(swapState.index, id); setSwapState(null); setLibraryVisible(false); } else { onAddExerciseFromSearch?.(id); }
     setSearchQuery('');
     requestAnimationFrame(() => {
       sessionCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2661,7 +2627,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               />
             </div>
             {!hasTodayWorkout && !isRestDay && (
-              <div className="text-[11px] workout-muted">Create a draft to add exercises and start logging.</div>
+              <div className="text-[11px] workout-muted">Add exercises and start logging.</div>
             )}
           </Card>
         )}
@@ -2670,7 +2636,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           <Card className="workout-card mt-5">
             <div className="flex items-center justify-between gap-3">
               <div className="text-xs font-bold workout-muted uppercase">
-                {mode === 'draft' ? 'Draft mode' : 'Workout active'}
+                Workout active
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -2689,16 +2655,14 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 >
                   Search
                 </button>
-                {mode === 'draft' && (
-                  <button
-                    type="button"
-                    className="pill-button"
-                    onClick={() => setIsTemplatePickerOpen(true)}
-                    disabled={isRestDay}
-                  >
-                    Template
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="pill-button"
+                  onClick={() => setIsTemplatePickerOpen(true)}
+                  disabled={isRestDay}
+                >
+                  Template
+                </button>
               </div>
             </div>
           </Card>
@@ -2726,7 +2690,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               <div className="text-xs font-bold workout-muted uppercase">Search Results</div>
               {searchResults.length > 0 ? (
                 <div className="space-y-2">
-                  {searchResults.map(id => renderExerciseRow(id, 'Add', handleSearchAdd))}
+                  {searchResults.map(id => renderExerciseRow(id, swapState ? 'Swap' : 'Add', handleSearchAdd))}
                 </div>
               ) : (
                 <div className="text-xs workout-muted">No matches yet. Try a different keyword.</div>
@@ -2739,14 +2703,14 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           <Card className="space-y-3 workout-card" ref={sessionCardRef}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold workout-muted uppercase">{isSessionMode ? 'Workout active' : 'Draft workout'}</div>
+                <div className="text-xs font-bold workout-muted uppercase">Workout active</div>
                 <div className="flex items-center gap-2">
                   <div className="text-lg font-black workout-heading">Today's Workout</div>
                   {activeSession?.createdFrom === 'generated' && (
                     <span className="session-badge">Generated</span>
                   )}
                 </div>
-                <div className="text-[11px] workout-muted">{isSessionMode ? 'Log as you go' : 'Edit and start when ready'}</div>
+                <div className="text-[11px] workout-muted">Log as you go</div>
               </div>
               <button
                 onClick={() => {
@@ -2758,7 +2722,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                 }}
                 className="session-cancel-button"
               >
-                {isSessionMode ? 'Cancel workout' : 'Cancel draft'}
+                Cancel workout
               </button>
             </div>
             {sessionEntries.length === 0 ? (
@@ -2776,23 +2740,22 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   return (
                   <div
                     key={entryId}
-                    onClick={mode === 'active' ? () => onSelectExercise(entryId, 'session') : undefined}
-                    className={`session-entry-row ${mode === 'active' ? 'active-workout-row' : ''} ${categoryClass}`}
-                    role={mode === 'active' ? 'button' : undefined}
-                    tabIndex={mode === 'active' ? 0 : undefined}
-                    onKeyDown={mode === 'active' ? (e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); } : undefined}
-                    style={{ cursor: mode === 'active' ? 'pointer' : 'default' }}
+                    onClick={() => onSelectExercise(entryId, 'session')}
+                    className={`session-entry-row active-workout-row ${categoryClass}`}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter') onSelectExercise(entryId, 'session'); }}
+                    style={{ cursor: 'pointer' }}
                   >
                     <div className="active-workout-main">
                       <div className="active-workout-name" style={{ color: 'var(--white)', opacity: 1 }}>{entryName}</div>
-                      <div className={mode === 'active' ? 'active-workout-category' : 'session-entry-subtitle'}>{entryMuscle}</div>
+                      <div className="active-workout-category">{entryMuscle}</div>
                     </div>
                     <div className="active-workout-controls">
                       <span className="active-workout-setcount">
                         {entrySetCount} {entry.kind === 'cardio' ? 'entries' : 'sets'}
                       </span>
-                      {mode === 'active' && (
-                        <>
+                      <>
                           <button
                             onClick={(e) => {
                               e.preventDefault();
@@ -2814,16 +2777,13 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                             Edit
                           </button>
                         </>
-                      )}
                       {entry.kind !== 'cardio' && (
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            setSwapSearch('');
-                            setSwapMuscleFilter('all');
-                            setSwapEquipmentFilter('all');
-                            setSwapState({ mode: 'session', index: idx });
+                            setSwapState({ index: idx });
+                            setLibraryVisible(true);
                           }}
                           className="active-workout-btn active-workout-btn--secondary active-workout-btn--swap ps-tap"
                         >
@@ -2849,21 +2809,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               >
                 + Add exercise
               </button>
-              {isDraft && (
-                <button
-                  onClick={() => {
-                    if (libraryVisible) setLibraryVisible(false);
-                    if (showCompactSearch) setShowCompactSearch(false);
-                    if (searchQuery) setSearchQuery('');
-                    setActiveFilter('All');
-                    onStartWorkoutFromBuilder?.();
-                  }}
-                  className="w-full py-3 rounded-xl font-bold active:scale-[0.98] accent-button"
-                >
-                  Start Workout
-                </button>
-              )}
-            </div>
+                          </div>
           </Card>
         )}
 
@@ -2875,7 +2821,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                   <div className="text-xs font-bold workout-muted uppercase">Recent</div>
                 </div>
                 <div className="space-y-2">
-                  {filteredRecents.map(id => renderExerciseRow(id, 'Add'))}
+                  {filteredRecents.map(id => renderExerciseRow(id, swapState ? 'Swap' : 'Add'))}
                 </div>
               </Card>
             )}
@@ -2884,6 +2830,11 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
 
         {libraryVisible && !isRestDay && (
           <Card className="space-y-2 workout-card">
+            {swapState && (
+              <div className="text-xs font-bold workout-muted">
+                Swapping: {EQUIPMENT_DB[sessionEntries[swapState.index]?.exerciseId || sessionEntries[swapState.index]?.id]?.name || 'Exercise'} — tap any exercise to swap
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div className="text-xs font-bold workout-muted uppercase">Full Library</div>
               <button onClick={() => setLibraryVisible(false)} className="text-xs cues-accent font-bold">Close</button>
@@ -2923,80 +2874,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         </div>
       )}
 
-      {swapState !== null && (
-        <div className="fixed inset-0 bg-black/60 z-[120] flex items-end justify-center" onClick={() => setSwapState(null)}>
-          <div className="bg-white w-full max-w-md rounded-t-3xl p-4 animate-slide-up" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '80vh' }}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold text-gray-900">Swap Exercise</h3>
-              <button onClick={() => setSwapState(null)} className="p-2 rounded-full bg-gray-100 text-gray-600">
-                <Icon name="X" className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="space-y-2 mb-3">
-              <input
-                value={swapSearch}
-                onChange={(e) => setSwapSearch(e.target.value)}
-                placeholder="Search exercises"
-                className="w-full p-3 rounded-xl border border-gray-200 bg-white text-sm font-semibold"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={swapMuscleFilter}
-                  onChange={(e) => setSwapMuscleFilter(e.target.value)}
-                  className="w-full p-2 rounded-lg border border-gray-200 bg-white text-xs font-semibold"
-                >
-                  {swapMuscleOptions.map((option) => (
-                    <option key={option} value={option}>{option === 'all' ? 'All muscles' : option}</option>
-                  ))}
-                </select>
-                <select
-                  value={swapEquipmentFilter}
-                  onChange={(e) => setSwapEquipmentFilter(e.target.value)}
-                  className="w-full p-2 rounded-lg border border-gray-200 bg-white text-xs font-semibold"
-                >
-                  {swapEquipmentOptions.map((option) => (
-                    <option key={option} value={option}>{option === 'all' ? 'All equipment' : option}</option>
-                  ))}
-                </select>
-              </div>
-              {swapOptions.length > 0 && (
-                <button
-                  onClick={() => {
-                    const randomId = swapOptions[Math.floor(Math.random() * swapOptions.length)];
-                    if (!randomId) return;
-                    if (swapState?.mode === 'session') onSwapSessionExercise?.(swapState.index, randomId);
-                    setSwapState(null);
-                  }}
-                  className="tile-action ps-tap"
-                >
-                  Surprise me
-                </button>
-              )}
-            </div>
-            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-              {swapOptions.map(id => (
-                <button
-                  key={id}
-                  onClick={() => {
-                    if (swapState?.mode === 'session') {
-                      onSwapSessionExercise?.(swapState.index, id);
-                    }
-                    setSwapState(null);
-                  }}
-                  className="w-full p-3 rounded-xl border border-gray-200 text-left bg-gray-50 active:scale-[0.98]"
-                >
-                  <div className="font-bold text-gray-900 text-sm">{EQUIPMENT_DB[id]?.name}</div>
-                  <div className="text-xs text-gray-500">{resolveGroup(EQUIPMENT_DB[id])} • {EQUIPMENT_DB[id]?.type}</div>
-                </button>
-              ))}
-              {swapOptions.length === 0 && (
-                <div className="text-sm text-gray-500">No similar exercises available.</div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      <TemplatePicker
+      <TemplatePickerePicker
         isOpen={isTemplatePickerOpen}
         plans={templatePlans}
         onClose={() => setIsTemplatePickerOpen(false)}
@@ -5545,7 +5423,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const normalizedStatus = session.status === 'in_progress' ? 'active' : session.status;
         return {
           date,
-          status: normalizedStatus || 'draft',
+          status: normalizedStatus || 'active',
           items,
           logsByExercise,
           createdFrom: session.createdFrom || 'manual'
@@ -5560,7 +5438,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
             label: draft.label || 'Workout Draft',
             exercises: draft.exercises || [],
             options: draft.options || {},
-            status: 'draft',
+            status: 'active',
             createdFrom: draft.createdFrom || 'generated'
           };
         }
@@ -5570,7 +5448,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
             label: draft.label || 'Workout Draft',
             exercises: (draft.items || []).map(item => item.id),
             options: draft.options || {},
-            status: 'draft',
+            status: 'active',
             createdFrom: draft.createdFrom || 'generated'
           };
         }
@@ -5992,7 +5870,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const createEmptySession = (overrides = {}) => ({
         date: todayKey,
-        status: 'draft',
+        status: 'active',
         items: [],
         logsByExercise: {},
         createdFrom: overrides.createdFrom || 'manual',
@@ -6157,7 +6035,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const createEmptyDraft = () => {
         createDraft({ label: 'Workout Draft', exercises: [], createdFrom: 'manual', type: todayWorkoutType });
-        updateSessionItemsByIds([], { status: 'draft', createdFrom: 'manual' });
+        updateSessionItemsByIds([], { status: 'active', createdFrom: 'manual' });
         setFocusDraft(true);
       };
 
@@ -6247,7 +6125,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           label: draft?.label || 'Workout Draft',
           exercises: draft?.exercises || [],
           options: draft?.options || {},
-          status: 'draft',
+          status: 'active',
           createdFrom: draft?.createdFrom || 'manual',
           type: draft?.type || todayWorkoutType
         };
@@ -6266,7 +6144,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         }
         const chosen = type === 'surprise' ? ['legs','push','pull','full'][Math.floor(Math.random()*4)] : type;
         const draft = buildDraftPlan(chosen, generatorOptions || {});
-        updateSessionItemsByIds(draft.exercises || [], { status: 'draft', createdFrom: 'generated' });
+        updateSessionItemsByIds(draft.exercises || [], { status: 'active', createdFrom: 'generated' });
         showToast("Added to today's workout");
         setTab('workout');
       };
@@ -6277,7 +6155,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         const regenerated = buildDraftPlan(draftPlan.type, hasOptions ? generatorOptions : (draftPlan.options || {}));
         createDraft({ ...regenerated, createdFrom: 'generated' });
         updateSessionItemsByIds(regenerated.exercises || [], {
-          status: activeSessionToday?.status === 'active' ? 'active' : 'draft',
+          status: 'active',
           createdFrom: 'generated'
         });
       };
@@ -6342,7 +6220,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         setDismissedDraftDate(null);
         if (activeSessionToday) {
           updateSessionItemsByIds([], {
-            status: activeSessionToday?.status === 'active' ? 'active' : 'draft',
+            status: 'active',
             createdFrom: 'manual'
           });
         }
@@ -6392,10 +6270,8 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
         if (!exerciseIds.length) return;
 
-        const nextStatus = activeSessionToday?.status === 'active' ? 'active' : 'draft';
-
         updateSessionItemsByIds(exerciseIds, {
-          status: nextStatus,
+          status: 'active',
           createdFrom: 'generated'
         });
 
@@ -6404,7 +6280,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           label: plan.name || 'Workout Template',
           exercises: exerciseIds,
           options: {},
-          status: nextStatus,
+          status: 'active',
           createdFrom: 'generated',
           type: todayWorkoutType
         });
@@ -6427,7 +6303,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           undoRestDay();
         }
         setTab('workout');
-        if (activeSessionToday?.status === 'active') {
+        if (activeSessionToday) {
           return;
         }
         if (!activeSessionToday) {
@@ -6450,7 +6326,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
         }
         setActiveSession(prev => {
           const base = (!prev || prev.date !== todayKey) ? createEmptySession({ createdFrom: 'manual' }) : prev;
-          return { ...base, status: 'draft' };
+          return { ...base, status: 'active' };
         });
       };
 
@@ -6472,7 +6348,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
 
       const addExerciseToDraft = (id) => {
         if (!id) return;
-        addExerciseToSession(id, { status: activeSessionToday?.status || 'draft' });
+        addExerciseToSession(id, { status: activeSessionToday?.status || 'active' });
       };
 
       const addExerciseToSession = (id, options = {}) => {
@@ -6491,7 +6367,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
             didAdd = true;
           }
           const nextStatus = options.status || base.status;
-          return { ...base, status: nextStatus, createdFrom: base.createdFrom || options.createdFrom || 'manual', items, logsByExercise };
+          return { ...base, status: 'active', createdFrom: base.createdFrom || options.createdFrom || 'manual', items, logsByExercise };
         });
         if (options.toast && didAdd) {
           showToast('Exercise added');
@@ -6515,7 +6391,7 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
           return;
         }
         
-        addExerciseToSession(id, { status: activeSessionToday?.status === 'active' ? 'active' : 'draft', toast: true });
+        addExerciseToSession(id, { status: activeSessionToday?.status === 'active' ? 'active' : 'active', toast: true });
       };
 
       const handleSelectExercise = (id, mode, options = {}) => {
