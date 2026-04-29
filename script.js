@@ -340,6 +340,85 @@ const GeneratorOptions = ({ options, onUpdate, compact = false }) => {
   );
 };
 
+const InlineMessage = ({ message }) => {
+  if (!message) return null;
+  return (
+    <div className="px-4 pt-3">
+      <div className="inline-message">{message}</div>
+    </div>
+  );
+};
+
+const UndoToast = ({ message, onUndo }) => {
+  if (!message) return null;
+  return (
+    <div className="toast toast--undo" role="status" aria-live="polite">
+      <span>{message}</span>
+      <button onClick={onUndo} className="toast-action">Undo</button>
+    </div>
+  );
+};
+
+const ToastHost = ({ toasts }) => {
+  if (!toasts.length) return null;
+  return (
+    <div className="toast-host">
+      {toasts.map((toast) => (
+        <div key={toast.id} className="toast card-enter">
+          <div className="toast-text">{toast.message}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const Card = ({ children, className = '', onClick, style }) => (
+  <div onClick={onClick} style={style} className={`ps-card ${className}`}>
+    {children}
+  </div>
+);
+
+const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="template-picker-backdrop">
+      <div className="template-picker card-enter">
+        <div className="template-picker-header">
+          <h2 className="template-picker-title">Start from template</h2>
+          <button
+            type="button"
+            className="btn-secondary-flat ps-tap text-xs"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+        </div>
+        <div className="template-picker-list">
+          {plans.map((plan) => (
+            <button
+              key={plan.id || plan.name}
+              type="button"
+              className="template-picker-item ps-card-interactive ps-tap"
+              onClick={() => onSelect(plan)}
+            >
+              <div className="template-picker-name">{plan.name}</div>
+              {plan.description && (
+                <div className="template-picker-desc">{plan.description}</div>
+              )}
+              {Array.isArray(plan.exercises) && (
+                <div className="template-picker-meta">
+                  {plan.exercises.length} exercises
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // EASTER EGG COMPONENTS → moved to components/easter-eggs.js
 
     // ========== HOME LOCKER WIDGET ==========
