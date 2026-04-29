@@ -5323,39 +5323,6 @@ const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, 
       const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * motivationalQuotes.length));
       const [generatorOptions, setGeneratorOptions] = useState({ goal: '', duration: 45, equipment: '' });
 
-      const sessionManager = useSessionManager({
-        todayKey,
-        isRestDay,
-        activeSession,
-        setActiveSession,
-        history,
-        setHistory,
-        cardioHistory,
-        setCardioHistory,
-        dayEntries,
-        setDayEntries,
-        appState,
-        setAppState,
-        todayWorkoutType,
-        recordDayEntry,
-        recordExerciseUse,
-        showToast,
-        pushMessage,
-        postWorkoutQuotes,
-        getRandomQuote,
-        setShowPostWorkout,
-        setShowPostWorkoutCelebration,
-        setPostWorkoutQuote,
-        postWorkoutTimerRef,
-        postWorkoutCelebrationRef,
-        setActiveEquipment,
-        setActiveCardio,
-        setDraftPlan,
-        setDismissedDraftDate,
-        setSessionStartNotice,
-        setTab,
-      });
-
       useEffect(() => {
         if (!DEBUG_LOG) return;
         const rageTapWindow = 2000;
