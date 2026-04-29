@@ -1877,10 +1877,64 @@ body.dark-mode { /* Already dark, no change needed */ }
     margin-bottom: 0.65rem;
   }
 
+  .logger-mobile-controls {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .logger-control-group {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.45rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .logger-stepper-row {
+    display: grid !important;
+    grid-template-columns: 4.25rem minmax(0, 1fr) 4.25rem !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .logger-stepper-button {
+    width: 4.25rem !important;
+    min-width: 4.25rem !important;
+    max-width: 4.25rem !important;
+  }
+
+  .logger-stepper-input {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    text-align: center !important;
+  }
+
   .logger-sheet-actions {
     gap: 0.9rem !important;
     padding-top: 0.9rem !important;
     margin-top: 0.5rem;
+  }
+
+  .logger-repeat-button {
+    margin-top: 0.75rem !important;
+    width: 100% !important;
+  }
+
+  .logger-log-button {
+    margin-top: 0 !important;
+    width: 100% !important;
+  }
+
+  .logger-sheet .workout-accent-surface {
+    background: transparent !important;
+    border-color: var(--border) !important;
+    padding: 0.65rem !important;
   }
 }
 
