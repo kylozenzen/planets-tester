@@ -2813,7 +2813,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
           </Card>
         )}
 
-        {!isRestDay && !isSessionMode && (isDraft || libraryVisible || searchQuery) && (
+        {!isRestDay && !isSessionMode && (libraryVisible || searchQuery) && (
           <>
             {filteredRecents.length > 0 && (
               <Card className="space-y-2 workout-card">
