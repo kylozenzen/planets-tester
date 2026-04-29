@@ -288,7 +288,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       }
     };
 
-    const buildMuscleDistribution = (history = {}, rangeDays = 30) => {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - Math.max(rangeDays - 1, 0));
       cutoff.setHours(0, 0, 0, 0);
@@ -447,8 +446,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return new Date(Math.max(...dates.map(d => d.getTime())));
     };
 
-    const buildLastSessionSummary = (history, lastWorkoutLabel) => {
-      if (!history || !lastWorkoutLabel) return null;
       const sessions = [];
       Object.entries(history || {}).forEach(([exerciseId, arr]) => {
         safeArray(arr).forEach(session => {
@@ -530,7 +527,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     // useDebounce hook is now loaded from hooks/useDebounce.js
     // usePersistedState hook is now loaded from hooks/usePersistedState.js
 
-    const toDayKey = (date = new Date()) => {
       const y = date.getFullYear();
       const m = String(date.getMonth()+1).padStart(2,'0');
       const d = String(date.getDate()).padStart(2,'0');
@@ -562,7 +558,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return Array.from(keys).sort();
     };
 
-    const computeStreak = (history, cardioHistory = {}, restDays = [], dayEntries = null) => {
       const days = uniqueDayKeysFromHistory(history, cardioHistory, restDays, dayEntries);
       if (days.length === 0) return { current: 0, best: 0, lastDayKey: null, hasToday: false };
 
@@ -592,7 +587,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return { current, best, lastDayKey: anchor, hasToday: anchor === todayKey };
     };
 
-    const buildDayEntriesFromHistory = (history = {}, cardioHistory = {}, restDays = []) => {
       const entries = {};
       Object.values(history || {}).forEach(arr => {
         safeArray(arr).forEach(s => {
@@ -623,7 +617,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       };
     };
 
-    const generateDemoData = (days = 30) => {
       const rng = createSeededRandom(917202);
       const today = new Date();
       const start = new Date(today);
@@ -729,7 +722,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return { history, cardioHistory, restDays, dayEntries };
     };
 
-    const normalizeHistory = (obj) => {
       const safe = {};
       if (!obj || typeof obj !== 'object') return safe;
       Object.entries(obj).forEach(([key, value]) => {
@@ -757,7 +749,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return safe;
     };
 
-    const normalizeCardioHistory = (obj) => {
       const safe = {};
       if (!obj || typeof obj !== 'object') return safe;
       Object.entries(obj).forEach(([key, value]) => {
@@ -780,10 +771,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return safe;
     };
 
-    const normalizeDayEntries = (obj, history, cardioHistory, restDays) => {
-      if (!obj || typeof obj !== 'object') {
-        return buildDayEntriesFromHistory(history, cardioHistory, restDays);
-      }
       const entries = {};
       Object.entries(obj).forEach(([key, value]) => {
         if (!value || typeof value !== 'object') return;
@@ -797,7 +784,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     };
 
     let demoDataCache = null;
-    const getEffectiveData = (realData, demoEnabled) => {
       const base = realData || {};
       const source = demoEnabled
         ? (demoDataCache || (demoDataCache = generateDemoData(30)))
@@ -814,7 +800,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return { history, cardioHistory, restDays, dayEntries };
     };
 
-    const buildPatternsFromHistory = (history = {}, cardioHistory = {}) => {
       const sessions = [];
       const seen = new Set();
       Object.entries(history || {}).forEach(([equipId, arr]) => {
@@ -1116,20 +1101,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     };
 
     // ========== LOCKER VIEW ==========
-    const LockerView = () => {
-      const [combo, setCombo] = usePersistedState('ps_locker_combo', '');
-      const [barcode, setBarcode] = usePersistedState('ps_locker_barcode', '');
-      const [gymApp, setGymApp] = usePersistedState('ps_locker_gymapp', '');
-      const [gymAppUrl, setGymAppUrl] = usePersistedState('ps_locker_gymappurl', '');
-      const [showCombo, setShowCombo] = React.useState(false);
-      const [editingCombo, setEditingCombo] = React.useState(false);
-      const [editingBarcode, setEditingBarcode] = React.useState(false);
-      const [editingGymApp, setEditingGymApp] = React.useState(false);
-      const [barcodeFullscreen, setBarcodeFullscreen] = React.useState(false);
-      const [tempCombo, setTempCombo] = React.useState('');
-      const [tempBarcode, setTempBarcode] = React.useState('');
-      const [tempGymApp, setTempGymApp] = React.useState('');
-      const [tempGymAppUrl, setTempGymAppUrl] = React.useState('');
       const barcodeRef = React.useRef(null);
       const barcodeFullRef = React.useRef(null);
 
@@ -1464,7 +1435,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       );
     };
 
-    const TabBar = ({ currentTab, setTab, onWorkoutTripleTap }) => {
       const tapCountRef = React.useRef(0);
       const tapTimerRef = React.useRef(null);
 
@@ -1515,29 +1485,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       );
     };
 
-    const ToggleRow = ({ icon, title, subtitle, enabled, onToggle }) => (
-      <button
-        onClick={() => onToggle(!enabled)}
-        className="w-full flex items-center justify-between py-2"
-      >
-        <div className="flex items-center gap-3 text-left">
-          <Icon name={icon} className="w-5 h-5 text-purple-600" />
-          <div>
-            <div className="font-semibold text-gray-900 text-sm">{title}</div>
-            {subtitle && <div className="text-xs text-gray-500">{subtitle}</div>}
-          </div>
-        </div>
-        <div className={`w-12 h-6 rounded-full transition-colors ${enabled ? 'bg-purple-600' : 'bg-gray-300'}`}>
-          <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform m-0.5 ${enabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
-        </div>
-      </button>
-    );
-
-    // ========== ONBOARDING ==========
-// Intro + onboarding flow
-// ONBOARDING COMPONENTS → moved to components/onboarding.js
-
-    // ========== CALCULATIONS ==========
     const getBestForEquipment = (sessions = []) => {
       let best = 0;
       sessions.forEach(s => {
@@ -1560,7 +1507,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return clampTo5((best || getStrongWeightForEquipment({}, equipId, [])) + increment);
     };
 
-    const computeStrengthScore = (_profile, history) => {
       const ids = Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio');
       const logged = ids.filter(id => Array.isArray(history[id]) && history[id].length > 0);
 
@@ -1588,7 +1534,6 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
       return { score, avgPct: Math.round(avg*100), coveragePct: Math.round(coverage*100), loggedCount: logged.length, total: ids.length };
     };
 
-    const computeAchievements = ({ history, cardioHistory = {}, strengthScoreObj, streakObj }) => {
       const days = uniqueDayKeysFromHistory(history, cardioHistory);
       const strengthSessions = Object.values(history || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
       const cardioSessions = Object.values(cardioHistory || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
@@ -1664,14 +1609,6 @@ const GeneratorOptions = ({ options, onUpdate, compact = false }) => {
 // EASTER EGG COMPONENTS → moved to components/easter-eggs.js
 
     // ========== HOME LOCKER WIDGET ==========
-    const HomeLockerWidget = () => {
-      const [combo, setCombo] = usePersistedState('ps_locker_combo', '');
-      const [gymCardImg, setGymCardImg] = usePersistedState('ps_locker_gymcard', '');
-      const [expanded, setExpanded] = React.useState(false);
-      const [showCombo, setShowCombo] = React.useState(false);
-      const [activePanel, setActivePanel] = React.useState(null);
-      const [tempCombo, setTempCombo] = React.useState('');
-      const [cardFullscreen, setCardFullscreen] = React.useState(false);
       const fileInputRef = React.useRef(null);
       const comboInputRef = React.useRef(null);
 
@@ -1913,28 +1850,6 @@ const GeneratorOptions = ({ options, onUpdate, compact = false }) => {
       );
     };
 
-const Home = ({
-  profile,
-  lastWorkoutLabel,
-  lastSessionSummary,
-  lastSessionShortLabel,
-  lastSessionDetail,
-  suggestedFocus,
-  dayEntries,
-  lastWorkoutDate,
-  onStartWorkout,
-  homeQuote,
-  coachMessage,
-  isRestDay,
-  sessionIntent,
-  onLogRestDay,
-  onUndoRestDay,
-  onTriggerGlory,
-  onLongPressRestDay,
-  onOpenTemplatesFromHome,
-  onOpenHistoryFromHome,
-  onOpenSettingsFromHome
-}) => {
   const longPressTimerRef = useRef(null);
   const restDayTimerRef = useRef(null);
   const [isHolding, setIsHolding] = useState(false);
@@ -2125,8 +2040,6 @@ const Home = ({
   );
 };
 
-const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay, onQuickLogSet }) => {
-  const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
   const [swapState, setSwapState] = useState(null);
@@ -3008,9 +2921,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     </div>
   );
 };
-const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
-      const [displayWeight, setDisplayWeight] = useState(targetWeight || barWeight || '');
-      
       const plates = [45, 35, 25, 10, 5, 2.5];
       
       const calculatePlates = (weight) => {
@@ -3832,24 +3742,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROGRESS TAB ==========
-    const Progress = ({
-      profile,
-      history,
-      strengthScoreObj,
-      cardioHistory,
-      initialAnalyticsTab = 'overview'
-    }) => {
-      const [selectedEquipment, setSelectedEquipment] = useState(null);
-      const [analyticsTab, setAnalyticsTab] = useState(initialAnalyticsTab);
-      const [exerciseHistoryQuery, setExerciseHistoryQuery] = useState('');
-      const [exerciseHistoryExpanded, setExerciseHistoryExpanded] = useState(null);
-      useEffect(() => {
-        if (initialAnalyticsTab && initialAnalyticsTab !== analyticsTab) {
-          setAnalyticsTab(initialAnalyticsTab);
-          setSelectedEquipment(null);
-        }
-      }, [initialAnalyticsTab]);
-
       const allEquipment = Object.keys(EQUIPMENT_DB).filter(id => EQUIPMENT_DB[id]?.type !== 'cardio');
       const combinedSessions = useMemo(() => {
         const sessions = [];
@@ -4298,14 +4190,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
     // ========== PROFILE TAB ==========
-    const ProfileView = ({ settings, setSettings, colorfulExerciseCards, onToggleColorfulExerciseCards, onViewAnalytics, onViewPatterns, onViewMuscleMap, onExportData, onImportData, onResetApp, onResetOnboarding, onBack }) => {
-      const [workoutOpen, setWorkoutOpen] = useState(false);
-      const [appearanceOpen, setAppearanceOpen] = useState(false);
-      const [analyticsOpen, setAnalyticsOpen] = useState(false);
-      const [learnOpen, setLearnOpen] = useState(false);
-      const [aboutOpen, setAboutOpen] = useState(false);
-      const [dataToolsOpen, setDataToolsOpen] = useState(false);
-      const [devTapCount, setDevTapCount] = useState(0);
       const devTapRef = useRef(null);
 
       const handleDevTap = () => {
@@ -4581,10 +4465,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       );
     };
 
-    const MuscleMapScreen = ({ history, onClose }) => {
-      const [rangeDays, setRangeDays] = useState(30);
-
-      // Adjust time ranges or add muscle groups by editing these lists.
       const rangeOptions = [
         { label: '7D', days: 7 },
         { label: '30D', days: 30 },
@@ -4691,7 +4571,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
       );
     };
 
-    const PatternsScreen = ({ history, cardioHistory, onClose }) => {
       const patterns = useMemo(() => buildPatternsFromHistory(history, cardioHistory), [history, cardioHistory]);
 
       return (
@@ -4745,7 +4624,6 @@ const PlateCalculator = ({ targetWeight, barWeight, onClose }) => {
     };
 
 // ========== CARDIO LOGGER ==========
-const CardioLogger = ({ id, onClose, onUpdateSessionLogs, sessionLogs, history, settings }) => {
   const eq = EQUIPMENT_DB[id] || { name: 'Cardio', emoji: '🏃' };
   const isRunning = eq?.cardioGroup === 'running';
   const isSwimming = eq?.cardioGroup === 'swimming';
