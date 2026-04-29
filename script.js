@@ -2874,7 +2874,7 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
         </div>
       )}
 
-      <TemplatePickerePicker
+      <TemplatePicker
         isOpen={isTemplatePickerOpen}
         plans={templatePlans}
         onClose={() => setIsTemplatePickerOpen(false)}
