@@ -6936,7 +6936,7 @@ return (
                     exerciseUsageCounts={exerciseUsageCounts}
                     onStartWorkoutFromBuilder={startWorkoutFromBuilder}
                     activeSession={activeSessionToday}
-                    onFinishSession={() => sessionManager.finishSession(activeSessionToday)}
+                    onFinishSession={finishActiveSession}
                     onAddExerciseFromSearch={addExerciseFromSearch}
                     onPushMessage={pushMessage}
                     onRemoveSessionExercise={removeSessionExercise}
@@ -6950,7 +6950,7 @@ return (
                     onConsumedOpenTemplatesFromHome={() => setOpenTemplatesFromHome(false)}
                     onOpenSettings={() => setTab('profile')}
                     onToggleRestDay={isRestDay ? undoRestDay : logRestDay}
-                    onQuickLogSet={sessionManager.quickLogSet}
+                    onQuickLogSet={quickLogSessionSet}
                   />
                 </div>
 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>
@@ -6992,7 +6992,7 @@ return (
                 profile={profile}
                 history={Array.isArray(effectiveHistory[activeEquipment]) ? effectiveHistory[activeEquipment] : []}
                 settings={settings}
-                onUpdateSessionLogs={sessionManager.updateSessionLogs}
+                onUpdateSessionLogs={updateSessionLogs}
                 sessionLogs={activeSessionToday?.logsByExercise?.[activeEquipment] || []}
                 onRequestUndo={showUndoToast}
                 onShowToast={showToast}
@@ -7008,7 +7008,7 @@ return (
             {activeCardio && (
               <CardioLogger
                 id={activeCardio}
-                onUpdateSessionLogs={sessionManager.updateSessionLogs}
+                onUpdateSessionLogs={updateSessionLogs}
                 sessionLogs={activeSessionToday?.logsByExercise?.[activeCardio] || []}
                 history={Array.isArray(effectiveHistory[activeCardio]) ? effectiveHistory[activeCardio] : []}
                 settings={settings}
