@@ -32,76 +32,7 @@ const { useState, useEffect, useMemo, useRef, useCallback } = React;
     };
 
     // ========== PWA SETUP ==========
-    // Confirm manifest + icon links (guarded for templates that omit them).
-    const manifestLink = document.getElementById('manifest-placeholder');
-    if (manifestLink) manifestLink.setAttribute('href', 'manifest.json');
-    const iconLink = document.getElementById('app-icon');
-    const appleTouchLink = document.getElementById('apple-touch-icon');
-    const APP_ICON_SVG = `
-      <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="spaceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#2b1055;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#7597de;stop-opacity:1" />
-          </linearGradient>
-          <linearGradient id="metalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:#e0e0e0;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#9e9e9e;stop-opacity:1" />
-          </linearGradient>
-        </defs>
-        <rect width="1024" height="1024" fill="url(#spaceGrad)" />
-        <circle cx="200" cy="200" r="10" fill="white" opacity="0.8"/>
-        <circle cx="800" cy="150" r="6" fill="white" opacity="0.6"/>
-        <circle cx="900" cy="800" r="8" fill="white" opacity="0.7"/>
-        <circle cx="100" cy="900" r="5" fill="white" opacity="0.5"/>
-        <circle cx="500" cy="100" r="4" fill="white" opacity="0.4"/>
-        <circle cx="512" cy="512" r="280" fill="#7245d8" />
-        <path d="M 232 512 C 232 400, 792 400, 792 512" stroke="#4cc9f0" stroke-width="40" fill="none" opacity="0.6" stroke-linecap="round"/>
-        <rect x="312" y="472" width="400" height="80" rx="10" fill="#b0bec5" />
-        <rect x="232" y="412" width="60" height="200" rx="15" fill="url(#metalGrad)" />
-        <rect x="192" y="432" width="40" height="160" rx="10" fill="#78909c" />
-        <rect x="732" y="412" width="60" height="200" rx="15" fill="url(#metalGrad)" />
-        <rect x="792" y="432" width="40" height="160" rx="10" fill="#78909c" />
-      </svg>
-    `.trim();
-    const svgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(APP_ICON_SVG)}`;
-    if (iconLink) iconLink.setAttribute('href', svgDataUri);
-    const ensureAppleTouchIcon = () => {
-      if (!appleTouchLink) return;
-      const size = 180;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const img = new Image();
-      img.onload = () => {
-        ctx.clearRect(0, 0, size, size);
-        ctx.drawImage(img, 0, 0, size, size);
-        appleTouchLink.setAttribute('href', canvas.toDataURL('image/png'));
-      };
-      const encoded = btoa(unescape(encodeURIComponent(APP_ICON_SVG)));
-      img.src = `data:image/svg+xml;base64,${encoded}`;
-    };
-    ensureAppleTouchIcon();
-
-    // Register service worker
-    // Register service worker only on supported origins (not file://)
-    const isSecureContextOk = location.protocol === 'https:' || location.hostname === 'localhost';
-    if (isSecureContextOk && 'serviceWorker' in navigator) {
-      const SW_CODE = `
-        const CACHE = 'ps-v2';
-        self.addEventListener('install', e => {
-          e.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['./', 'https://cdn.tailwindcss.com'])));
-        });
-        self.addEventListener('fetch', e => {
-          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-        });
-      `;
-      const swBlob = new Blob([SW_CODE], { type: 'application/javascript' });
-      const swURL = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swURL).catch(() => {});
-    }
+    // Static manifest/icons and service worker registration live in index.html and sw.js.
 
     // PWA Install Prompt Component
     const InstallPrompt = () => {
@@ -905,6 +836,15 @@ const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
         return remaining[0] || 'Full Body';
       }, [effectiveDayEntries]);
 
+      const lastWorkoutExerciseIds = useMemo(() => {
+        const lastWorkout = Object.entries(effectiveDayEntries || {})
+          .filter(([dayKey, entry]) => dayKey !== todayKey && entry?.type === 'workout' && Array.isArray(entry.exercises) && entry.exercises.length > 0)
+          .sort((a, b) => new Date(b[0]) - new Date(a[0]))[0];
+        if (!lastWorkout) return [];
+        return Array.from(new Set(lastWorkout[1].exercises))
+          .filter(id => EQUIPMENT_DB[id] && !EQUIPMENT_DB[id].comingSoon);
+      }, [effectiveDayEntries, todayKey]);
+
       useEffect(() => {
         if (!isRestDay) return;
         setActiveEquipment(null);
@@ -1068,7 +1008,7 @@ const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
         const activeLogs = activeSessionToday?.logsByExercise?.[exerciseId] || [];
         const dedupeKey = `${exerciseId}-${weight}-${reps}`;
         const now = Date.now();
-        if (quickLogSubmitRef.current.key === dedupeKey && now - quickLogSubmitRef.current.at < 900) {
+        if (quickLogSubmitRef.current.key === dedupeKey && now - quickLogSubmitRef.current.at < 400) {
           return false;
         }
         quickLogSubmitRef.current = { key: dedupeKey, at: now };
@@ -1404,6 +1344,59 @@ const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
         });
       };
 
+      const startSessionWithExercise = (id) => {
+        if (!id || EQUIPMENT_DB[id]?.comingSoon) return;
+        if (id === 'kung_fu') {
+          setShowMatrix(true);
+          return;
+        }
+        if (id === 'power_up') {
+          setShowPowerUp(true);
+          return;
+        }
+        if (isRestDay) {
+          undoRestDay();
+        }
+        const alreadyAdded = activeSessionToday?.items?.some(item => (item.exerciseId || item.id) === id);
+        setActiveSession(prev => {
+          const base = (!prev || prev.date !== todayKey) ? createEmptySession({ createdFrom: 'quick-start' }) : prev;
+          const items = [...(base.items || [])];
+          const logsByExercise = { ...(base.logsByExercise || {}) };
+          if (!items.find(item => (item.exerciseId || item.id) === id)) {
+            items.push(buildSessionItem(id));
+            logsByExercise[id] = logsByExercise[id] || [];
+          }
+          return {
+            ...base,
+            status: 'active',
+            createdFrom: base.createdFrom || 'quick-start',
+            items,
+            logsByExercise
+          };
+        });
+        setTab('workout');
+        if (!alreadyAdded) {
+          debugLog('exercise_quick_start', { id });
+          showToast('Exercise added');
+        }
+      };
+
+      const repeatLastWorkout = () => {
+        if (!lastWorkoutExerciseIds.length) return;
+        if (isRestDay) {
+          undoRestDay();
+        }
+        updateSessionItemsByIds(lastWorkoutExerciseIds, {
+          status: 'active',
+          createdFrom: 'repeat'
+        });
+        setDraftPlan(null);
+        setDismissedDraftDate(null);
+        setTab('workout');
+        showToast(`Loaded ${lastWorkoutExerciseIds.length} exercises`);
+        debugLog('workout_repeat_last', { count: lastWorkoutExerciseIds.length });
+      };
+
       const cancelTodaySession = (isActive = false, hasLoggedSets = false) => {
         if (hasLoggedSets) {
           const confirmed = window.confirm("Discard today's session? Your logged sets will be cleared.");
@@ -1429,7 +1422,7 @@ const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
         if (isRestDay) return;
         if (!id) return;
         if (!activeSessionToday) return;
-        let didAdd = false;
+        const alreadyAdded = activeSessionToday?.items?.some(item => (item.exerciseId || item.id) === id);
         setActiveSession(prev => {
           if (!prev || prev.date !== todayKey) return prev;
           const base = prev;
@@ -1438,15 +1431,14 @@ const TemplatePicker = ({ isOpen, onClose, onSelect, plans = [] }) => {
           if (!items.find(item => (item.exerciseId || item.id) === id)) {
             items.push(buildSessionItem(id));
             logsByExercise[id] = [];
-            didAdd = true;
           }
           const nextStatus = options.status || base.status;
           return { ...base, status: 'active', createdFrom: base.createdFrom || options.createdFrom || 'manual', items, logsByExercise };
         });
-        if (options.toast && didAdd) {
+        if (options.toast && !alreadyAdded) {
           showToast('Exercise added');
         }
-        if (didAdd) {
+        if (!alreadyAdded) {
           debugLog('exercise_add', { id });
         }
       };
@@ -2025,6 +2017,9 @@ return (
                     onOpenSettings={() => setTab('profile')}
                     onToggleRestDay={isRestDay ? undoRestDay : logRestDay}
                     onQuickLogSet={quickLogSessionSet}
+                    onStartSessionWithExercise={startSessionWithExercise}
+                    onRepeatLastWorkout={repeatLastWorkout}
+                    repeatLastWorkoutCount={lastWorkoutExerciseIds.length}
                   />
                 </div>
 <div className={`page ${!showAnalytics && !showPatterns && !showMuscleMap && tab === 'profile' ? 'active' : ''}`} aria-hidden={showAnalytics || showPatterns || showMuscleMap || tab !== 'profile'}>

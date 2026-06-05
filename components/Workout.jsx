@@ -31,7 +31,7 @@ const MUSCLE_ICONS = {
   neutral: "M4 12h16M12 4v16"
 };
 
-const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay, onQuickLogSet }) => {
+const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSelectExercise, settings, setSettings, recentExercises, starredExercises, onToggleStarred, exerciseUsageCounts, activeSession, onFinishSession, onStartWorkoutFromBuilder, onAddExerciseFromSearch, onPushMessage, onRemoveSessionExercise, onSwapSessionExercise, onStartEmptySession, isRestDay, onCancelSession, sessionIntent, onApplyTemplate, openTemplatesFromHome, onConsumedOpenTemplatesFromHome, onOpenSettings, onToggleRestDay, onQuickLogSet, onStartSessionWithExercise, onRepeatLastWorkout, repeatLastWorkoutCount = 0 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [libraryVisible, setLibraryVisible] = useState(settings.showAllExercises);
@@ -42,7 +42,6 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const searchResultsRef = useRef(null);
   const sessionCardRef = useRef(null);
   const lastSessionStatusRef = useRef(activeSession?.status || null);
-  const lastQuickLogRef = useRef({ key: '', at: 0 });
 
   useEffect(() => {
     if (openTemplatesFromHome) {
@@ -291,13 +290,16 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
     return { weight, reps };
   }, [sessionLogsByExercise, getLastStrengthSet, getExerciseSessionAnchor]);
 
+  const formatQuickSetLabel = useCallback((set) => {
+    const weight = Number(set?.weight);
+    const reps = Number(set?.reps);
+    if (!Number.isFinite(weight) || !Number.isFinite(reps) || weight <= 0 || reps <= 0) return '+ Set';
+    return `+ ${weight} × ${reps}`;
+  }, []);
+
   const handleQuickLog = useCallback((exerciseId) => {
     const suggestion = getSuggestedSet(exerciseId);
     if (!suggestion) return;
-    const key = `${exerciseId}-${suggestion.weight}-${suggestion.reps}`;
-    const now = Date.now();
-    if (lastQuickLogRef.current.key === key && now - lastQuickLogRef.current.at < 900) return;
-    lastQuickLogRef.current = { key, at: now };
     onQuickLogSet?.(exerciseId, suggestion);
   }, [getSuggestedSet, onQuickLogSet]);
 
@@ -453,6 +455,30 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
   const showCompactControls = mode !== 'idle';
   const workoutHeaderSubtitle = isSessionMode ? 'Workout active' : "Workout, Let's build.";
 
+  const quickStartIds = useMemo(() => {
+    const ids = [...filteredStarred, ...filteredRecents];
+    return Array.from(new Set(ids))
+      .filter(id => EQUIPMENT_DB[id] && !EQUIPMENT_DB[id].comingSoon)
+      .slice(0, 8);
+  }, [filteredStarred, filteredRecents]);
+
+  const renderQuickStartButton = (id) => {
+    const eq = EQUIPMENT_DB[id];
+    if (!eq) return null;
+    const suggestedSet = eq.type !== 'cardio' ? getSuggestedSet(id) : null;
+    return (
+      <button
+        key={id}
+        type="button"
+        onClick={() => onStartSessionWithExercise?.(id)}
+        className="quick-start-chip ps-tap"
+      >
+        <span className="quick-start-chip__name">{eq.name}</span>
+        <span className="quick-start-chip__meta">{suggestedSet ? formatQuickSetLabel(suggestedSet).replace(/^\+\s*/, '') : (eq.type === 'cardio' ? 'Cardio' : 'Start')}</span>
+      </button>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-50 workout-shell relative">
       <div className="ps-hero-header sticky top-0 z-20">
@@ -501,6 +527,17 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               >
                 {hasTodayWorkout ? 'Drafted for today' : 'Start Today'}
               </button>
+              {repeatLastWorkoutCount > 0 && (
+                <button
+                  onClick={() => onRepeatLastWorkout?.()}
+                  disabled={isRestDay || hasTodayWorkout}
+                  className={`w-full py-3 rounded-xl border font-bold active:scale-[0.98] ${
+                    (isRestDay || hasTodayWorkout) ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed' : 'ps-browse-library-btn'
+                  }`}
+                >
+                  Repeat last workout ({repeatLastWorkoutCount})
+                </button>
+              )}
               <button
                 onClick={handleBrowseAll}
                 disabled={isRestDay}
@@ -523,7 +560,17 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
               />
             </div>
             {!hasTodayWorkout && !isRestDay && (
-              <div className="text-[11px] workout-muted">Add exercises and start logging.</div>
+              <>
+                <div className="text-[11px] workout-muted">Add exercises and start logging.</div>
+                {quickStartIds.length > 0 && (
+                  <div className="quick-start-panel">
+                    <div className="quick-start-panel__label">One-tap quick start</div>
+                    <div className="quick-start-panel__row no-scrollbar">
+                      {quickStartIds.map(renderQuickStartButton)}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </Card>
         )}
@@ -650,8 +697,9 @@ const Workout = ({ profile, history, cardioHistory, colorfulExerciseCards, onSel
                               }
                             }}
                             className="active-workout-btn active-workout-btn--primary active-workout-btn--logset ps-tap"
+                            title={quickSet ? `Log ${quickSet.weight} lb × ${quickSet.reps}` : 'Open logger'}
                           >
-                            + Set
+                            {quickSet ? formatQuickSetLabel(quickSet) : 'Log set'}
                           </button>
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelectExercise(entryId, 'session'); }}
